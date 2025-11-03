@@ -1,0 +1,40 @@
+export const scheduleStyles = {
+  page: "flex h-full flex-col overflow-hidden",
+  /* Calendar header and toolbar */
+  calHeader: "flex flex-shrink-0 items-center justify-between border-b border-gray-200 p-4",
+  calHeaderLeft: "flex items-center gap-2",
+  calHeaderRight: "flex items-center gap-2",
+  calTitle: "text-lg font-semibold",
+  navBtn: "rounded-md p-1 hover:bg-gray-100",
+  todayBtn: "rounded-md border border-gray-300 px-3 py-1 text-sm hover:bg-gray-50",
+  refreshBtn: "inline-flex items-center rounded-md px-2 py-1 text-sm hover:bg-gray-100",
+  viewToggle: "inline-flex rounded-md border border-gray-300",
+  viewBtn: "px-3 py-1 text-sm hover:bg-gray-50 first:rounded-l-md last:rounded-r-md aria-selected:bg-gray-900 aria-selected:text-white",
+  /* Calendar grid area */
+  calendarArea: "flex-1 overflow-auto p-4",
+  weekGrid: "grid w-full grid-cols-7 gap-2",
+  dayCell: "relative min-h-96 rounded-md border border-gray-200 bg-gray-50",
+  weekHours: "relative h-[1088px]",
+  weekHourRow: "h-16 border-b border-gray-100",
+  dayCellToday: "bg-blue-50 border-blue-300",
+  event: "absolute left-1 right-1 top-6 rounded-md border-l-4 border-blue-400 bg-blue-100 p-2 text-xs font-semibold text-gray-800 shadow-sm",
+  /* Chat input bar */
+  chatBar: "flex-shrink-0 border-t bg-white p-4",
+  inputForm: "flex gap-2",
+  input: "flex-1 rounded-md border border-gray-300 px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-gray-300",
+  sendBtn: "inline-flex items-center rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-black disabled:opacity-60",
+  /* Day view */
+  dayArea: "h-full w-full overflow-auto p-4",
+  dayGrid: "grid w-full grid-cols-[64px_1fr] gap-2",
+  timeCol: "text-right pr-2 text-xs text-gray-500",
+  timeLabel: "h-16 flex items-end pb-[2px] leading-none",
+  dayCol: "relative",
+  dayHours: "relative",
+  hourRow: "h-16 border-b border-gray-100",
+  eventDay: "absolute left-2 right-2 rounded-md border-l-4 border-blue-400 bg-blue-100 p-2 text-xs font-semibold text-gray-800 shadow-sm",
+  eventDayHandle: "absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize rounded-b-md bg-blue-400/40",
+  eventDayDragging: "opacity-80 ring-2 ring-blue-400",
+  selectionBox: "absolute left-2 right-2 rounded-md border border-blue-400 bg-blue-500/20",
+  nowLine: "absolute left-0 right-0 h-[2px] bg-red-500",
+}
+

@@ -1,0 +1,16 @@
+export const impactStyles = {
+  section: "bg-white py-16",
+  container: "mx-auto max-w-6xl px-6",
+  grid: "mx-auto grid max-w-5xl grid-cols-1 gap-12 text-center md:grid-cols-3",
+  item: "flex flex-col items-center",
+  badgeBase: "mb-4 grid h-14 w-14 place-items-center rounded-2xl",
+  badgeIcon: "h-6 w-6",
+  badgeRose: "bg-gradient-to-b from-rose-50 to-rose-100",
+  badgeViolet: "bg-gradient-to-b from-violet-50 to-violet-100",
+  badgeBlue: "bg-gradient-to-b from-blue-50 to-blue-100",
+  iconRose: "text-rose-600",
+  iconViolet: "text-violet-600",
+  iconBlue: "text-blue-600",
+  itemTitle: "mt-2 text-xl font-semibold text-gray-900",
+  itemDesc: "mt-2 max-w-xs text-sm leading-6 text-gray-600",
+}

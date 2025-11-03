@@ -1,0 +1,21 @@
+// use cases section styles
+export const useCasesStyles = {
+  section: "mx-auto max-w-7xl px-8 py-24",
+  header: "mb-16 text-center",
+  title: "mb-4 text-5xl font-bold text-black",
+  subtitle: "text-xl text-gray-600",
+  subtitleHighlight: "font-semibold text-gray-900",
+  grid: "grid grid-cols-1 gap-8 md:grid-cols-3",
+  card: "flex flex-col rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition-shadow hover:shadow-md",
+  iconWrapper: "mb-6 flex h-16 w-16 items-center justify-center rounded-full",
+  icon: "h-8 w-8",
+  category: "mb-3 text-sm font-bold uppercase tracking-wide text-gray-500",
+  cardTitle: "mb-4 text-2xl font-bold text-black",
+  description: "mb-6 text-base leading-relaxed text-gray-600",
+  descriptionHighlight: "font-semibold text-gray-900",
+  featureList: "flex flex-col gap-4",
+  featureItem: "flex gap-3 text-sm leading-relaxed text-gray-600",
+  featureIcon: "mt-0.5 flex-shrink-0 text-base",
+  featureText: "flex-1",
+  featureHighlight: "font-semibold text-gray-900",
+}
