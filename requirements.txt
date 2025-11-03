@@ -1,0 +1,35 @@
+# FastAPI and server
+fastapi==0.104.1
+# Use plain uvicorn; the [standard] extra pulls in watchfiles, which lacks Py3.13 wheels
+uvicorn==0.24.0
+python-multipart==0.0.6
+
+# Google API clients
+google-auth==2.25.2
+google-auth-oauthlib==1.2.0
+google-auth-httplib2==0.2.0
+google-api-python-client==2.110.0
+
+# OpenAI
+openai==1.6.1
+httpx==0.27.0
+
+# Environment variables
+python-dotenv==1.0.0
+
+# Utilities
+pydantic==2.5.2
+pydantic-settings==2.1.0
+
+# Database
+sqlalchemy>=2.0.31  # Python 3.13 support added in 2.0.31
+
+# AI Agent & Scheduling
+# Note: openai-agents not available yet, using openai function calling instead
+apscheduler==3.10.4
+python-dateutil==2.8.2
+
+# File Processing
+PyPDF2==3.0.1
+Pillow>=10.0.0
+pytesseract==0.3.10
