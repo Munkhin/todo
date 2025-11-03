@@ -1,5 +1,7 @@
 {
   "rewrites": [
-    { "source": "/backend/:path*", "destination": "https://todo-fufa.onrender.com/:path*" }
+    { "source": "/api/auth/:path*", "destination": "/api/auth/:path*", "continue": true },
+    { "source": "/api/cron/:path*", "destination": "/api/cron/:path*", "continue": true },
+    { "source": "/api/:path*", "destination": "https://todo-fufa.onrender.com/api/:path*" }
   ]
 }
