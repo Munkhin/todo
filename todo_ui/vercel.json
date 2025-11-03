@@ -1,5 +1,5 @@
 {
   "rewrites": [
-    { "source": "/backend/:path*", "destination": "https://YOUR_BACKEND_URL/:path*" }
+    { "source": "/backend/:path*", "destination": "https://todo-fufa.onrender.com/:path*" }
   ]
 }
