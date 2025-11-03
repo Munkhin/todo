@@ -57,10 +57,19 @@ const plans: Plan[] = [
   },
 ]
 
+const freePlanHref = plans.find((plan) => plan.variant === 'free')?.href ?? '/signup'
+const isPaidPlan = (variant: Plan['variant']): variant is 'pro' | 'unlimited' =>
+  variant !== 'free'
+
 export default function Pricing() {
   const { status } = useSession()
 
-  const startPlan = useCallback((plan: 'pro' | 'unlimited') => {
+  const startPlan = useCallback((plan: Plan['variant']) => {
+    if (!isPaidPlan(plan)) {
+      window.location.href = freePlanHref
+      return
+    }
+
     const base = process.env.NEXT_PUBLIC_BASE_URL || ''
     const purchaseUrl = `/purchase?plan=${plan}`
     if (status === 'authenticated') {
@@ -95,12 +104,15 @@ export default function Pricing() {
                   ))}
                 </ul>
                 <div className={pricingStyles.ctaWrap}>
-                  {plan.variant === 'free' ? (
+                  {!isPaidPlan(plan.variant) ? (
                     <Link href={plan.href!} className={pricingStyles.ctaOutline}>
                       {plan.cta}
                     </Link>
                   ) : (
-                    <button onClick={() => startPlan(plan.variant)} className={pricingStyles.ctaGradient}>
+                    <button
+                      onClick={() => startPlan(plan.variant)}
+                      className={pricingStyles.ctaGradient}
+                    >
                       <span className={pricingStyles.ctaGradientInner}>{plan.cta}</span>
                     </button>
                   )}
