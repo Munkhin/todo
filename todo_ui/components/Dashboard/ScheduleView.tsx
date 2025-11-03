@@ -101,154 +101,172 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
 
       <div className={cal.calendarArea}>
         {view === 'week' ? (
-          <div ref={gridRef} className={cal.weekGrid}>
-            {getWeekDates(currentDate).map((dayDate, i) => (
-              <div key={i} className={`${cal.dayCell} ${isSameDate(dayDate, new Date()) ? cal.dayCellToday : ''}`}>
-                <div
-                  ref={(el) => { (weekHoursRefs as any).current[i] = el }}
-                  className={cal.weekHours}
-                  style={{ height: `${spanHours * 64}px` }}
-                  onMouseDown={(e) => {
-                    const min = yToMinutes(e.clientY, (weekHoursRefs as any).current[i], spanMinutes)
-                    const snapped = snap15(min)
-                    setIsSelecting(true)
-                    setSelectStartMin(snapped)
-                    setSelectEndMin(snapped + 60)
-                    ;(window as any).__selDayIndex = i
-                  }}
-                  onMouseMove={(e) => {
-                    if (!isSelecting) return
-                    const idx = (window as any).__selDayIndex ?? i
-                    const min = yToMinutes(e.clientY, (weekHoursRefs as any).current[idx], spanMinutes)
-                    setSelectEndMin(snap15(min))
-                  }}
-                  onMouseUp={() => {
-                    if (!isSelecting) return
-                    const start = Math.min(selectStartMin ?? 0, selectEndMin ?? 0)
-                    const end = Math.max(selectStartMin ?? 0, selectEndMin ?? 0)
-                    const startDayIndex = (window as any).__selDayIndex ?? i
-                    const day = getWeekDates(currentDate)[startDayIndex]
-                    const baseHour = wake
-                    const startDate = new Date(day)
-                    startDate.setHours(baseHour, 0, 0, 0)
-                    startDate.setMinutes(startDate.getMinutes() + start)
-                    const endDate = new Date(day)
-                    endDate.setHours(baseHour, 0, 0, 0)
-                    const finalEndMin = Math.max(start + 30, end)
-                    endDate.setMinutes(endDate.getMinutes() + finalEndMin)
-                    setInitialDueDate(endDate.toISOString())
-                    setPresetMinutes(finalEndMin - start)
-                    setEditingTask(null)
-                    setEditingTaskId(null)
-                    setOpenDialog(true)
-                    setIsSelecting(false)
-                  }}
-                >
-                  {hoursSeq.map((_, idx) => (
-                    <div key={idx} className={cal.weekHourRow} />
-                  ))}
-
-                  {tasks
-                    .filter(t => isSameDate(new Date(t.due_date), dayDate))
-                    .map((t) => {
-                      const { startIso, endIso } = taskToSpan(t)
-                      const { top, height } = getEventBox(startIso, endIso, wake, spanMinutes)
-                      const colWidth = (gridRef.current?.getBoundingClientRect().width || 0) / 7
-                      return (
-                        <div
-                          key={t.id}
-                          className={`${cal.eventDay} ${draggingTaskId === t.id ? cal.eventDayDragging : ''}`}
-                          style={{ top, height, cursor: 'grab' }}
-                          onMouseDown={(e) => {
-                            e.stopPropagation()
-                            setDraggingTaskId(t.id)
-                            setDragMode('move')
-                            setDragDurationMin(Math.max(30, (new Date(endIso).getTime() - new Date(startIso).getTime())/60000))
-                            setDragOriginMin(minutesSinceStartOfDay(startIso) - wake*60)
-                            ;(window as any).__dragStartDay = i
-                          }}
-                          onMouseMove={(e) => {
-                            if (dragMode !== 'move' || draggingTaskId !== t.id) return
-                            const idx = xToDayIndex(e.clientX, gridRef.current)
-                            const min = yToMinutes(e.clientY, (weekHoursRefs as any).current[idx], spanMinutes)
-                            const snapped = snap15(min)
-                            ;(e.currentTarget as HTMLDivElement).style.top = `${snapped * (64/60)}px`
-                            const dx = (idx - ((window as any).__dragStartDay ?? i)) * colWidth
-                            ;(e.currentTarget as HTMLDivElement).style.transform = `translateX(${dx}px)`
-                          }}
-                          onMouseUp={async (e) => {
-                            if (dragMode !== 'move' || draggingTaskId !== t.id) return
-                            const idx = xToDayIndex(e.clientX, gridRef.current)
-                            const min = yToMinutes(e.clientY, (weekHoursRefs as any).current[idx], spanMinutes)
-                            const snapped = snap15(min)
-                            const day = getWeekDates(currentDate)[idx]
-                            const base = new Date(day)
-                            base.setHours(wake,0,0,0)
-                            const newStart = new Date(base.getTime() + snapped*60000)
-                            const newEnd = new Date(newStart.getTime() + dragDurationMin*60000)
-                            await editTask(String(t.id), {
-                              scheduled_start: newStart.toISOString(),
-                              scheduled_end: newEnd.toISOString(),
-                              due_date: newEnd.toISOString(),
-                            })
-                            await fetchTasks()
-                            setDraggingTaskId(null)
-                            setDragMode(null)
-                          }}
-                        >
-                          {t.topic}
-                          <div
-                            className={cal.eventDayHandle}
-                            onMouseDown={(e) => {
-                              e.stopPropagation()
-                              setDraggingTaskId(t.id)
-                              setDragMode('resize')
-                              setDragOriginMin(minutesSinceStartOfDay(startIso) - wake*60)
-                              ;(window as any).__dragStartDay = i
-                            }}
-                            onMouseMove={(e) => {
-                              if (dragMode !== 'resize' || draggingTaskId !== t.id) return
-                              const idx = xToDayIndex(e.clientX, gridRef.current)
-                              const min = yToMinutes(e.clientY, (weekHoursRefs as any).current[idx], spanMinutes)
-                              const snapped = Math.max(snap15(min), dragOriginMin + 30)
-                              const newHeight = (snapped - dragOriginMin) * (64/60)
-                              const parent = (e.currentTarget.parentElement as HTMLDivElement)
-                              parent.style.height = `${newHeight}px`
-                            }}
-                            onMouseUp={async (e) => {
-                              if (dragMode !== 'resize' || draggingTaskId !== t.id) return
-                              const idx = xToDayIndex(e.clientX, gridRef.current)
-                              const min = yToMinutes(e.clientY, (weekHoursRefs as any).current[idx], spanMinutes)
-                              const snapped = Math.max(snap15(min), dragOriginMin + 30)
-                              const day = getWeekDates(currentDate)[idx]
-                              const base = new Date(day)
-                              base.setHours(wake,0,0,0)
-                              const newStart = new Date(base.getTime() + dragOriginMin*60000)
-                              const newEnd = new Date(base.getTime() + snapped*60000)
-                              await editTask(String(t.id), {
-                                scheduled_start: newStart.toISOString(),
-                                scheduled_end: newEnd.toISOString(),
-                                due_date: newEnd.toISOString(),
-                              })
-                              await fetchTasks()
-                              setDraggingTaskId(null)
-                              setDragMode(null)
-                            }}
-                          />
-                        </div>
-                      )
-                    })}
-
-                  {isSelecting && (window as any).__selDayIndex === i && selectStartMin !== null && selectEndMin !== null && (
-                    (() => {
-                      const top = Math.min(selectStartMin, selectEndMin) * (64/60)
-                      const height = Math.max(16, Math.abs(selectEndMin - selectStartMin) * (64/60))
-                      return <div className={cal.selectionBox} style={{ top, height }} />
-                    })()
-                  )}
-                </div>
+          <div className={cal.weekOuterGrid}>
+            {/* Left time column */}
+            <div className={cal.timeCol}>
+              {hoursSeq.map((h, idx) => (
+                <div key={idx} className={cal.timeLabel}>{formatHour(h)}</div>
+              ))}
+            </div>
+            {/* Right: headers + 7 day columns */}
+            <div className="min-h-0 flex flex-col">
+              <div className={cal.weekHeader}>
+                {getWeekDates(currentDate).map((dayDate, i) => (
+                  <div key={i} className={cal.weekHeaderCell}>
+                    {dayDate.toLocaleDateString('en-US', { weekday: 'short' })} {dayDate.getDate()}
+                  </div>
+                ))}
               </div>
-            ))}
+              <div ref={gridRef} className={cal.weekGrid}>
+                {getWeekDates(currentDate).map((dayDate, i) => (
+                  <div key={i} className={`${cal.dayCell} ${isSameDate(dayDate, new Date()) ? cal.dayCellToday : ''}`}>
+                    <div
+                      ref={(el) => { (weekHoursRefs as any).current[i] = el }}
+                      className={cal.weekHours}
+                      style={{ height: `${spanHours * 64}px` }}
+                      onMouseDown={(e) => {
+                        const min = yToMinutes(e.clientY, (weekHoursRefs as any).current[i], spanMinutes)
+                        const snapped = snap15(min)
+                        setIsSelecting(true)
+                        setSelectStartMin(snapped)
+                        setSelectEndMin(snapped + 60)
+                        ;(window as any).__selDayIndex = i
+                      }}
+                      onMouseMove={(e) => {
+                        if (!isSelecting) return
+                        const idx = (window as any).__selDayIndex ?? i
+                        const min = yToMinutes(e.clientY, (weekHoursRefs as any).current[idx], spanMinutes)
+                        setSelectEndMin(snap15(min))
+                      }}
+                      onMouseUp={() => {
+                        if (!isSelecting) return
+                        const start = Math.min(selectStartMin ?? 0, selectEndMin ?? 0)
+                        const end = Math.max(selectStartMin ?? 0, selectEndMin ?? 0)
+                        const startDayIndex = (window as any).__selDayIndex ?? i
+                        const day = getWeekDates(currentDate)[startDayIndex]
+                        const baseHour = wake
+                        const startDate = new Date(day)
+                        startDate.setHours(baseHour, 0, 0, 0)
+                        startDate.setMinutes(startDate.getMinutes() + start)
+                        const endDate = new Date(day)
+                        endDate.setHours(baseHour, 0, 0, 0)
+                        const finalEndMin = Math.max(start + 15, end)
+                        endDate.setMinutes(endDate.getMinutes() + finalEndMin)
+                        setInitialDueDate(endDate.toISOString())
+                        setPresetMinutes(finalEndMin - start)
+                        setEditingTask(null)
+                        setEditingTaskId(null)
+                        setOpenDialog(true)
+                        setIsSelecting(false)
+                      }}
+                    >
+                      {hoursSeq.map((_, idx) => (
+                        <div key={idx} className={cal.weekHourRow} />
+                      ))}
+
+                      {tasks
+                        .filter(t => isSameDate(new Date(t.due_date), dayDate))
+                        .map((t) => {
+                          const { startIso, endIso } = taskToSpan(t)
+                          const { top, height } = getEventBox(startIso, endIso, wake, spanMinutes)
+                          const colWidth = (gridRef.current?.getBoundingClientRect().width || 0) / 7
+                          return (
+                            <div
+                              key={t.id}
+                              className={`${cal.eventDay} ${draggingTaskId === t.id ? cal.eventDayDragging : ''}`}
+                              style={{ top, height, cursor: 'grab' }}
+                              onMouseDown={(e) => {
+                                e.stopPropagation()
+                                setDraggingTaskId(t.id)
+                                setDragMode('move')
+                                setDragDurationMin(Math.max(15, (new Date(endIso).getTime() - new Date(startIso).getTime())/60000))
+                                setDragOriginMin(minutesSinceStartOfDay(startIso) - wake*60)
+                                ;(window as any).__dragStartDay = i
+                              }}
+                              onMouseMove={(e) => {
+                                if (dragMode !== 'move' || draggingTaskId !== t.id) return
+                                const idx = xToDayIndex(e.clientX, gridRef.current)
+                                const min = yToMinutes(e.clientY, (weekHoursRefs as any).current[idx], spanMinutes)
+                                const snapped = snap15(min)
+                                ;(e.currentTarget as HTMLDivElement).style.top = `${snapped * (64/60)}px`
+                                const dx = (idx - ((window as any).__dragStartDay ?? i)) * colWidth
+                                ;(e.currentTarget as HTMLDivElement).style.transform = `translateX(${dx}px)`
+                              }}
+                              onMouseUp={async (e) => {
+                                if (dragMode !== 'move' || draggingTaskId !== t.id) return
+                                const idx = xToDayIndex(e.clientX, gridRef.current)
+                                const min = yToMinutes(e.clientY, (weekHoursRefs as any).current[idx], spanMinutes)
+                                const snapped = snap15(min)
+                                const day = getWeekDates(currentDate)[idx]
+                                const base = new Date(day)
+                                base.setHours(wake,0,0,0)
+                                const newStart = new Date(base.getTime() + snapped*60000)
+                                const newEnd = new Date(newStart.getTime() + dragDurationMin*60000)
+                                await editTask(String(t.id), {
+                                  scheduled_start: newStart.toISOString(),
+                                  scheduled_end: newEnd.toISOString(),
+                                  due_date: newEnd.toISOString(),
+                                })
+                                await fetchTasks()
+                                setDraggingTaskId(null)
+                                setDragMode(null)
+                              }}
+                            >
+                              {t.topic}
+                              <div
+                                className={cal.eventDayHandle}
+                                onMouseDown={(e) => {
+                                  e.stopPropagation()
+                                  setDraggingTaskId(t.id)
+                                  setDragMode('resize')
+                                  setDragOriginMin(minutesSinceStartOfDay(startIso) - wake*60)
+                                  ;(window as any).__dragStartDay = i
+                                }}
+                                onMouseMove={(e) => {
+                                  if (dragMode !== 'resize' || draggingTaskId !== t.id) return
+                                  const idx = xToDayIndex(e.clientX, gridRef.current)
+                                  const min = yToMinutes(e.clientY, (weekHoursRefs as any).current[idx], spanMinutes)
+                                  const snapped = Math.max(snap15(min), dragOriginMin + 15)
+                                  const newHeight = (snapped - dragOriginMin) * (64/60)
+                                  const parent = (e.currentTarget.parentElement as HTMLDivElement)
+                                  parent.style.height = `${newHeight}px`
+                                }}
+                                onMouseUp={async (e) => {
+                                  if (dragMode !== 'resize' || draggingTaskId !== t.id) return
+                                  const idx = xToDayIndex(e.clientX, gridRef.current)
+                                  const min = yToMinutes(e.clientY, (weekHoursRefs as any).current[idx], spanMinutes)
+                                  const snapped = Math.max(snap15(min), dragOriginMin + 15)
+                                  const day = getWeekDates(currentDate)[idx]
+                                  const base = new Date(day)
+                                  base.setHours(wake,0,0,0)
+                                  const newStart = new Date(base.getTime() + dragOriginMin*60000)
+                                  const newEnd = new Date(base.getTime() + snapped*60000)
+                                  await editTask(String(t.id), {
+                                    scheduled_start: newStart.toISOString(),
+                                    scheduled_end: newEnd.toISOString(),
+                                    due_date: newEnd.toISOString(),
+                                  })
+                                  await fetchTasks()
+                                  setDraggingTaskId(null)
+                                  setDragMode(null)
+                                }}
+                              />
+                            </div>
+                          )
+                        })}
+
+                      {isSelecting && (window as any).__selDayIndex === i && selectStartMin !== null && selectEndMin !== null && (
+                        (() => {
+                          const top = Math.min(selectStartMin, selectEndMin) * (64/60)
+                          const height = Math.max(16, Math.abs(selectEndMin - selectStartMin) * (64/60))
+                          return <div className={cal.selectionBox} style={{ top, height }} />
+                        })()
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         ) : (
           <div className={cal.dayArea}>
@@ -286,7 +304,7 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
                     startDate.setMinutes(startDate.getMinutes() + start)
                     const endDate = new Date(dueDateTime)
                     endDate.setHours(baseHour, 0, 0, 0)
-                    const finalEndMin = Math.max(start + 30, end)
+                    const finalEndMin = Math.max(start + 15, end)
                     endDate.setMinutes(endDate.getMinutes() + finalEndMin)
                     setInitialDueDate(endDate.toISOString())
                     setPresetMinutes(finalEndMin - start)
@@ -326,7 +344,7 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
                             e.stopPropagation()
                             setDraggingTaskId(t.id)
                             setDragMode('move')
-                            setDragDurationMin(Math.max(30, (new Date(endIso).getTime() - new Date(startIso).getTime())/60000))
+                            setDragDurationMin(Math.max(15, (new Date(endIso).getTime() - new Date(startIso).getTime())/60000))
                             setDragOriginMin(minutesSinceStartOfDay(startIso) - wake*60)
                           }}
                           onMouseUp={(e) => {
@@ -371,7 +389,7 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
                             onMouseMove={(e) => {
                               if (dragMode !== 'resize' || draggingTaskId !== t.id) return
                               const min = yToMinutes(e.clientY, dayHoursRef.current, spanMinutes)
-                              const snapped = Math.max(snap15(min), dragOriginMin + 30)
+                            const snapped = Math.max(snap15(min), dragOriginMin + 15)
                               const newHeight = (snapped - dragOriginMin) * (64/60)
                               const parent = (e.currentTarget.parentElement as HTMLDivElement)
                               parent.style.height = `${newHeight}px`
@@ -379,7 +397,7 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
                             onMouseUp={async (e) => {
                               if (dragMode !== 'resize' || draggingTaskId !== t.id) return
                               const min = yToMinutes(e.clientY, dayHoursRef.current, spanMinutes)
-                              const snapped = Math.max(snap15(min), dragOriginMin + 30)
+                            const snapped = Math.max(snap15(min), dragOriginMin + 15)
                               const base = new Date(currentDate)
                               base.setHours(wake,0,0,0)
                               const newStart = new Date(base.getTime() + dragOriginMin*60000)
@@ -516,7 +534,15 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
 }
 
 // date helpers and positioning
-function startOfWeek(date: Date) { const d = new Date(date); d.setHours(0,0,0,0); d.setDate(d.getDate() - d.getDay()); return d }
+function startOfWeek(date: Date) {
+  // Monday as start of week
+  const d = new Date(date)
+  d.setHours(0, 0, 0, 0)
+  const day = d.getDay() // 0 (Sun) -> 6 (Sat)
+  const diffFromMonday = (day + 6) % 7 // 0 when Mon
+  d.setDate(d.getDate() - diffFromMonday)
+  return d
+}
 function endOfWeek(date: Date) { const d = startOfWeek(date); d.setDate(d.getDate() + 6); d.setHours(23,59,59,999); return d }
 function addDays(date: Date, days: number) { const d = new Date(date); d.setDate(d.getDate() + days); return d }
 function getWeekDates(date: Date) { const start = startOfWeek(date); return Array.from({ length: 7 }).map((_, i) => new Date(start.getFullYear(), start.getMonth(), start.getDate() + i)) }

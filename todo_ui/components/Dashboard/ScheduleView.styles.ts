@@ -12,6 +12,9 @@ export const scheduleStyles = {
   viewBtn: "px-3 py-1 text-sm hover:bg-gray-50 first:rounded-l-md last:rounded-r-md aria-selected:bg-gray-900 aria-selected:text-white",
   /* Calendar grid area */
   calendarArea: "flex-1 overflow-auto p-4",
+  weekOuterGrid: "grid w-full grid-cols-[64px_1fr] gap-2",
+  weekHeader: "grid grid-cols-7 gap-2 mb-2",
+  weekHeaderCell: "text-center text-sm font-medium text-gray-700",
   weekGrid: "grid w-full grid-cols-7 gap-2",
   dayCell: "relative min-h-96 rounded-md border border-gray-200 bg-gray-50",
   weekHours: "relative h-[1088px]",
@@ -37,4 +40,3 @@ export const scheduleStyles = {
   selectionBox: "absolute left-2 right-2 rounded-md border border-blue-400 bg-blue-500/20",
   nowLine: "absolute left-0 right-0 h-[2px] bg-red-500",
 }
-
