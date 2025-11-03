@@ -84,7 +84,6 @@ export default function TaskDialog({
               className={taskDialogStyles.input}
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              placeholder="Study calculus"
             />
           </label>
           <label className={taskDialogStyles.label}>
