@@ -26,30 +26,6 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS middleware configuration
-default_origins = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
-extra_origins = os.getenv("CORS_ALLOWED_ORIGINS", "")
-if extra_origins:
-    default_origins.extend(
-        origin.strip()
-        for origin in extra_origins.split(",")
-        if origin.strip()
-    )
-
-allowed_origins = sorted(set(default_origins))
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_origin_regex=r"https?://localhost(:\d+)?$",
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # Health check endpoint
 @app.get("/")
 def root():
