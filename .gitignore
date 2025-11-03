@@ -1,0 +1,5 @@
+.pytest_cache
+.env
+tasks.db
+start-servers.ps1
+start-servers.sh

@@ -1,0 +1,11 @@
+INFO:     Will watch for changes in these directories: ['/mnt/c/Users/Cheem/OneDrive/Coding/todo']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [12544] using WatchFiles
+INFO:     Started server process [12546]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+Background scheduler started (runs every hour)
+INFO:     127.0.0.1:49644 - "GET /api/tasks?include_completed=false HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:49644 - "GET /api/tasks?include_completed=false HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:49644 - "GET /api/tasks/?include_completed=false HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49644 - "GET /api/tasks/?include_completed=false HTTP/1.1" 200 OK

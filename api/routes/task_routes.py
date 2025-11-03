@@ -1,0 +1,156 @@
+# routes/tasks.py
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from typing import List
+from pydantic import BaseModel
+from api.database import get_db
+from api.models import Task
+from api.schemas import TaskCreate, TaskUpdate, TaskOut
+from datetime import datetime, timedelta, timezone
+
+router = APIRouter()
+
+# Get all tasks with optional filters
+@router.get("/", response_model=List[TaskOut])
+def get_tasks(
+    scheduled: bool = None,  # None=all, True=scheduled, False=unscheduled
+    completed: bool = None,  # filter by review_count > 0
+    difficulty: int = None,  # filter by specific difficulty
+    sort_by: str = "due_date",  # due_date, difficulty, review_count
+    db: Session = Depends(get_db)
+):
+    """
+    get tasks with optional filters
+
+    filters:
+    - scheduled: None (all), True (scheduled only), False (unscheduled only)
+    - completed: None (all), True (completed), False (not completed)
+    - difficulty: filter by difficulty level (1-5)
+    - sort_by: sort tasks by due_date, difficulty, or review_count
+    """
+    query = db.query(Task)
+
+    # filter by scheduled status
+    if scheduled is not None:
+        if scheduled:
+            query = query.filter(Task.scheduled_start != None)
+        else:
+            query = query.filter(Task.scheduled_start == None)
+
+    # filter by completion status
+    if completed is not None:
+        if completed:
+            query = query.filter(Task.review_count > 0)
+        else:
+            query = query.filter(Task.review_count == 0)
+
+    # filter by difficulty
+    if difficulty is not None:
+        query = query.filter(Task.difficulty == difficulty)
+
+    # get results
+    tasks = query.all()
+
+    # sort tasks
+    if sort_by == "due_date":
+        tasks = sorted(tasks, key=lambda t: t.due_date)
+    elif sort_by == "difficulty":
+        tasks = sorted(tasks, key=lambda t: t.difficulty, reverse=True)
+    elif sort_by == "review_count":
+        tasks = sorted(tasks, key=lambda t: t.review_count)
+
+    return tasks
+
+# Get single task by ID
+@router.get("/{task_id}")
+def get_task(task_id: int, db: Session = Depends(get_db)):
+    db_task = db.query(Task).filter(Task.id == task_id).first()
+    if not db_task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return {"task": db_task}
+
+# Create new task
+@router.post("/", response_model=TaskOut, status_code=201)
+def create_task(task: TaskCreate, db: Session = Depends(get_db)):
+    from api.models import CalendarEvent
+    from api.services.consts import DEFAULT_DUE_DATE_DAYS
+    from datetime import timedelta
+
+    # apply default due_date if not provided
+    task_data = task.dict()
+    if not task_data.get("due_date"):
+        task_data["due_date"] = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=DEFAULT_DUE_DATE_DAYS)
+
+    db_task = Task(**task_data)
+    db.add(db_task)
+    db.commit()
+    db.refresh(db_task)
+
+    # create calendar event if task is scheduled
+    if db_task.scheduled_start and db_task.scheduled_end:
+        calendar_event = CalendarEvent(
+            user_id=db_task.user_id,
+            title=db_task.topic,
+            description=f"Study session for {db_task.topic}",
+            start_time=db_task.scheduled_start,
+            end_time=db_task.scheduled_end,
+            event_type="study",
+            source="user",
+            task_id=db_task.id
+        )
+        db.add(calendar_event)
+        db.commit()
+
+    return db_task
+
+# Update task
+@router.put("/{task_id}", response_model=TaskOut)
+def update_task(task_id: int, task: TaskUpdate, db: Session = Depends(get_db)):
+    from api.models import CalendarEvent
+
+    db_task = db.query(Task).filter(Task.id == task_id).first()
+    if not db_task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    for field, value in task.dict(exclude_unset=True).items():
+        setattr(db_task, field, value)
+
+    # update associated calendar events to match task changes
+    if db_task.scheduled_start and db_task.scheduled_end:
+        calendar_events = db.query(CalendarEvent).filter(
+            CalendarEvent.task_id == task_id
+        ).all()
+
+        for event in calendar_events:
+            event.title = db_task.topic
+            event.start_time = db_task.scheduled_start
+            event.end_time = db_task.scheduled_end
+            if db_task.description:
+                event.description = f"Study session for {db_task.topic}"
+
+    db.commit()
+    db.refresh(db_task)
+    return db_task
+
+# Delete task
+@router.delete("/{task_id}")
+def delete_task(task_id: int, db: Session = Depends(get_db)):
+    db_task = db.query(Task).filter(Task.id == task_id).first()
+    if not db_task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    db.delete(db_task)
+    db.commit()
+    return {"message": "Task deleted"}
+
+
+# Mark task as completed
+@router.post("/{task_id}/complete", response_model=TaskOut)
+def complete_task(task_id: int, db: Session = Depends(get_db)):
+    db_task = db.query(Task).filter(Task.id == task_id).first()
+    if not db_task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    db_task.review_count += 1
+    db_task.last_studied = datetime.now(timezone.utc).replace(tzinfo=None)
+    db.commit()
+    db.refresh(db_task)
+    return db_task
