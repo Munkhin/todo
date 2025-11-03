@@ -3,3 +3,44 @@
 tasks.db
 start-servers.ps1
 start-servers.sh
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+todo_ui/node_modules
+todo_ui/.pnp
+todo_ui/.pnp.*
+todo_ui/.yarn/*
+!todo_ui/.yarn/patches
+!todo_ui/.yarn/plugins
+!todo_ui/.yarn/releases
+!todo_ui/.yarn/versions
+
+# testing
+todo_ui/coverage
+
+# next.js
+todo_ui/.next/
+todo_ui/out/
+
+# production
+todo_ui/build
+
+# misc
+todo_ui/.DS_Store
+todo_ui/*.pem
+
+# debug
+todo_ui/npm-debug.log*
+todo_ui/yarn-debug.log*
+todo_ui/yarn-error.log*
+todo_ui/.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+todo_ui/.env*
+
+# vercel
+todo_ui/.vercel
+
+# typescript
+todo_ui/*.tsbuildinfo
+todo_ui/next-env.d.ts
