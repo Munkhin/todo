@@ -82,6 +82,12 @@ async def update_user_timezone(request: UpdateTimezoneRequest, db: Session = Dep
     """Update user's timezone setting"""
     try:
         print(f"[update_user_timezone] Received user_id={request.user_id}, timezone={request.timezone}")
+
+        # Debug: check all users
+        all_users = db.query(User).all()
+        print(f"[update_user_timezone] Total users in DB: {len(all_users)}")
+        print(f"[update_user_timezone] User IDs: {[u.id for u in all_users]}")
+
         user = db.query(User).filter(User.id == request.user_id).first()
         print(f"[update_user_timezone] User query result: {user}")
         if not user:

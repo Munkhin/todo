@@ -20,7 +20,25 @@ interface DemoState {
   messages: DemoChatMessage[]
 }
 
-const STORAGE_KEY = 'demoState:v1'
+// Generate unique session ID per demo visitor
+function getDemoSessionId(): string {
+  if (typeof window === 'undefined') return 'demo-server'
+
+  const SESSION_KEY = 'demoSessionId'
+  let sessionId = window.sessionStorage.getItem(SESSION_KEY)
+
+  if (!sessionId) {
+    // Create new session ID for this browser tab
+    sessionId = `demo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    window.sessionStorage.setItem(SESSION_KEY, sessionId)
+  }
+
+  return sessionId
+}
+
+function getStorageKey(): string {
+  return `demoState:${getDemoSessionId()}`
+}
 
 function nowIso() {
   return new Date().toISOString()
@@ -31,7 +49,7 @@ function readState(): DemoState {
     return { nextTaskId: 1, nextEventId: 1, tasks: [], events: [], messages: [] }
   }
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
+    const raw = window.localStorage.getItem(getStorageKey())
     if (!raw) return { nextTaskId: 1, nextEventId: 1, tasks: [], events: [], messages: [] }
     const parsed = JSON.parse(raw) as DemoState
     // basic shape guard
@@ -49,7 +67,7 @@ function readState(): DemoState {
 
 function writeState(state: DemoState) {
   if (typeof window === 'undefined') return
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+  window.localStorage.setItem(getStorageKey(), JSON.stringify(state))
 }
 
 // Tasks API (local)
@@ -63,7 +81,7 @@ export async function demoCreateTask(taskData: Partial<Task> & { topic: string; 
   const id = s.nextTaskId
   const task: Task = {
     id,
-    user_id: 0,
+    user_id: -1, // Demo user ID (not persisted to backend)
     topic: taskData.topic,
     estimated_minutes: taskData.estimated_minutes,
     difficulty: taskData.difficulty ?? 3,

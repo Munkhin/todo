@@ -31,7 +31,8 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
   const removeTask = useTaskStore((s) => s.removeTask)
   const events = useScheduleStore((s) => s.events) ?? []
   const fetchEvents = useScheduleStore((s) => s.fetchEvents)
-  const userId = useUserId()
+  // Don't call backend for user ID in demo mode
+  const userId = demoMode ? -1 : useUserId()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [view, setView] = useState<'week' | 'day'>('week')
   const [openDialog, setOpenDialog] = useState(false)
