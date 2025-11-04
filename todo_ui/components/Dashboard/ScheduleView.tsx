@@ -469,8 +469,8 @@ function getEventBox(startIso: string, endIso: string, baseHour: number, spanMin
 }
 function getNowOffsetPx(baseHour: number, spanMinutes: number) {
   const now = new Date()
-  // Offset the current time indicator by +60 minutes (1 hour)
-  const min = now.getHours()*60 + now.getMinutes() - baseHour*60 + 60
+  // Position the current time indicator with no artificial offset
+  const min = now.getHours()*60 + now.getMinutes() - baseHour*60
   return Math.max(0, Math.min(min, spanMinutes) * PX_PER_MIN)
 }
 function yToMinutes(clientY: number, el: HTMLDivElement | null, clampTo: number) { if (!el) return 0; const rect = el.getBoundingClientRect(); const y = clientY - rect.top; const min = y/PX_PER_MIN; return Math.max(0, Math.min(min, clampTo)) }

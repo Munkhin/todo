@@ -1,5 +1,5 @@
 export const scheduleStyles = {
-  page: "flex h-full min-h-0 flex-col overflow-hidden",
+  page: "relative flex h-full min-h-0 flex-col overflow-hidden",
   /* Calendar header and toolbar */
   calHeader: "flex flex-shrink-0 items-center justify-between border-b border-gray-200 p-[clamp(0.75rem,1.8vh,1.25rem)]",
   calHeaderLeft: "flex items-center gap-2",
@@ -13,8 +13,10 @@ export const scheduleStyles = {
   /* Calendar grid area */
   calendarArea: "relative z-0 flex-1 overflow-auto p-[clamp(0.75rem,1.8vh,1.25rem)]",
   weekOuterGrid: "grid w-full grid-cols-[64px_1fr] gap-2",
-  weekHeader: "grid grid-cols-7 gap-2 mb-2",
-  weekHeaderCell: "text-center text-sm font-medium text-gray-700",
+  // Sticky week header overlay that stays in place when scrolling
+  weekHeader: "sticky top-0 z-10 grid grid-cols-7 gap-2 mb-2 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80",
+  // Prevent wrapping of weekday labels
+  weekHeaderCell: "text-center text-sm font-medium text-gray-700 whitespace-nowrap overflow-hidden text-ellipsis",
   weekGrid: "grid w-full grid-cols-7 gap-2",
   dayCell: "relative min-h-96 rounded-md border border-gray-200 bg-gray-50",
   weekHours: "relative h-[1088px]",

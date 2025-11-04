@@ -34,12 +34,16 @@ class ChatMessageResponse(BaseModel):
 # standardize the time
 def _to_utc_iso(dt: datetime) -> str:
     if dt.tzinfo is None:
-        local_tz = datetime.now().astimezone().tzinfo
-        dt = dt.replace(tzinfo=local_tz)
+        # database stores naive datetimes as UTC, so treat them as UTC
+        dt = dt.replace(tzinfo=timezone.utc)
     return dt.astimezone(timezone.utc).isoformat().replace('+00:00', 'Z')
 
 
 def _serialize_event_utc(ev) -> dict:
+    # ensure timestamps are calculated from UTC-aware datetimes
+    start_utc = ev.start_time.replace(tzinfo=timezone.utc) if ev.start_time.tzinfo is None else ev.start_time
+    end_utc = ev.end_time.replace(tzinfo=timezone.utc) if ev.end_time.tzinfo is None else ev.end_time
+
     return {
         "id": ev.id,
         "user_id": ev.user_id,
@@ -47,8 +51,8 @@ def _serialize_event_utc(ev) -> dict:
         "description": ev.description,
         "start_time": _to_utc_iso(ev.start_time),
         "end_time": _to_utc_iso(ev.end_time),
-        "start_ts": int(ev.start_time.timestamp() * 1000),
-        "end_ts": int(ev.end_time.timestamp() * 1000),
+        "start_ts": int(start_utc.timestamp() * 1000),
+        "end_ts": int(end_utc.timestamp() * 1000),
         "event_type": ev.event_type,
         "source": getattr(ev, 'source', 'system'),
         "task_id": ev.task_id,
