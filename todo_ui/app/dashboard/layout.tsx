@@ -17,11 +17,14 @@ export default function DashboardLayout({
 
   // auto-detect and update user timezone on mount
   useEffect(() => {
-    if (userId) {
+    if (userId && userId > 0) {
       const timezone = detectTimezone()
-      updateUserTimezone(userId, timezone).catch(() => {
-        // silently fail - timezone update is not critical
-      })
+      console.log(`Detected timezone: ${timezone}, updating for user ${userId}`)
+      updateUserTimezone(userId, timezone)
+        .then(() => console.log(`Timezone updated to ${timezone}`))
+        .catch((err) => {
+          console.error('Failed to update timezone:', err)
+        })
     }
   }, [userId])
   return (
