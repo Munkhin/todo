@@ -97,7 +97,8 @@
       "mcp__playwright__playwright_fill",
       "mcp__playwright__playwright_console_logs",
       "mcp__playwright__playwright_evaluate",
-      "mcp__playwright__playwright_press_key"
+      "mcp__playwright__playwright_press_key",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": [],
     "ask": []
