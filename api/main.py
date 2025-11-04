@@ -5,7 +5,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from api.database import Base, engine
+from api.database import Base, engine, run_light_migrations
 import api.models as models  # to ensure tables are created
 
 # Load environment variables
@@ -79,6 +79,8 @@ async def startup_event():
     """startup tasks"""
     # create database tables
     Base.metadata.create_all(bind=engine)
+    # lightweight migrations for new columns
+    run_light_migrations()
     # start background scheduler
     from api.services.cron_scheduler import start_scheduler
     start_scheduler()

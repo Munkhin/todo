@@ -142,7 +142,7 @@ async def get_user(session_id: str):
     user_info = service.userinfo().get().execute()
 
     # create or update user in database
-    from ..database import create_or_update_user, get_user_credits
+    from ..db_helpers import create_or_update_user, get_user_credits
     user_id = user_info.get('id')
     email = user_info.get('email')
     name = user_info.get('name')
@@ -177,7 +177,7 @@ async def get_credits(session_id: str):
     service = build('oauth2', 'v2', credentials=credentials)
     user_info = service.userinfo().get().execute()
 
-    from ..database import get_user_credits
+    from ..db_helpers import get_user_credits
     user_id = user_info.get('id')
 
     credit_info = get_user_credits(user_id)
@@ -199,7 +199,7 @@ async def upgrade_plan(session_id: str, plan_type: str):
     service = build('oauth2', 'v2', credentials=credentials)
     user_info = service.userinfo().get().execute()
 
-    from ..database import update_user_plan, get_user_credits
+    from ..db_helpers import update_user_plan, get_user_credits
     user_id = user_info.get('id')
 
     success = update_user_plan(user_id, plan_type)
@@ -265,7 +265,7 @@ async def register_nextauth_session(request: NextAuthSessionRequest):
         print(f"Session keys: {[k[:20] + '...' for k in list(sessions.keys())[:3]]}")
 
         # get user info and create user in database
-        from ..database import create_or_update_user
+        from ..db_helpers import create_or_update_user
         credentials = Credentials(**creds_dict)
         service = build('oauth2', 'v2', credentials=credentials)
         user_info = service.userinfo().get().execute()
@@ -275,13 +275,14 @@ async def register_nextauth_session(request: NextAuthSessionRequest):
         name = user_info.get('name')
 
         print(f"User info retrieved: {email}")
-        create_or_update_user(user_id, email, name)
-        print(f"User created/updated in database: {user_id}")
+        db_user_id = create_or_update_user(user_id, email, name)
+        print(f"User created/updated in database: {db_user_id}")
 
         return {
             "session_id": session_id,
             "message": "Session registered successfully",
-            "user": user_info
+            "user": user_info,
+            "db_user_id": db_user_id,
         }
 
     except Exception as e:

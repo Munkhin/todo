@@ -18,4 +18,5 @@ export const pricingStyles = {
   ctaOutline: "inline-flex w-full items-center justify-center rounded-md border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50",
   ctaGradient: "group relative inline-flex w-full items-center justify-center rounded-md p-[2px] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500",
   ctaGradientInner: "w-full rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 [background:linear-gradient(white,white)] group-hover:bg-gray-50",
+  ctaDisabled: "inline-flex w-full items-center justify-center rounded-md bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 cursor-not-allowed",
 }

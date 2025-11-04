@@ -1,4 +1,3 @@
 # checklist for launch
+- [ ] rest aware scheduling implementation
 
-- [✓] landing page 
-- [ ] sign in

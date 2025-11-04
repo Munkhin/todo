@@ -7,8 +7,10 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 from api.database import get_db
+from api.services.stripe_service import get_stripe
 from api.models import User
 
 router = APIRouter()
@@ -46,13 +48,33 @@ async def get_subscription(user_id: int, db: Session = Depends(get_db)):
 
         credit_limit = CREDIT_LIMITS.get(user.subscription_plan)
 
+        # Compute renews_at: prefer Stripe period end if available
+        renews_at = None
+        if user.stripe_subscription_id:
+            client = get_stripe()
+            try:
+                if client:
+                    sub = client.get_subscription(user.stripe_subscription_id)
+                    if sub.current_period_end:
+                        renews_at = datetime.utcfromtimestamp(sub.current_period_end)
+            except Exception:
+                pass
+        # fallback naive: monthly cycle from start date
+        base = user.subscription_start_date or datetime.utcnow()
+        renews_at = (base + relativedelta(months=1))
+
+        # Compatibility + new shape
         return {
+            # legacy keys
             "subscription_plan": user.subscription_plan,
             "credits_used": user.credits_used,
             "credits_limit": credit_limit,
             "subscription_status": user.subscription_status,
             "subscription_start_date": user.subscription_start_date,
-            "subscription_end_date": user.subscription_end_date
+            "subscription_end_date": user.subscription_end_date,
+            # new keys for frontend
+            "plan": user.subscription_plan,
+            "renews_at": renews_at.isoformat(),
         }
     except HTTPException:
         raise
@@ -110,9 +132,20 @@ async def cancel_subscription(request: CancelSubscriptionRequest, db: Session = 
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
-        # set status to cancelled
+        # If stripe subscription is present and stripe configured, set cancel_at_period_end
+        end_date = datetime.utcnow()
+        client = get_stripe()
+        if user.stripe_subscription_id and client:
+            try:
+                sub = client.cancel_at_period_end(user.stripe_subscription_id)
+                if sub.current_period_end:
+                    end_date = datetime.utcfromtimestamp(sub.current_period_end)
+            except Exception:
+                # fall back silently to immediate cancel end date
+                pass
+
         user.subscription_status = "cancelled"
-        user.subscription_end_date = datetime.utcnow()
+        user.subscription_end_date = end_date
 
         db.commit()
         db.refresh(user)
@@ -120,7 +153,7 @@ async def cancel_subscription(request: CancelSubscriptionRequest, db: Session = 
         return {
             "message": "Subscription cancelled successfully",
             "subscription_status": user.subscription_status,
-            "subscription_end_date": user.subscription_end_date
+            "subscription_end_date": user.subscription_end_date,
         }
     except HTTPException:
         raise

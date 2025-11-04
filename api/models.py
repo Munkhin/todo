@@ -32,6 +32,8 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, nullable=False)
     name = Column(String, nullable=True)
+    # external identity link (Google/OpenID subject)
+    google_user_id = Column(String, nullable=True)
     # store hashed passwords if needed
     hashed_password = Column(String, nullable=True)
     created_at = Column(DateTime, default=utc_now_naive)
@@ -43,6 +45,9 @@ class User(Base):
     subscription_status = Column(String, default="active")  # active, cancelled
     subscription_start_date = Column(DateTime, default=utc_now_naive)
     subscription_end_date = Column(DateTime, nullable=True)
+    # Stripe linking (optional)
+    stripe_customer_id = Column(String, nullable=True)
+    stripe_subscription_id = Column(String, nullable=True)
 
 class EnergyProfile(Base):
     __tablename__ = "energy_profiles"

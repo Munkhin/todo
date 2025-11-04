@@ -5,12 +5,16 @@ import { subscriptionStyles } from "./SubscriptionView.styles"
 import { useUserId } from "@/hooks/use-user-id"
 
 export default function SubscriptionView() {
-  const { subscription, loading, error, fetchSubscription, changePlan, cancelSubscription } = useSubscriptionStore()
+  const { subscription, loading, error, fetchSubscription, cancelSubscription } = useSubscriptionStore()
   const userId = useUserId()
 
   useEffect(() => {
     fetchSubscription(userId).catch(() => {})
   }, [fetchSubscription, userId])
+
+  const used = subscription?.credits_used ?? 0
+  const cap = subscription?.credits_limit ?? 0
+  const pct = cap > 0 ? Math.min(100, Math.round((used / cap) * 100)) : 0
 
   return (
     <section className={subscriptionStyles.container} aria-labelledby="subscription-title">
@@ -18,30 +22,53 @@ export default function SubscriptionView() {
       <article className={subscriptionStyles.card}>
         <div className={subscriptionStyles.body}>
           {subscription ? (
-            <div className={subscriptionStyles.grid}>
-              <div className={subscriptionStyles.stat}>
-                <p className={subscriptionStyles.statLabel}>Plan</p>
-                <p className={subscriptionStyles.statValue}>{subscription.plan}</p>
+            <>
+              <div>
+                <p className={subscriptionStyles.planTitle}>
+                  {subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1)} Plan
+                </p>
+                <p className={subscriptionStyles.subText}>
+                  Renews {new Date(subscription.renews_at).toLocaleDateString('en-US')}
+                </p>
               </div>
-              <div className={subscriptionStyles.stat}>
-                <p className={subscriptionStyles.statLabel}>Credits</p>
-                <p className={subscriptionStyles.statValue}>{subscription.credits_used} / {subscription.credits_limit}</p>
+
+              <div className={subscriptionStyles.progressWrap}>
+                <div className={subscriptionStyles.progressLabelRow}>
+                  <span>Credits usage</span>
+                  <span>{used} / {cap}</span>
+                </div>
+                <div
+                  className={subscriptionStyles.progressBar}
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={cap}
+                  aria-valuenow={used}
+                  aria-label="Credits used"
+                >
+                  <div className={subscriptionStyles.progressFill} style={{ width: `${pct}%` }} />
+                </div>
+                <div className={subscriptionStyles.percentLabel}>{pct}% used</div>
               </div>
-              <div className={subscriptionStyles.stat}>
-                <p className={subscriptionStyles.statLabel}>Renews</p>
-                <p className={subscriptionStyles.statValue}>{new Date(subscription.renews_at).toLocaleDateString('en-US')}</p>
-              </div>
-            </div>
+            </>
           ) : (
             <p className="text-gray-600">{loading ? 'Loading…' : 'No subscription info available.'}</p>
           )}
         </div>
         <div className={subscriptionStyles.actions}>
-          <button className={subscriptionStyles.btn} onClick={() => changePlan(userId, 'free')} disabled={loading}>Free</button>
-          <button className={subscriptionStyles.btn} onClick={() => changePlan(userId, 'pro')} disabled={loading}>Pro</button>
-          <button className={subscriptionStyles.btn} onClick={() => changePlan(userId, 'unlimited')} disabled={loading}>Unlimited</button>
-          <div className="flex-1" />
-          <button className={subscriptionStyles.primary} onClick={() => cancelSubscription(userId)} disabled={loading}>Cancel</button>
+          <button
+            className={subscriptionStyles.btn}
+            onClick={() => cancelSubscription(userId)}
+            disabled={loading}
+          >
+            Cancel plan
+          </button>
+          <a
+            href="/#pricing"
+            className={subscriptionStyles.primary}
+            aria-label="Change plan"
+          >
+            Change plan
+          </a>
         </div>
       </article>
       {error && <p role="alert" className="text-sm text-red-600">{error}</p>}

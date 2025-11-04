@@ -1,8 +1,10 @@
 "use client"
 import Link from "next/link"
-import { useCallback } from "react"
+import { useCallback, useEffect } from "react"
 import { useSession, signIn } from "next-auth/react"
 import { pricingStyles } from "./pricing.styles"
+import { useSubscriptionStore } from "@/lib/store/useSubscriptionStore"
+import { useUserId } from "@/hooks/use-user-id"
 
 type Plan = {
   name: string
@@ -63,6 +65,15 @@ const isPaidPlan = (variant: Plan['variant']): variant is 'pro' | 'unlimited' =>
 
 export default function Pricing() {
   const { status } = useSession()
+  const userId = useUserId()
+  const { subscription, fetchSubscription } = useSubscriptionStore()
+
+  useEffect(() => {
+    // Only fetch if likely authenticated or have a valid user id
+    if (userId > 0) {
+      fetchSubscription(userId).catch(() => {})
+    }
+  }, [fetchSubscription, userId])
 
   const startPlan = useCallback((plan: Plan['variant']) => {
     if (!isPaidPlan(plan)) {
@@ -86,6 +97,7 @@ export default function Pricing() {
         <p className={pricingStyles.sub}>Start free, upgrade as you grow</p>
         <div className={pricingStyles.grid}>
           {plans.map((plan) => {
+            const isCurrent = subscription?.plan === plan.variant
             const content = (
               <div className={pricingStyles.cardInner}>
                 {plan.popular && <div className={pricingStyles.badge}>Most Popular</div>}
@@ -104,7 +116,9 @@ export default function Pricing() {
                   ))}
                 </ul>
                 <div className={pricingStyles.ctaWrap}>
-                  {!isPaidPlan(plan.variant) ? (
+                  {isCurrent ? (
+                    <span className={pricingStyles.ctaDisabled}>Current plan</span>
+                  ) : !isPaidPlan(plan.variant) ? (
                     <Link href={plan.href!} className={pricingStyles.ctaOutline}>
                       {plan.cta}
                     </Link>
