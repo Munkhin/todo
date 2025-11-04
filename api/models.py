@@ -65,7 +65,7 @@ class EnergyProfile(Base):
     # energy levels stored as JSON string: {"7": 6, "8": 7, ...}
     energy_levels = Column(Text, nullable=True)
     # rest-aware scheduling preferences
-    insert_breaks = Column(Boolean, default=False)
+    insert_breaks = Column(Boolean, default=True)
     short_break_min = Column(Integer, default=5)
     long_break_min = Column(Integer, default=15)
     long_study_threshold_min = Column(Integer, default=90)

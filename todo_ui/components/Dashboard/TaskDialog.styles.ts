@@ -1,7 +1,9 @@
 export const taskDialogStyles = {
-  overlay: "fixed inset-0 z-50",
+  // Ensure overlay sits below the panel so inputs remain interactive
+  overlay: "fixed inset-0 z-40 bg-black/40",
   dialog: "fixed inset-0 z-50 flex items-center justify-center p-[clamp(0.75rem,2vh,1rem)]",
-  panel: "w-full max-w-md max-h-[90svh] rounded-lg border bg-white shadow-xl",
+  // Elevate panel above overlay
+  panel: "relative z-50 w-full max-w-md max-h-[90svh] rounded-lg border bg-white shadow-xl",
   header: "border-b p-[clamp(0.75rem,2vh,1rem)] text-lg font-semibold",
   body: "p-[clamp(0.75rem,2vh,1rem)] space-y-3 overflow-auto",
   label: "block text-sm font-medium text-gray-700",

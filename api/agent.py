@@ -3,6 +3,7 @@ import os
 import json
 from openai import OpenAI
 from sqlalchemy.orm import Session
+from api.models import CalendarEvent
 from typing import List, Dict, Any
 from functools import partial
 from api.services.agent_tools import (
@@ -304,9 +305,21 @@ def run_agent(user_id: int, message: str, conversation_history: List[Dict], db: 
             function_to_call = tool_mapping[function_name]
             function_response = function_to_call(**function_args)
 
-            # extract events from schedule_all_tasks
+            # extract events from scheduling and direct calendar creation
             if function_name == "schedule_all_tasks" and "events" in function_response:
+                # already ORM objects from scheduler
                 scheduled_events.extend(function_response["events"])
+            elif function_name == "create_calendar_event":
+                # capture directly created event too
+                ev_id = function_response.get("event_id") if isinstance(function_response, dict) else None
+                if ev_id is not None:
+                    try:
+                        ev = db.query(CalendarEvent).filter(CalendarEvent.id == ev_id).first()
+                        if ev:
+                            scheduled_events.append(ev)
+                    except Exception:
+                        # non-blocking; keep going even if lookup fails
+                        pass
 
             # add tool response to messages
             messages.append({

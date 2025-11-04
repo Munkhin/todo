@@ -11,7 +11,7 @@ DEFAULT_WAKE_TIME = 7  # wake up time (7 AM)
 DEFAULT_SLEEP_TIME = 23  # sleep time (11 PM)
 
 # rest/break defaults
-DEFAULT_INSERT_BREAKS = False  # insert short/long breaks between sessions
+DEFAULT_INSERT_BREAKS = True  # insert short/long breaks between sessions (enabled by default)
 DEFAULT_SHORT_BREAK_MIN = 5
 DEFAULT_LONG_BREAK_MIN = 15
 DEFAULT_LONG_STUDY_THRESHOLD_MIN = 90

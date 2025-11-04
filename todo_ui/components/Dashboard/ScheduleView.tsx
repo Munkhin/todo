@@ -7,6 +7,7 @@ import { DEFAULT_WAKE_TIME, DEFAULT_SLEEP_TIME } from "@/lib/constants/schedulin
 import { useUserId } from "@/hooks/use-user-id"
 import TaskDialog from "./TaskDialog"
 import { useChatStore } from "@/lib/store/useChatStore"
+import { useScheduleStore } from "@/lib/store/useScheduleStore"
 import { scheduleStyles as cal } from "@/components/Dashboard/ScheduleView.styles"
 
 // Visual scale: pixels per hour and minute
@@ -25,6 +26,7 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
   const addTask = useTaskStore((s) => s.addTask)
   const editTask = useTaskStore((s) => s.editTask)
   const removeTask = useTaskStore((s) => s.removeTask)
+  const fetchEvents = useScheduleStore((s) => s.fetchEvents)
   const userId = useUserId()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [view, setView] = useState<'week' | 'day'>('week')
@@ -58,9 +60,23 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
   const [notification, setNotification] = useState<ReactNode | null>(null)
   const [sentCount, setSentCount] = useState(0)
 
+  // unified refresh: tasks + calendar events for current view range
+  const refreshViewData = async () => {
+    const start = view === 'week' ? startOfWeek(currentDate) : new Date(currentDate)
+    start.setHours(0, 0, 0, 0)
+    const end = view === 'week' ? endOfWeek(currentDate) : new Date(currentDate)
+    if (view !== 'week') end.setHours(23, 59, 59, 999)
+
+    await Promise.all([
+      fetchTasks({ include_completed: false }),
+      fetchEvents(start.toISOString(), end.toISOString(), userId)
+    ])
+  }
+
   useEffect(() => {
-    fetchTasks({ include_completed: false }).catch(() => {})
-  }, [fetchTasks])
+    // initial load and keep events in sync as date/view changes
+    refreshViewData().catch(() => {})
+  }, [currentDate, view, userId])
 
   const tasksThisWeek = useMemo(() => {
     const start = startOfWeek(currentDate)
@@ -250,7 +266,7 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
                                     scheduled_end: newEnd.toISOString(),
                                     due_date: newEnd.toISOString(),
                                   })
-                                  await fetchTasks()
+                                  await refreshViewData()
                                   setDraggingTaskId(null)
                                   setDragMode(null)
                                 }}
@@ -376,7 +392,7 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
                               scheduled_end: newEnd.toISOString(),
                               due_date: newEnd.toISOString(),
                             })
-                            await fetchTasks()
+                            await refreshViewData()
                             setDraggingTaskId(null)
                             setDragMode(null)
                           }}
@@ -411,7 +427,7 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
                                 scheduled_end: newEnd.toISOString(),
                                 due_date: newEnd.toISOString(),
                               })
-                              await fetchTasks()
+                              await refreshViewData()
                               setDraggingTaskId(null)
                               setDragMode(null)
                             }}
@@ -467,14 +483,14 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
               status: 'scheduled'
             } as any)
           }
-          await fetchTasks()
+          await refreshViewData()
           setOpenDialog(false)
           setEditingTaskId(null)
           setEditingTask(null)
         }}
         onDelete={editingTaskId ? async () => {
           await removeTask(String(editingTaskId))
-          await fetchTasks()
+          await refreshViewData()
           setOpenDialog(false)
           setEditingTaskId(null)
           setEditingTask(null)
@@ -512,8 +528,8 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
             } else {
               setNotification(resp)
             }
-            // refresh tasks after assistant responds
-            await fetchTasks({ include_completed: false })
+            // refresh tasks + calendar events after assistant responds
+            await refreshViewData()
             if (!demoMode) setTimeout(() => setNotification(null), 4000)
           } catch {
             setNotification("Failed to send. Please try again.")
@@ -568,7 +584,8 @@ function getEventBox(startIso: string, endIso: string, baseHour: number, spanMin
 }
 function getNowOffsetPx(baseHour: number, spanMinutes: number) {
   const now = new Date()
-  const min = now.getHours()*60 + now.getMinutes() - baseHour*60
+  // Offset the current time indicator by +60 minutes (1 hour)
+  const min = now.getHours()*60 + now.getMinutes() - baseHour*60 + 60
   return Math.max(0, Math.min(min, spanMinutes) * PX_PER_MIN)
 }
 function taskToSpan(t: any) { const end = new Date(t.scheduled_end || t.due_date); const start = new Date(t.scheduled_start || new Date(end.getTime() - (t.estimated_minutes || 30)*60000)); return { startIso: start.toISOString(), endIso: end.toISOString() } }
