@@ -17,6 +17,8 @@ export default function DashboardLayout({
 
   // auto-detect and update user timezone on mount
   useEffect(() => {
+    console.log(`[layout] userId from useUserId: ${userId}`)
+    console.log(`[layout] localStorage backendUserId: ${typeof window !== 'undefined' ? window.localStorage.getItem('backendUserId') : 'N/A'}`)
     if (userId && userId > 0) {
       const timezone = detectTimezone()
       console.log(`Detected timezone: ${timezone}, updating for user ${userId}`)
@@ -25,6 +27,8 @@ export default function DashboardLayout({
         .catch((err) => {
           console.error('Failed to update timezone:', err)
         })
+    } else {
+      console.log(`[layout] Skipping timezone update: userId=${userId}`)
     }
   }, [userId])
   return (
