@@ -96,8 +96,8 @@ def get_user_id(request: ChatMessageRequest) -> int:
         raise HTTPException(status_code=400, detail="session_id or user_id required")
 
 
-# send message -> events created, new conversation history  
-@router.post("/message", response_model=ChatMessageResponse)
+# send message -> events created, new conversation history
+@router.post("/message")
 async def send_message(request: ChatMessageRequest, db: Session = Depends(get_db)):
     try:
         effective_user_id = get_user_id(request)

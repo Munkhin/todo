@@ -32,8 +32,9 @@ export const scheduleStyles = {
   input: "flex-1 rounded-md border border-gray-300 px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-gray-300",
   attachBtn: "inline-flex h-[42px] w-[42px] items-center justify-center rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-60",
   sendBtn: "inline-flex items-center rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-black disabled:opacity-60",
-  /* Floating model response container: make sticky at bottom of scroll area */
-  overlayWrap: "pointer-events-none sticky bottom-6 z-30 flex justify-center px-4",
+  /* Floating model response container: align to content start (right of sidebar)
+     and sit a bit lower toward the bottom */
+  overlayWrap: "pointer-events-none sticky bottom-4 z-30 w-full flex justify-start px-0",
   overlayBubble: "pointer-events-auto max-w-[52rem] rounded-md border border-gray-800 bg-gray-900 px-4 py-3 text-sm text-white shadow-lg",
   /* Day view */
   dayArea: "h-full w-full overflow-auto p-[clamp(0.75rem,1.8vh,1.25rem)]",
