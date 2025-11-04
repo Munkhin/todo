@@ -1,11 +1,15 @@
+"use client"
 import { AppSidebar } from "@/components/Dashboard/AppSidebar"
 import MobileSidebar from "@/components/Dashboard/MobileSidebar"
+import { usePathname } from "next/navigation"
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const pathname = usePathname()
+  const isSchedule = pathname === "/dashboard/schedule"
   return (
     <div className="grid min-h-[100svh] grid-cols-1 md:grid-cols-[260px_1fr]">
       {/* Desktop sidebar */}
@@ -21,7 +25,15 @@ export default function DashboardLayout({
             <MobileSidebar />
           </div>
         </header>
-        <main className="flex min-h-0 h-full flex-1 flex-col overflow-hidden p-[clamp(1rem,2.5vh,1.5rem)]">{children}</main>
+        <main
+          className={
+            isSchedule
+              ? "flex min-h-0 h-full flex-1 flex-col overflow-hidden px-[clamp(1rem,2.5vh,1.5rem)] pb-[clamp(1rem,2.5vh,1.5rem)] pt-0"
+              : "flex min-h-0 h-full flex-1 flex-col overflow-hidden px-[clamp(1rem,2.5vh,1.5rem)] pb-[clamp(1rem,2.5vh,1.5rem)] pt-[clamp(1rem,2.5vh,1.5rem)]"
+          }
+        >
+          {children}
+        </main>
       </div>
     </div>
   )

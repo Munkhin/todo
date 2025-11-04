@@ -15,7 +15,7 @@ export default function TaskListView() {
       <h1 id="tasks-heading" className="text-2xl font-semibold">Your Tasks</h1>
       <ul className="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white">
         {tasks.length === 0 && (
-          <li className="p-4 text-gray-500">No tasks yet. Create one from the Schedule tab or API.</li>
+          <li className="p-4 text-gray-500">No tasks yet. Create one from the Schedule tab</li>
         )}
         {tasks.map((t) => (
           <li key={t.id} className="flex items-start justify-between p-4">
