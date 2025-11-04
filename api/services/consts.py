@@ -10,6 +10,13 @@ DEFAULT_MIN_STUDY_DURATION = 30  # min study duration in minutes
 DEFAULT_WAKE_TIME = 7  # wake up time (7 AM)
 DEFAULT_SLEEP_TIME = 23  # sleep time (11 PM)
 
+# rest/break defaults
+DEFAULT_INSERT_BREAKS = False  # insert short/long breaks between sessions
+DEFAULT_SHORT_BREAK_MIN = 5
+DEFAULT_LONG_BREAK_MIN = 15
+DEFAULT_LONG_STUDY_THRESHOLD_MIN = 90
+DEFAULT_MIN_GAP_FOR_BREAK_MIN = 3
+
 # default energy levels throughout the day (hour: energy_level 1-10)
 DEFAULT_ENERGY_LEVELS = {
     7: 6,   # 7 AM - waking up
@@ -35,7 +42,10 @@ def get_user_constants(user_id: int, db: Session) -> Dict:
     get user-specific constants from database, fallback to defaults
     returns dict with all scheduling constants
     """
-    from api.models import EnergyProfile
+    try:
+        from models import EnergyProfile  # type: ignore
+    except Exception:
+        from api.models import EnergyProfile
 
     # try to get user's energy profile
     profile = db.query(EnergyProfile).filter(EnergyProfile.user_id == user_id).first()
@@ -55,7 +65,13 @@ def get_user_constants(user_id: int, db: Session) -> Dict:
             'SLEEP_TIME': profile.sleep_time,
             'MAX_STUDY_DURATION': profile.max_study_duration,
             'MIN_STUDY_DURATION': profile.min_study_duration,
-            'ENERGY_LEVELS': energy_levels
+            'ENERGY_LEVELS': energy_levels,
+            # rest-aware settings (with safe fallbacks if columns absent)
+            'INSERT_BREAKS': getattr(profile, 'insert_breaks', DEFAULT_INSERT_BREAKS) if profile.insert_breaks is not None else DEFAULT_INSERT_BREAKS,
+            'SHORT_BREAK_MIN': getattr(profile, 'short_break_min', DEFAULT_SHORT_BREAK_MIN) if getattr(profile, 'short_break_min', None) is not None else DEFAULT_SHORT_BREAK_MIN,
+            'LONG_BREAK_MIN': getattr(profile, 'long_break_min', DEFAULT_LONG_BREAK_MIN) if getattr(profile, 'long_break_min', None) is not None else DEFAULT_LONG_BREAK_MIN,
+            'LONG_STUDY_THRESHOLD_MIN': getattr(profile, 'long_study_threshold_min', DEFAULT_LONG_STUDY_THRESHOLD_MIN) if getattr(profile, 'long_study_threshold_min', None) is not None else DEFAULT_LONG_STUDY_THRESHOLD_MIN,
+            'MIN_GAP_FOR_BREAK_MIN': getattr(profile, 'min_gap_for_break_min', DEFAULT_MIN_GAP_FOR_BREAK_MIN) if getattr(profile, 'min_gap_for_break_min', None) is not None else DEFAULT_MIN_GAP_FOR_BREAK_MIN,
         }
     else:
         # return defaults
@@ -65,5 +81,10 @@ def get_user_constants(user_id: int, db: Session) -> Dict:
             'SLEEP_TIME': DEFAULT_SLEEP_TIME,
             'MAX_STUDY_DURATION': DEFAULT_MAX_STUDY_DURATION,
             'MIN_STUDY_DURATION': DEFAULT_MIN_STUDY_DURATION,
-            'ENERGY_LEVELS': DEFAULT_ENERGY_LEVELS
+            'ENERGY_LEVELS': DEFAULT_ENERGY_LEVELS,
+            'INSERT_BREAKS': DEFAULT_INSERT_BREAKS,
+            'SHORT_BREAK_MIN': DEFAULT_SHORT_BREAK_MIN,
+            'LONG_BREAK_MIN': DEFAULT_LONG_BREAK_MIN,
+            'LONG_STUDY_THRESHOLD_MIN': DEFAULT_LONG_STUDY_THRESHOLD_MIN,
+            'MIN_GAP_FOR_BREAK_MIN': DEFAULT_MIN_GAP_FOR_BREAK_MIN,
         }

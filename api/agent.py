@@ -14,7 +14,8 @@ from api.services.agent_tools import (
     get_calendar_events,
     create_calendar_event,
     get_energy_profile,
-    update_energy_profile
+    update_energy_profile,
+    tune_break_settings,
 )
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -59,6 +60,11 @@ CONTINUOUS ADAPTATION:
 - After patterns emerge: apply learned heuristics
 - Always contextualize: same task type may vary by subject or user mood
 
+REST-AWARE SCHEDULING TUNING:
+- When the user expresses preferences about breaks (e.g., "give me longer breaks", "turn off breaks", "long break after 2 hours"), proactively call the tuning tools to update settings.
+- Prefer `tune_break_settings` for break-related adjustments. Use `update_energy_profile` when broader profile changes are requested.
+- Keep responses terse; execute tools instead of asking clarifying questions when intent is clear from context.
+
 Available tools:
 - create_tasks: Create new tasks (accepts natural language dates)
 - schedule_all_tasks: Generate optimal schedule for unscheduled tasks
@@ -69,6 +75,7 @@ Available tools:
 - create_calendar_event: Add personal event (blocks time)
 - get_energy_profile: View schedule preferences
 - update_energy_profile: Update preferences
+- tune_break_settings: Update rest/break behavior (insert on/off, short/long durations, thresholds)
 
 Be decisive, adaptive, and learn continuously from every interaction.
 """
@@ -206,7 +213,29 @@ TOOLS = [
                     "sleep_time": {"type": "integer"},
                     "max_study_duration": {"type": "integer"},
                     "min_study_duration": {"type": "integer"},
-                    "due_date_days": {"type": "integer"}
+                    "due_date_days": {"type": "integer"},
+                    "insert_breaks": {"type": "boolean"},
+                    "short_break_min": {"type": "integer"},
+                    "long_break_min": {"type": "integer"},
+                    "long_study_threshold_min": {"type": "integer"},
+                    "min_gap_for_break_min": {"type": "integer"}
+                }
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "tune_break_settings",
+            "description": "Tune rest/break behavior: enable/disable and adjust durations/thresholds.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "insert_breaks": {"type": "boolean"},
+                    "short_break_min": {"type": "integer"},
+                    "long_break_min": {"type": "integer"},
+                    "long_study_threshold_min": {"type": "integer"},
+                    "min_gap_for_break_min": {"type": "integer"}
                 }
             }
         }
@@ -224,7 +253,8 @@ def get_tool_mapping(user_id: int, db: Session) -> Dict[str, Any]:
         "get_calendar_events": partial(get_calendar_events, user_id=user_id, db=db),
         "create_calendar_event": partial(create_calendar_event, user_id=user_id, db=db),
         "get_energy_profile": partial(get_energy_profile, user_id=user_id, db=db),
-        "update_energy_profile": partial(update_energy_profile, user_id=user_id, db=db)
+        "update_energy_profile": partial(update_energy_profile, user_id=user_id, db=db),
+        "tune_break_settings": partial(tune_break_settings, user_id=user_id, db=db)
     }
 
 # main: uid, message, conversation history -> response, updated history

@@ -93,7 +93,12 @@ async def get_energy_profile(user_id: int, db: Session = Depends(get_db)):
             "sleep_time": profile.sleep_time,
             "max_study_duration": profile.max_study_duration,
             "min_study_duration": profile.min_study_duration,
-            "energy_levels": profile.energy_levels
+            "energy_levels": profile.energy_levels,
+            "insert_breaks": getattr(profile, 'insert_breaks', False),
+            "short_break_min": getattr(profile, 'short_break_min', 5),
+            "long_break_min": getattr(profile, 'long_break_min', 15),
+            "long_study_threshold_min": getattr(profile, 'long_study_threshold_min', 90),
+            "min_gap_for_break_min": getattr(profile, 'min_gap_for_break_min', 3),
         }
     except Exception as e:
         import traceback
@@ -109,6 +114,12 @@ class EnergyProfileUpdate(BaseModel):
     max_study_duration: Optional[int] = None
     min_study_duration: Optional[int] = None
     energy_levels: Optional[str] = None  # JSON string
+    # rest-aware fields
+    insert_breaks: Optional[bool] = None
+    short_break_min: Optional[int] = None
+    long_break_min: Optional[int] = None
+    long_study_threshold_min: Optional[int] = None
+    min_gap_for_break_min: Optional[int] = None
 
 @router.post("/energy-profile")
 async def update_energy_profile(
@@ -139,6 +150,17 @@ async def update_energy_profile(
             profile.min_study_duration = profile_update.min_study_duration
         if profile_update.energy_levels is not None:
             profile.energy_levels = profile_update.energy_levels
+        # rest-aware fields
+        if profile_update.insert_breaks is not None:
+            profile.insert_breaks = profile_update.insert_breaks
+        if profile_update.short_break_min is not None:
+            profile.short_break_min = profile_update.short_break_min
+        if profile_update.long_break_min is not None:
+            profile.long_break_min = profile_update.long_break_min
+        if profile_update.long_study_threshold_min is not None:
+            profile.long_study_threshold_min = profile_update.long_study_threshold_min
+        if profile_update.min_gap_for_break_min is not None:
+            profile.min_gap_for_break_min = profile_update.min_gap_for_break_min
 
         db.commit()
         db.refresh(profile)
@@ -151,9 +173,65 @@ async def update_energy_profile(
                 "sleep_time": profile.sleep_time,
                 "max_study_duration": profile.max_study_duration,
                 "min_study_duration": profile.min_study_duration,
-                "energy_levels": profile.energy_levels
+                "energy_levels": profile.energy_levels,
+                "insert_breaks": profile.insert_breaks,
+                "short_break_min": profile.short_break_min,
+                "long_break_min": profile.long_break_min,
+                "long_study_threshold_min": profile.long_study_threshold_min,
+                "min_gap_for_break_min": profile.min_gap_for_break_min
             }
         }
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error updating energy profile: {str(e)}")
+
+
+class BreakTuningUpdate(BaseModel):
+    insert_breaks: Optional[bool] = None
+    short_break_min: Optional[int] = None
+    long_break_min: Optional[int] = None
+    long_study_threshold_min: Optional[int] = None
+    min_gap_for_break_min: Optional[int] = None
+
+
+@router.post("/tune-breaks")
+async def tune_breaks(
+    user_id: int,
+    tuning: BreakTuningUpdate,
+    db: Session = Depends(get_db)
+):
+    """Tune rest/break scheduling parameters only (for agent/chat usage)."""
+    try:
+        from api.models import EnergyProfile
+        profile = db.query(EnergyProfile).filter(EnergyProfile.user_id == user_id).first()
+        if not profile:
+            profile = EnergyProfile(user_id=user_id)
+            db.add(profile)
+
+        if tuning.insert_breaks is not None:
+            profile.insert_breaks = tuning.insert_breaks
+        if tuning.short_break_min is not None:
+            profile.short_break_min = tuning.short_break_min
+        if tuning.long_break_min is not None:
+            profile.long_break_min = tuning.long_break_min
+        if tuning.long_study_threshold_min is not None:
+            profile.long_study_threshold_min = tuning.long_study_threshold_min
+        if tuning.min_gap_for_break_min is not None:
+            profile.min_gap_for_break_min = tuning.min_gap_for_break_min
+
+        db.commit()
+        db.refresh(profile)
+
+        return {
+            "message": "Break settings tuned",
+            "profile": {
+                "insert_breaks": profile.insert_breaks,
+                "short_break_min": profile.short_break_min,
+                "long_break_min": profile.long_break_min,
+                "long_study_threshold_min": profile.long_study_threshold_min,
+                "min_gap_for_break_min": profile.min_gap_for_break_min,
+            }
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error tuning break settings: {str(e)}")

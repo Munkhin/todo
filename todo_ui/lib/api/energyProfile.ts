@@ -15,6 +15,12 @@ export interface EnergyProfilePayload {
   max_study_duration: number;
   min_study_duration: number;
   energy_levels: Record<number, number>;
+  // rest-aware
+  insert_breaks: boolean;
+  short_break_min: number;
+  long_break_min: number;
+  long_study_threshold_min: number;
+  min_gap_for_break_min: number;
 }
 
 export interface EnergyProfileResponse {
@@ -24,6 +30,11 @@ export interface EnergyProfileResponse {
   max_study_duration: number;
   min_study_duration: number;
   energy_levels: string | null;
+  insert_breaks?: boolean;
+  short_break_min?: number | null;
+  long_break_min?: number | null;
+  long_study_threshold_min?: number | null;
+  min_gap_for_break_min?: number | null;
 }
 
 function parseEnergyLevels(levels: string | null): Record<number, number> {
@@ -51,6 +62,11 @@ export function normaliseResponse(response: EnergyProfileResponse | null): Energ
       max_study_duration: DEFAULT_MAX_STUDY_DURATION,
       min_study_duration: DEFAULT_MIN_STUDY_DURATION,
       energy_levels: { ...DEFAULT_ENERGY_LEVELS },
+      insert_breaks: DEFAULT_INSERT_BREAKS,
+      short_break_min: DEFAULT_SHORT_BREAK_MIN,
+      long_break_min: DEFAULT_LONG_BREAK_MIN,
+      long_study_threshold_min: DEFAULT_LONG_STUDY_THRESHOLD_MIN,
+      min_gap_for_break_min: DEFAULT_MIN_GAP_FOR_BREAK_MIN,
     };
   }
 
@@ -64,6 +80,11 @@ export function normaliseResponse(response: EnergyProfileResponse | null): Energ
     max_study_duration: response.max_study_duration ?? DEFAULT_MAX_STUDY_DURATION,
     min_study_duration: response.min_study_duration ?? DEFAULT_MIN_STUDY_DURATION,
     energy_levels: parseEnergyLevels(response.energy_levels),
+    insert_breaks: response.insert_breaks ?? DEFAULT_INSERT_BREAKS,
+    short_break_min: response.short_break_min ?? DEFAULT_SHORT_BREAK_MIN,
+    long_break_min: response.long_break_min ?? DEFAULT_LONG_BREAK_MIN,
+    long_study_threshold_min: response.long_study_threshold_min ?? DEFAULT_LONG_STUDY_THRESHOLD_MIN,
+    min_gap_for_break_min: response.min_gap_for_break_min ?? DEFAULT_MIN_GAP_FOR_BREAK_MIN,
   };
 }
 
@@ -87,6 +108,11 @@ export async function saveEnergyProfile(userId: number, payload: EnergyProfilePa
     max_study_duration: payload.max_study_duration,
     min_study_duration: payload.min_study_duration,
     energy_levels: JSON.stringify(payload.energy_levels),
+    insert_breaks: payload.insert_breaks,
+    short_break_min: payload.short_break_min,
+    long_break_min: payload.long_break_min,
+    long_study_threshold_min: payload.long_study_threshold_min,
+    min_gap_for_break_min: payload.min_gap_for_break_min,
   };
 
   await api.post(`/api/schedule/energy-profile?user_id=${userId}`, body);

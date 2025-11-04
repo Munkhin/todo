@@ -4,6 +4,13 @@ export const DEFAULT_MIN_STUDY_DURATION = 30;
 export const DEFAULT_WAKE_TIME = 7;
 export const DEFAULT_SLEEP_TIME = 23;
 
+// Rest-aware defaults
+export const DEFAULT_INSERT_BREAKS = false;
+export const DEFAULT_SHORT_BREAK_MIN = 5;
+export const DEFAULT_LONG_BREAK_MIN = 15;
+export const DEFAULT_LONG_STUDY_THRESHOLD_MIN = 90;
+export const DEFAULT_MIN_GAP_FOR_BREAK_MIN = 3;
+
 export const DEFAULT_ENERGY_LEVELS: Record<number, number> = {
   7: 6,
   8: 7,

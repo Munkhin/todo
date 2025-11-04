@@ -76,6 +76,61 @@ export default function SettingsView() {
             </label>
           </div>
         </div>
+        <div className={settingsStyles.section}>
+          <h2 className={settingsStyles.sectionTitle}>Breaks & Rest</h2>
+          <p className={settingsStyles.sectionDesc}>Configure short/long breaks between study sessions</p>
+          <div className={settingsStyles.formGrid}>
+            <label className={settingsStyles.label}>
+              Insert Breaks
+              <input
+                type="checkbox"
+                className={settingsStyles.input}
+                checked={!!settings.insert_breaks}
+                onChange={(e) => updateField('insert_breaks', e.target.checked)}
+              />
+            </label>
+            <label className={settingsStyles.label}>
+              Short Break (min)
+              <input
+                type="number"
+                min={1}
+                className={settingsStyles.input}
+                value={settings.short_break_min}
+                onChange={(e) => updateField('short_break_min', Number(e.target.value))}
+              />
+            </label>
+            <label className={settingsStyles.label}>
+              Long Break (min)
+              <input
+                type="number"
+                min={5}
+                className={settingsStyles.input}
+                value={settings.long_break_min}
+                onChange={(e) => updateField('long_break_min', Number(e.target.value))}
+              />
+            </label>
+            <label className={settingsStyles.label}>
+              Long Study Threshold (min)
+              <input
+                type="number"
+                min={30}
+                className={settingsStyles.input}
+                value={settings.long_study_threshold_min}
+                onChange={(e) => updateField('long_study_threshold_min', Number(e.target.value))}
+              />
+            </label>
+            <label className={settingsStyles.label}>
+              Min Gap For Break (min)
+              <input
+                type="number"
+                min={1}
+                className={settingsStyles.input}
+                value={settings.min_gap_for_break_min}
+                onChange={(e) => updateField('min_gap_for_break_min', Number(e.target.value))}
+              />
+            </label>
+          </div>
+        </div>
         <div className={settingsStyles.actions}>
           <button
             className={settingsStyles.saveBtn}

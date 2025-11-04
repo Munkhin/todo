@@ -1,5 +1,5 @@
 # models.py
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Float
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Float, Boolean
 from api.database import Base
 from datetime import datetime, timezone
 
@@ -9,9 +9,10 @@ def utc_now_naive():
 
 class Task(Base):
     __tablename__ = "tasks"
+    __table_args__ = {"extend_existing": True}
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     topic = Column(String, nullable=False)
     estimated_minutes = Column(Integer, nullable=False)
     difficulty = Column(Integer, default=3)  # 1=easy, 5=hard
@@ -28,6 +29,7 @@ class Task(Base):
 
 class User(Base):
     __tablename__ = "users"
+    __table_args__ = {"extend_existing": True}
 
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, nullable=False)
@@ -51,6 +53,7 @@ class User(Base):
 
 class EnergyProfile(Base):
     __tablename__ = "energy_profiles"
+    __table_args__ = {"extend_existing": True}
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
@@ -61,9 +64,16 @@ class EnergyProfile(Base):
     min_study_duration = Column(Integer, default=30)  # minutes
     # energy levels stored as JSON string: {"7": 6, "8": 7, ...}
     energy_levels = Column(Text, nullable=True)
+    # rest-aware scheduling preferences
+    insert_breaks = Column(Boolean, default=False)
+    short_break_min = Column(Integer, default=5)
+    long_break_min = Column(Integer, default=15)
+    long_study_threshold_min = Column(Integer, default=90)
+    min_gap_for_break_min = Column(Integer, default=3)
 
 class CalendarEvent(Base):
     __tablename__ = "calendar_events"
+    __table_args__ = {"extend_existing": True}
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
@@ -80,6 +90,7 @@ class CalendarEvent(Base):
 class BrainDump(Base):
     """raw user input before AI processing"""
     __tablename__ = "brain_dumps"
+    __table_args__ = {"extend_existing": True}
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)

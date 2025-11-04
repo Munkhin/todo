@@ -44,10 +44,25 @@ def run_light_migrations() -> None:
         if _column_exists("users", "id"):  # table exists
             if not _column_exists("users", "google_user_id"):
                 conn.execute(text("ALTER TABLE users ADD COLUMN google_user_id VARCHAR"))
+            if not _column_exists("users", "timezone"):
+                conn.execute(text("ALTER TABLE users ADD COLUMN timezone VARCHAR DEFAULT 'UTC'"))
             if not _column_exists("users", "stripe_customer_id"):
                 conn.execute(text("ALTER TABLE users ADD COLUMN stripe_customer_id VARCHAR"))
             if not _column_exists("users", "stripe_subscription_id"):
                 conn.execute(text("ALTER TABLE users ADD COLUMN stripe_subscription_id VARCHAR"))
+
+        # energy_profiles: add rest-aware columns if missing
+        if _column_exists("energy_profiles", "id"):
+            if not _column_exists("energy_profiles", "insert_breaks"):
+                conn.execute(text("ALTER TABLE energy_profiles ADD COLUMN insert_breaks BOOLEAN DEFAULT 0"))
+            if not _column_exists("energy_profiles", "short_break_min"):
+                conn.execute(text("ALTER TABLE energy_profiles ADD COLUMN short_break_min INTEGER DEFAULT 5"))
+            if not _column_exists("energy_profiles", "long_break_min"):
+                conn.execute(text("ALTER TABLE energy_profiles ADD COLUMN long_break_min INTEGER DEFAULT 15"))
+            if not _column_exists("energy_profiles", "long_study_threshold_min"):
+                conn.execute(text("ALTER TABLE energy_profiles ADD COLUMN long_study_threshold_min INTEGER DEFAULT 90"))
+            if not _column_exists("energy_profiles", "min_gap_for_break_min"):
+                conn.execute(text("ALTER TABLE energy_profiles ADD COLUMN min_gap_for_break_min INTEGER DEFAULT 3"))
 
 
 # moved app-specific helpers to api/db_helpers.py to avoid circular imports

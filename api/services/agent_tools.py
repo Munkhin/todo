@@ -2,7 +2,15 @@
 from sqlalchemy.orm import Session
 from api.models import Task, CalendarEvent, EnergyProfile, BrainDump
 from api.services.scheduler import schedule_tasks as run_scheduler
-from api.services.consts import DEFAULT_DUE_DATE_DAYS, DEFAULT_ENERGY_LEVELS
+from api.services.consts import (
+    DEFAULT_DUE_DATE_DAYS,
+    DEFAULT_ENERGY_LEVELS,
+    DEFAULT_INSERT_BREAKS,
+    DEFAULT_SHORT_BREAK_MIN,
+    DEFAULT_LONG_BREAK_MIN,
+    DEFAULT_LONG_STUDY_THRESHOLD_MIN,
+    DEFAULT_MIN_GAP_FOR_BREAK_MIN,
+)
 from api.services.date_parser import parse_natural_date
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Dict
@@ -324,7 +332,12 @@ def get_energy_profile(user_id: int, db: Session) -> Dict:
         "sleep_time": profile.sleep_time,
         "max_study_duration": profile.max_study_duration,
         "min_study_duration": profile.min_study_duration,
-        "energy_levels": json.loads(profile.energy_levels) if profile.energy_levels else DEFAULT_ENERGY_LEVELS
+        "energy_levels": json.loads(profile.energy_levels) if profile.energy_levels else DEFAULT_ENERGY_LEVELS,
+        "insert_breaks": getattr(profile, 'insert_breaks', DEFAULT_INSERT_BREAKS),
+        "short_break_min": getattr(profile, 'short_break_min', DEFAULT_SHORT_BREAK_MIN),
+        "long_break_min": getattr(profile, 'long_break_min', DEFAULT_LONG_BREAK_MIN),
+        "long_study_threshold_min": getattr(profile, 'long_study_threshold_min', DEFAULT_LONG_STUDY_THRESHOLD_MIN),
+        "min_gap_for_break_min": getattr(profile, 'min_gap_for_break_min', DEFAULT_MIN_GAP_FOR_BREAK_MIN),
     }
 
 def update_energy_profile(
@@ -334,6 +347,11 @@ def update_energy_profile(
     sleep_time: Optional[int] = None,
     max_study_duration: Optional[int] = None,
     min_study_duration: Optional[int] = None,
+    insert_breaks: Optional[bool] = None,
+    short_break_min: Optional[int] = None,
+    long_break_min: Optional[int] = None,
+    long_study_threshold_min: Optional[int] = None,
+    min_gap_for_break_min: Optional[int] = None,
     db: Session = None
 ) -> Dict:
     """update user's energy profile
@@ -365,6 +383,47 @@ def update_energy_profile(
         profile.max_study_duration = max_study_duration
     if min_study_duration is not None:
         profile.min_study_duration = min_study_duration
+    # rest-aware fields
+    if insert_breaks is not None:
+        profile.insert_breaks = insert_breaks
+    if short_break_min is not None:
+        profile.short_break_min = short_break_min
+    if long_break_min is not None:
+        profile.long_break_min = long_break_min
+    if long_study_threshold_min is not None:
+        profile.long_study_threshold_min = long_study_threshold_min
+    if min_gap_for_break_min is not None:
+        profile.min_gap_for_break_min = min_gap_for_break_min
+
+    db.commit()
+    return {"success": True}
+
+
+def tune_break_settings(
+    user_id: int,
+    insert_breaks: Optional[bool] = None,
+    short_break_min: Optional[int] = None,
+    long_break_min: Optional[int] = None,
+    long_study_threshold_min: Optional[int] = None,
+    min_gap_for_break_min: Optional[int] = None,
+    db: Session = None
+) -> Dict:
+    """Tune rest/break parameters only (agent/chat tool)."""
+    profile = db.query(EnergyProfile).filter(EnergyProfile.user_id == user_id).first()
+    if not profile:
+        profile = EnergyProfile(user_id=user_id)
+        db.add(profile)
+
+    if insert_breaks is not None:
+        profile.insert_breaks = insert_breaks
+    if short_break_min is not None:
+        profile.short_break_min = short_break_min
+    if long_break_min is not None:
+        profile.long_break_min = long_break_min
+    if long_study_threshold_min is not None:
+        profile.long_study_threshold_min = long_study_threshold_min
+    if min_gap_for_break_min is not None:
+        profile.min_gap_for_break_min = min_gap_for_break_min
 
     db.commit()
     return {"success": True}

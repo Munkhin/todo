@@ -1,7 +1,12 @@
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict
 from sqlalchemy.orm import Session
-from api.models import Task, CalendarEvent
+try:
+    # test context (when importing as 'services.scheduler')
+    from models import Task, CalendarEvent  # type: ignore
+except Exception:
+    # app context
+    from api.models import Task, CalendarEvent
 from api.schemas import CalendarEventCreate
 from api.services.consts import get_user_constants
 import math
@@ -270,6 +275,7 @@ def reschedule_optimistic(tasks: List[Task], time_blocks: List[Dict], user_id: i
     scheduled_count = 0
 
     # assign tasks to time blocks
+    streak_by_day: Dict = {}
     for task in sorted_tasks:
         # find first available block that fits this task
         for block in sorted_blocks:
@@ -301,6 +307,42 @@ def reschedule_optimistic(tasks: List[Task], time_blocks: List[Dict], user_id: i
                 block['start_time'] = end_time  # move block start forward
 
                 scheduled_count += 1
+
+                # insert break/rest if enabled and time allows
+                try:
+                    if consts.get('INSERT_BREAKS', False):
+                        day_key = start_time.date()
+                        prev_streak = streak_by_day.get(day_key, 0)
+                        new_streak = prev_streak + task.estimated_minutes
+                        break_min = consts.get('LONG_BREAK_MIN', 15) if new_streak >= consts.get('LONG_STUDY_THRESHOLD_MIN', 90) else consts.get('SHORT_BREAK_MIN', 5)
+                        min_gap = consts.get('MIN_GAP_FOR_BREAK_MIN', 3)
+                        if break_min and break_min >= min_gap and block['available_minutes'] >= break_min:
+                            br_start = block['start_time']
+                            br_end = br_start + timedelta(minutes=break_min)
+                            br_type = 'rest' if new_streak >= consts.get('LONG_STUDY_THRESHOLD_MIN', 90) else 'break'
+                            break_event = CalendarEvent(
+                                user_id=user_id,
+                                title='Long Break' if br_type == 'rest' else 'Short Break',
+                                description=f"{br_type.title()} between study sessions",
+                                start_time=br_start,
+                                end_time=br_end,
+                                event_type=br_type,
+                                source='system',
+                                task_id=None
+                            )
+                            db.add(break_event)
+                            created_events.append(break_event)
+                            # advance block after break
+                            block['available_minutes'] -= break_min
+                            block['start_time'] = br_end
+                            # reset streak after an inserted break
+                            streak_by_day[day_key] = 0
+                        else:
+                            streak_by_day[day_key] = new_streak
+                    # else: breaks disabled
+                except Exception:
+                    # fail-safe: never let break insertion break scheduling
+                    pass
                 break
 
     # flush to get IDs without committing (optimistic update)
@@ -344,6 +386,7 @@ def reschedule(tasks: List[Task], time_blocks: List[Dict], user_id: int, consts:
     scheduled_count = 0
 
     # assign tasks to time blocks
+    streak_by_day: Dict = {}
     for task in sorted_tasks:
         # find first available block that fits this task
         for block in sorted_blocks:
@@ -375,6 +418,39 @@ def reschedule(tasks: List[Task], time_blocks: List[Dict], user_id: int, consts:
                 block['start_time'] = end_time  # move block start forward
 
                 scheduled_count += 1
+                # insert break/rest if enabled (same logic as optimistic)
+                try:
+                    if consts.get('INSERT_BREAKS', False):
+                        day_key = start_time.date()
+                        prev_streak = streak_by_day.get(day_key, 0)
+                        new_streak = prev_streak + task.estimated_minutes
+                        break_min = consts.get('LONG_BREAK_MIN', 15) if new_streak >= consts.get('LONG_STUDY_THRESHOLD_MIN', 90) else consts.get('SHORT_BREAK_MIN', 5)
+                        min_gap = consts.get('MIN_GAP_FOR_BREAK_MIN', 3)
+                        if break_min and break_min >= min_gap and block['available_minutes'] >= break_min:
+                            br_start = block['start_time']
+                            br_end = br_start + timedelta(minutes=break_min)
+                            br_type = 'rest' if new_streak >= consts.get('LONG_STUDY_THRESHOLD_MIN', 90) else 'break'
+                            break_event = CalendarEvent(
+                                user_id=user_id,
+                                title='Long Break' if br_type == 'rest' else 'Short Break',
+                                description=f"{br_type.title()} between study sessions",
+                                start_time=br_start,
+                                end_time=br_end,
+                                event_type=br_type,
+                                source='system',
+                                task_id=None
+                            )
+                            db.add(break_event)
+                            created_events.append(break_event)
+                            # advance block after break
+                            block['available_minutes'] -= break_min
+                            block['start_time'] = br_end
+                            # reset streak after an inserted break
+                            streak_by_day[day_key] = 0
+                        else:
+                            streak_by_day[day_key] = new_streak
+                except Exception:
+                    pass
                 break
 
     db.commit()

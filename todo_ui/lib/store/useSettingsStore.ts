@@ -8,6 +8,11 @@ import {
   DEFAULT_MIN_STUDY_DURATION,
   DEFAULT_SLEEP_TIME,
   DEFAULT_WAKE_TIME,
+  DEFAULT_INSERT_BREAKS,
+  DEFAULT_SHORT_BREAK_MIN,
+  DEFAULT_LONG_BREAK_MIN,
+  DEFAULT_LONG_STUDY_THRESHOLD_MIN,
+  DEFAULT_MIN_GAP_FOR_BREAK_MIN,
 } from '../constants/scheduling';
 import { EnergyProfilePayload, fetchEnergyProfile, saveEnergyProfile } from '../api/energyProfile';
 
@@ -33,6 +38,11 @@ const buildDefaults = (): SchedulingSettings => ({
   max_study_duration: DEFAULT_MAX_STUDY_DURATION,
   min_study_duration: DEFAULT_MIN_STUDY_DURATION,
   energy_levels: { ...DEFAULT_ENERGY_LEVELS },
+  insert_breaks: DEFAULT_INSERT_BREAKS,
+  short_break_min: DEFAULT_SHORT_BREAK_MIN,
+  long_break_min: DEFAULT_LONG_BREAK_MIN,
+  long_study_threshold_min: DEFAULT_LONG_STUDY_THRESHOLD_MIN,
+  min_gap_for_break_min: DEFAULT_MIN_GAP_FOR_BREAK_MIN,
 });
 
 // defaults for resetting settings
@@ -142,9 +152,17 @@ export const useSettingsStore = create<SettingsState>()(
           max_study_duration: settings.max_study_duration,
           min_study_duration: settings.min_study_duration,
           energy_levels: settings.energy_levels,
+          insert_breaks: settings.insert_breaks,
+          short_break_min: settings.short_break_min,
+          long_break_min: settings.long_break_min,
+          long_study_threshold_min: settings.long_study_threshold_min,
+          min_gap_for_break_min: settings.min_gap_for_break_min,
         };
 
         await saveEnergyProfile(userId, payload);
+        // reload from server to ensure settings reflect DB truth
+        const refreshed = await fetchEnergyProfile(userId);
+        set({ settings: { ...refreshed } });
       },
     }),
     {
