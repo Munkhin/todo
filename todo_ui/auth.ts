@@ -61,7 +61,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           // Detect timezone on server-side (will be UTC, but we'll update from client)
           // This just ensures the user is created in the backend database
           const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
-          const response = await fetch(`${backendUrl}/api/auth/register-nextauth-session`, {
+          const response = await fetch(`${backendUrl}/api/user/register-session`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
