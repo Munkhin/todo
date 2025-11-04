@@ -24,13 +24,37 @@ SCOPES = [
 # In-memory session storage (for development - use Redis/DB in production)
 sessions = {}
 
+
+def _external_base_url(request: Request) -> str:
+    """Best-effort external base URL using proxy headers if present."""
+    proto = request.headers.get('x-forwarded-proto', request.url.scheme)
+    host = request.headers.get('x-forwarded-host', request.headers.get('host'))
+    return f"{proto}://{host}".rstrip('/')
+
+
+def _backend_callback_url(request: Request) -> str:
+    return f"{_external_base_url(request)}/api/auth/google-oauth/callback"
+
+
+def _frontend_base_url(request: Request) -> str:
+    # Prefer explicit env for frontend domain; fallback to reasonable default
+    env_frontend = os.getenv('FRONTEND_BASE_URL') or os.getenv('NEXT_PUBLIC_BASE_URL')
+    if env_frontend:
+        return env_frontend.rstrip('/')
+
+    # Local dev heuristic
+    ext = _external_base_url(request)
+    if 'localhost' in ext or '127.0.0.1' in ext:
+        return 'http://localhost:3000'
+    return ext
+
 @router.post("/login")
 async def login(request: Request):
     """Login user (email/password or OAuth token)"""
     flow = Flow.from_client_secrets_file(
         'credentials.json',
         scopes=SCOPES,
-        redirect_uri='http://localhost:8000/api/auth/google-oauth/callback'
+        redirect_uri=_backend_callback_url(request),
     )
 
     authorization_url, state = flow.authorization_url(
@@ -58,7 +82,7 @@ async def google_oauth(request: Request):
     flow = Flow.from_client_secrets_file(
         'credentials.json',
         scopes=SCOPES,
-        redirect_uri='http://localhost:8000/api/auth/google-oauth/callback'
+        redirect_uri=_backend_callback_url(request),
     )
 
     authorization_url, state = flow.authorization_url(
@@ -84,7 +108,7 @@ async def google_oauth_callback(request: Request, code: str = None, state: str =
         'credentials.json',
         scopes=SCOPES,
         state=state,
-        redirect_uri='http://localhost:8000/api/auth/google-oauth/callback'
+        redirect_uri=_backend_callback_url(request),
     )
 
     # exchange authorization code for credentials
@@ -102,7 +126,8 @@ async def google_oauth_callback(request: Request, code: str = None, state: str =
     }
 
     # redirect to frontend dashboard
-    return RedirectResponse(url=f"http://localhost:3000/dashboard?session={state}")
+    frontend = _frontend_base_url(request)
+    return RedirectResponse(url=f"{frontend}/dashboard?session={state}")
 
 @router.get("/user")
 async def get_user(session_id: str):
