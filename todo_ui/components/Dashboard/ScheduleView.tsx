@@ -424,6 +424,12 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
             </div>
           </div>
         )}
+        {/* Floating model response overlay (does not affect layout) */}
+        {notification && (
+          <div className={cal.overlayWrap}>
+            <div className={cal.overlayBubble}>{notification}</div>
+          </div>
+        )}
       </div>
 
       <TaskDialog
@@ -478,11 +484,6 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
 
     {/* Bottom chat bar in second row (15%) */}
     <div className={cal.chatBar}>
-      {notification && (
-        <div className="mb-2 text-sm text-gray-700">
-          {notification}
-        </div>
-      )}
       <form
         className={cal.inputForm}
         onSubmit={async (e) => {
@@ -511,7 +512,8 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
             } else {
               setNotification(resp)
             }
-            await fetchTasks()
+            // refresh tasks after assistant responds
+            await fetchTasks({ include_completed: false })
             if (!demoMode) setTimeout(() => setNotification(null), 4000)
           } catch {
             setNotification("Failed to send. Please try again.")

@@ -26,6 +26,9 @@ export const scheduleStyles = {
   inputForm: "flex gap-2",
   input: "flex-1 rounded-md border border-gray-300 px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-gray-300",
   sendBtn: "inline-flex items-center rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-black disabled:opacity-60",
+  /* Floating response overlay (does not shift layout) */
+  overlayWrap: "pointer-events-none absolute inset-x-0 bottom-6 z-30 flex justify-center px-4",
+  overlayBubble: "pointer-events-auto max-w-[52rem] rounded-md border border-gray-800 bg-gray-900 px-4 py-3 text-sm text-white shadow-lg",
   /* Day view */
   dayArea: "h-full w-full overflow-auto p-[clamp(0.75rem,1.8vh,1.25rem)]",
   dayGrid: "grid w-full grid-cols-[64px_1fr] gap-2",
