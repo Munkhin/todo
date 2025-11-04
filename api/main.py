@@ -13,6 +13,7 @@ load_dotenv()
 
 # import routers
 from api.routes.auth_routes import router as auth_router
+from api.routes.user_routes import router as user_router
 from api.routes.task_routes import router as task_router
 from api.routes.schedule_routes import router as schedule_router
 from api.routes.calendar_routes import router as calendar_router
@@ -67,6 +68,7 @@ def favicon():
 
 # register routers with prefixes
 app.include_router(auth_router, prefix="/api/auth", tags=["Authentication"])
+app.include_router(user_router, prefix="/api/user", tags=["User"])
 app.include_router(task_router, prefix="/api/tasks", tags=["Tasks"])
 app.include_router(schedule_router, prefix="/api/schedule", tags=["Scheduling"])
 app.include_router(calendar_router, prefix="/api/calendar", tags=["Calendar"])
