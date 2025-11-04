@@ -62,11 +62,16 @@ def _get_user_id_from_session(session_id: str) -> int:
     credentials = Credentials(**sessions[session_id]['credentials'])
     service = build('oauth2', 'v2', credentials=credentials)
     user_info = service.userinfo().get().execute()
-    # Google 'id' is often numeric as a string; cast to int for DB consistency
+    # Map Google account to our numeric DB user id
     try:
-        return int(user_info.get('id'))
-    except Exception:
-        raise HTTPException(status_code=500, detail="Invalid Google user id format")
+        from api.db_helpers import create_or_update_user
+        google_id = user_info.get('id')
+        email = user_info.get('email')
+        name = user_info.get('name')
+        db_user_id = create_or_update_user(google_id, email, name)
+        return int(db_user_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to resolve DB user id: {str(e)}")
 
 # get user id based on information present
 def get_user_id(request: ChatMessageRequest) -> int:
