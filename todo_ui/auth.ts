@@ -54,35 +54,5 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session
     },
 
-    async signIn({ user, account }) {
-      // On successful sign-in, register session with backend and set timezone
-      if (account?.provider === "google" && user?.email) {
-        try {
-          // Detect timezone on server-side (will be UTC, but we'll update from client)
-          // This just ensures the user is created in the backend database
-          const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
-          const response = await fetch(`${backendUrl}/api/user/register-session`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              access_token: account.access_token,
-              refresh_token: account.refresh_token,
-            }),
-          })
-
-          if (response.ok) {
-            const data = await response.json()
-            // Store backend user ID for later use
-            if (data.db_user_id && typeof window !== 'undefined') {
-              window.localStorage.setItem('backendUserId', String(data.db_user_id))
-            }
-          }
-        } catch (error) {
-          console.error("Failed to register session with backend:", error)
-          // Don't block sign-in if backend registration fails
-        }
-      }
-      return true
-    },
   },
 })

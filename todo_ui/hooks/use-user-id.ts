@@ -7,28 +7,42 @@ export function useUserId(): number {
   const [userId, setUserId] = useState<number>(0)
 
   useEffect(() => {
-    const updateUserId = () => {
-      // Prefer backend-provided numeric id from localStorage
-      if (typeof window !== 'undefined') {
-        const stored = window.localStorage.getItem('backendUserId')
-        const parsedStored = stored ? parseInt(stored, 10) : NaN
-        if (Number.isFinite(parsedStored)) {
-          setUserId(parsedStored)
-          return
-        }
-      }
-
-      // Fallback: try NextAuth's user.id if numeric-like
-      const id = (data?.user as any)?.id
-      const parsed = typeof id === 'string' ? parseInt(id, 10) : id
-      setUserId(Number.isFinite(parsed) ? parsed : 0)
+    if (!data?.user?.email) {
+      setUserId(0)
+      return
     }
 
-    updateUserId()
+    // Check localStorage first
+    const stored = window.localStorage.getItem('backendUserId')
+    if (stored) {
+      const parsedStored = parseInt(stored, 10)
+      if (Number.isFinite(parsedStored)) {
+        setUserId(parsedStored)
+        return
+      }
+    }
 
-    // Listen for storage changes
-    window.addEventListener('storage', updateUserId)
-    return () => window.removeEventListener('storage', updateUserId)
+    // Call /api/user/me to get or create user
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    fetch(`${backendUrl}/api/user/me`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: data.user.email,
+        name: data.user.name,
+      }),
+    })
+      .then((r) => r.ok ? r.json() : Promise.reject())
+      .then((res) => {
+        const id = res?.user_id
+        if (id && Number.isFinite(id)) {
+          setUserId(id)
+          window.localStorage.setItem('backendUserId', String(id))
+        }
+      })
+      .catch((err) => {
+        console.error('[useUserId] Failed to get user:', err)
+      })
   }, [data])
 
   return userId

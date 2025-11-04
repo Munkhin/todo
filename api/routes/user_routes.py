@@ -25,6 +25,58 @@ class RegisterSessionRequest(BaseModel):
     refresh_token: Optional[str] = None
 
 
+class GetMeRequest(BaseModel):
+    email: str
+    name: Optional[str] = None
+
+
+@router.post("/me")
+async def get_or_create_user(req: GetMeRequest, db: Session = Depends(get_db)):
+    """Get or create user from email - returns backend user_id"""
+    print(f"[/api/user/me] email={req.email}, name={req.name}")
+
+    try:
+        # Find existing user by email
+        user = db.query(User).filter(User.email == req.email).first()
+
+        if user:
+            print(f"[/api/user/me] Found existing user: id={user.id}")
+            # Update name if provided and different
+            if req.name and user.name != req.name:
+                user.name = req.name
+                db.commit()
+            return {
+                "user_id": user.id,
+                "email": user.email,
+                "name": user.name,
+                "timezone": user.timezone or "UTC"
+            }
+
+        # Create new user
+        new_user = User(
+            email=req.email,
+            name=req.name,
+            timezone="UTC"  # Will be auto-detected on frontend
+        )
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+
+        print(f"[/api/user/me] Created new user: id={new_user.id}")
+        return {
+            "user_id": new_user.id,
+            "email": new_user.email,
+            "name": new_user.name,
+            "timezone": new_user.timezone or "UTC"
+        }
+
+    except Exception as e:
+        import traceback
+        print(f"[/api/user/me] Error: {str(e)}")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Error getting user: {str(e)}")
+
+
 @router.post("/timezone")
 async def update_user_timezone(request: UpdateTimezoneRequest, db: Session = Depends(get_db)):
     """Update user's timezone setting"""
