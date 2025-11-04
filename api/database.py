@@ -64,5 +64,17 @@ def run_light_migrations() -> None:
             if not _column_exists("energy_profiles", "min_gap_for_break_min"):
                 conn.execute(text("ALTER TABLE energy_profiles ADD COLUMN min_gap_for_break_min INTEGER DEFAULT 3"))
 
+        # Drop redundant indexes on primary keys created by older versions
+        # Safe on SQLite due to IF EXISTS; no-op if missing
+        redundant_indexes = [
+            "ix_users_id",
+            "ix_tasks_id",
+            "ix_energy_profiles_id",
+            "ix_calendar_events_id",
+            "ix_brain_dumps_id",
+        ]
+        for idx in redundant_indexes:
+            conn.execute(text(f"DROP INDEX IF EXISTS {idx}"))
+
 
 # moved app-specific helpers to api/db_helpers.py to avoid circular imports

@@ -11,7 +11,7 @@ class Task(Base):
     __tablename__ = "tasks"
     __table_args__ = {"extend_existing": True}
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     topic = Column(String, nullable=False)
     estimated_minutes = Column(Integer, nullable=False)
@@ -31,7 +31,7 @@ class User(Base):
     __tablename__ = "users"
     __table_args__ = {"extend_existing": True}
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     email = Column(String, unique=True, nullable=False)
     name = Column(String, nullable=True)
     # external identity link (Google/OpenID subject)
@@ -55,7 +55,7 @@ class EnergyProfile(Base):
     __tablename__ = "energy_profiles"
     __table_args__ = {"extend_existing": True}
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     due_date_days = Column(Integer, default=7)  # days to add when defaulting due dates
     wake_time = Column(Integer, default=7)  # hour
@@ -75,7 +75,7 @@ class CalendarEvent(Base):
     __tablename__ = "calendar_events"
     __table_args__ = {"extend_existing": True}
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     title = Column(String, nullable=False)
     description = Column(Text, nullable=True)
@@ -92,7 +92,7 @@ class BrainDump(Base):
     __tablename__ = "brain_dumps"
     __table_args__ = {"extend_existing": True}
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     raw_text = Column(Text, nullable=False)
     attached_files = Column(Text, nullable=True)  # JSON array of file paths
