@@ -220,3 +220,10 @@ export async function demoSendMessage(_userId: number, message: string): Promise
 export async function demoClearAll(): Promise<void> {
   writeState({ nextTaskId: 1, nextEventId: 1, tasks: [], events: [], messages: [] })
 }
+
+// Read back the last assistant reply (to persist model response UI in demo)
+export async function demoGetLastAssistantMessage(): Promise<string | null> {
+  const s = readState()
+  const last = [...s.messages].reverse().find(m => m.role === 'assistant')
+  return last?.content ?? null
+}

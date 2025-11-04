@@ -290,3 +290,32 @@ async def register_nextauth_session(request: NextAuthSessionRequest):
         print(f"ERROR in register-nextauth-session: {str(e)}")
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Error registering session: {str(e)}")
+
+
+class UpdateTimezoneRequest(BaseModel):
+    user_id: int
+    timezone: str  # IANA timezone like "America/Los_Angeles"
+
+
+@router.post("/update-timezone")
+async def update_user_timezone(request: UpdateTimezoneRequest):
+    """Update user's timezone setting"""
+    from api.database import SessionLocal
+    from api.models import User
+
+    db = SessionLocal()
+    try:
+        user = db.query(User).filter(User.id == request.user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        user.timezone = request.timezone
+        db.commit()
+
+        return {"success": True, "timezone": request.timezone}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating timezone: {str(e)}")
+    finally:
+        db.close()

@@ -7,8 +7,14 @@ from api.database import SessionLocal
 from api.models import User
 
 
-def create_or_update_user(google_user_id: str, email: str, name: Optional[str]) -> int:
+def create_or_update_user(google_user_id: str, email: str, name: Optional[str], timezone: Optional[str] = None) -> int:
     """Create or update a user, linking Google ID to our numeric user id.
+
+    Args:
+        google_user_id: Google account ID
+        email: User email
+        name: User display name
+        timezone: User's IANA timezone (e.g. "America/Los_Angeles", "Europe/London")
 
     Returns the numeric user id.
     """
@@ -28,12 +34,16 @@ def create_or_update_user(google_user_id: str, email: str, name: Optional[str]) 
                 user.email = email
             if name and user.name != name:
                 user.name = name
+            # Update timezone if provided and different
+            if timezone and user.timezone != timezone:
+                user.timezone = timezone
         else:
             user = User(
                 email=email or f"unknown-{google_user_id}@example.com",
                 name=name,
                 google_user_id=google_user_id,
                 created_at=datetime.utcnow(),
+                timezone=timezone or "UTC"  # use provided timezone or default to UTC
             )
             db.add(user)
 

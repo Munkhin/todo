@@ -11,7 +11,7 @@ import { uploadChatFile } from "@/lib/api/chat"
 import { useScheduleStore } from "@/lib/store/useScheduleStore"
 import { scheduleStyles as cal } from "@/components/Dashboard/ScheduleView.styles"
 import type { CalendarEvent } from "@/lib/api/calendar"
-import { demoListEventsInRange, demoCreateTask, demoUpdateTask, demoDeleteTask, demoSendMessage } from "@/lib/demo/localDemo"
+import { demoListEventsInRange, demoCreateTask, demoUpdateTask, demoDeleteTask, demoSendMessage, demoGetLastAssistantMessage } from "@/lib/demo/localDemo"
 
 // Visual scale: pixels per hour and minute
 const PX_PER_HOUR = 48
@@ -84,6 +84,17 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
   useEffect(() => {
     // initial load and keep events in sync as date/view changes
     refreshViewData().catch(() => {})
+    // In demo, hydrate the last assistant message so the model response persists
+    if (demoMode) {
+      demoGetLastAssistantMessage().then((msg) => {
+        if (msg) setNotification(
+          <span>
+            {msg} {" "}
+            <a href={pricingAnchor} className="font-bold underline">Start scheduling now</a>
+          </span>
+        )
+      }).catch(() => {})
+    }
   }, [currentDate, view, userId])
 
   const handleEventClick = (event: any) => {
@@ -419,7 +430,7 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
               )
               // pull in newly created demo task/event
               await refreshViewData()
-              setTimeout(() => setNotification(null), 3000)
+              // Do not auto-dismiss in demo; keep persistent
             } else {
               const resp = await sendMessage(msg, userId)
               setNotification(resp)

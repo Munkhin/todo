@@ -2,6 +2,9 @@
 import { AppSidebar } from "@/components/Dashboard/AppSidebar"
 import MobileSidebar from "@/components/Dashboard/MobileSidebar"
 import { usePathname } from "next/navigation"
+import { useEffect } from "react"
+import { useUserId } from "@/hooks/use-user-id"
+import { detectTimezone, updateUserTimezone } from "@/lib/api/auth"
 
 export default function DashboardLayout({
   children,
@@ -10,6 +13,17 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname()
   const isSchedule = pathname === "/dashboard/schedule"
+  const userId = useUserId()
+
+  // auto-detect and update user timezone on mount
+  useEffect(() => {
+    if (userId) {
+      const timezone = detectTimezone()
+      updateUserTimezone(userId, timezone).catch(() => {
+        // silently fail - timezone update is not critical
+      })
+    }
+  }, [userId])
   return (
     <div className="grid min-h-[100svh] grid-cols-1 md:grid-cols-[260px_1fr]">
       {/* Desktop sidebar */}
