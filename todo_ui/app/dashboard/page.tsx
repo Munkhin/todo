@@ -3,7 +3,7 @@ import TaskListView from "@/components/Dashboard/TaskListView"
 
 export default function DashboardPage() {
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-3xl min-h-[60svh]">
       <TaskListView />
     </div>
   )

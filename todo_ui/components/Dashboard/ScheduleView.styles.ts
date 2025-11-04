@@ -1,7 +1,7 @@
 export const scheduleStyles = {
-  page: "flex h-full flex-col overflow-hidden",
+  page: "flex h-full min-h-0 flex-col overflow-hidden",
   /* Calendar header and toolbar */
-  calHeader: "flex flex-shrink-0 items-center justify-between border-b border-gray-200 p-4",
+  calHeader: "flex flex-shrink-0 items-center justify-between border-b border-gray-200 p-[clamp(0.75rem,1.8vh,1.25rem)]",
   calHeaderLeft: "flex items-center gap-2",
   calHeaderRight: "flex items-center gap-2",
   calTitle: "text-lg font-semibold",
@@ -11,7 +11,7 @@ export const scheduleStyles = {
   viewToggle: "inline-flex rounded-md border border-gray-300",
   viewBtn: "px-3 py-1 text-sm hover:bg-gray-50 first:rounded-l-md last:rounded-r-md aria-selected:bg-gray-900 aria-selected:text-white",
   /* Calendar grid area */
-  calendarArea: "flex-1 overflow-auto p-4",
+  calendarArea: "relative z-0 flex-1 overflow-auto p-[clamp(0.75rem,1.8vh,1.25rem)]",
   weekOuterGrid: "grid w-full grid-cols-[64px_1fr] gap-2",
   weekHeader: "grid grid-cols-7 gap-2 mb-2",
   weekHeaderCell: "text-center text-sm font-medium text-gray-700",
@@ -21,13 +21,13 @@ export const scheduleStyles = {
   weekHourRow: "h-16 border-b border-gray-100",
   dayCellToday: "bg-blue-50 border-blue-300",
   event: "absolute left-1 right-1 top-6 rounded-md border-l-4 border-blue-400 bg-blue-100 p-2 text-xs font-semibold text-gray-800 shadow-sm",
-  /* Chat input bar */
-  chatBar: "flex-shrink-0 border-t bg-white p-4",
+  /* Chat input bar at bottom of view, layered above calendar */
+  chatBar: "relative z-20 flex-shrink-0 border-t bg-white p-[clamp(0.75rem,1.8vh,1.25rem)]",
   inputForm: "flex gap-2",
   input: "flex-1 rounded-md border border-gray-300 px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-gray-300",
   sendBtn: "inline-flex items-center rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-black disabled:opacity-60",
   /* Day view */
-  dayArea: "h-full w-full overflow-auto p-4",
+  dayArea: "h-full w-full overflow-auto p-[clamp(0.75rem,1.8vh,1.25rem)]",
   dayGrid: "grid w-full grid-cols-[64px_1fr] gap-2",
   timeCol: "text-right pr-2 text-xs text-gray-500",
   timeLabel: "h-16 flex items-end pb-[2px] leading-none",

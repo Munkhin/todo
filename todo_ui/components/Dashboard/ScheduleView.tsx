@@ -76,7 +76,7 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
   }
 
   return (
-    <div className="min-h-0 h-full grid grid-rows-[85%_15%]">
+    <div className="min-h-0 h-full overflow-hidden grid grid-rows-[85%_15%]">
     <section className={`${cal.page} min-h-0`} aria-label="Tasks Calendar">
       <div className={cal.calHeader}>
         <div className={cal.calHeaderLeft}>

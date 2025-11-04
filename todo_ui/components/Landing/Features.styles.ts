@@ -1,5 +1,5 @@
 export const featuresStyles = {
-  section: "bg-gray-50 py-24",
+  section: "bg-gray-50 py-[clamp(3rem,10vh,6rem)]",
   container: "mx-auto max-w-7xl px-4",
   title: "text-center text-3xl font-bold md:text-4xl",
   sub: "mt-2 text-center text-lg text-gray-600",
@@ -10,4 +10,3 @@ export const featuresStyles = {
   cardTitle: "mb-3 text-xl font-semibold",
   cardDesc: "leading-relaxed text-gray-600",
 }
-

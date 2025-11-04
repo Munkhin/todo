@@ -1,5 +1,5 @@
 export const impactStyles = {
-  section: "bg-white py-16",
+  section: "bg-white py-[clamp(3rem,8vh,6rem)]",
   container: "mx-auto max-w-6xl px-6",
   grid: "mx-auto grid max-w-5xl grid-cols-1 gap-12 text-center md:grid-cols-3",
   item: "flex flex-col items-center",

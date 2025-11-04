@@ -1,5 +1,5 @@
 export const useCasesStyles = {
-  section: "bg-white py-24",
+  section: "bg-white py-[clamp(3rem,10vh,6rem)]",
   container: "mx-auto max-w-7xl px-4",
   title: "mb-16 text-center text-3xl font-bold md:text-4xl",
   grid: "grid grid-cols-1 gap-8 lg:grid-cols-3",
@@ -10,4 +10,3 @@ export const useCasesStyles = {
   benefitRow: "flex items-start gap-3",
   benefitText: "text-gray-700",
 }
-

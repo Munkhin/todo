@@ -1,6 +1,8 @@
 export const heroStyles = {
-  section: "bg-gradient-to-br from-gray-50 via-white to-blue-50",
-  container: "mx-auto max-w-7xl px-4 pt-10 pb-16 lg:pt-16 lg:pb-24",
+  // Fill the viewport minus navbar height (4rem) and center content
+  section: "bg-gradient-to-br from-gray-50 via-white to-blue-50 min-h-[calc(100svh-4rem)] flex items-center",
+  // Responsive padding scaled to viewport height
+  container: "mx-auto max-w-7xl px-4 py-[clamp(2rem,6vh,4rem)]",
   stack: "flex flex-col items-center gap-6 text-center isolate",
   title: "relative z-0 max-w-4xl text-5xl font-bold leading-[1.15] tracking-tight text-gray-900 md:text-6xl lg:text-7xl",
   titleLine: "block leading-[1.08]",

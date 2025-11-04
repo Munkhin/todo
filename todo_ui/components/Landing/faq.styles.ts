@@ -1,5 +1,5 @@
 export const faqStyles = {
-  section: "bg-white py-24",
+  section: "bg-white py-[clamp(3rem,10vh,6rem)]",
   container: "mx-auto max-w-3xl px-4",
   title: "mb-12 text-center text-3xl font-bold",
   wrapper: "divide-y divide-gray-200 rounded-xl border border-gray-200",
@@ -8,4 +8,3 @@ export const faqStyles = {
   i: "text-gray-500",
   a: "px-6 pb-4 text-gray-600",
 }
-

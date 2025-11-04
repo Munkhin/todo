@@ -1,5 +1,5 @@
 export const pricingStyles = {
-  section: "bg-gradient-to-b from-gray-50 to-white py-24",
+  section: "bg-gradient-to-b from-gray-50 to-white py-[clamp(3rem,10vh,6rem)]",
   container: "mx-auto max-w-6xl px-4",
   title: "text-center text-3xl font-bold md:text-4xl",
   sub: "mb-16 mt-2 text-center text-lg text-gray-600",

@@ -1,6 +1,6 @@
 export const footerStyles = {
   footer: "bg-gray-900 text-white",
-  container: "mx-auto max-w-7xl px-4 py-16",
+  container: "mx-auto max-w-7xl px-4 py-[clamp(2rem,6vh,4rem)]",
   grid: "grid grid-cols-2 gap-8 md:grid-cols-4",
   sectionTitle: "mb-3 font-semibold",
   link: "hover:text-white text-gray-300",

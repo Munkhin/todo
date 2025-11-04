@@ -9,7 +9,7 @@ export const sidebarStyles = {
 
   // header styling
   header: {
-    padding: "px-6 py-4",
+    padding: "px-5 py-[clamp(0.75rem,1.8vh,1rem)]",
     border: "border-b",
     logo: {
       iconSize: "h-6 w-6",
@@ -22,7 +22,7 @@ export const sidebarStyles = {
   menuItem: {
     fontSize: "text-base",     // increased from default text-sm
     iconSize: "h-5 w-5",       // increased from default h-4 w-4
-    padding: "p-3",            // increased from default p-2
+    padding: "px-3 py-[clamp(0.5rem,1.5vh,0.75rem)]",            // increased from default p-2
     gap: "gap-3",              // increased from default gap-2
   },
 
