@@ -218,7 +218,7 @@ class NextAuthSessionRequest(BaseModel):
     refresh_token: Optional[str] = None
 
 @router.post("/register-nextauth-session")
-async def register_nextauth_session(request: NextAuthSessionRequest):
+async def register_nextauth_session(request: Request):
     """
     Register NextAuth session with backend.
     Creates a session entry using the access token as session_id.
@@ -226,13 +226,20 @@ async def register_nextauth_session(request: NextAuthSessionRequest):
     """
     print("=" * 80)
     print("REGISTER-NEXTAUTH-SESSION CALLED")
-    print(f"Access token received: {request.access_token[:20] if request.access_token else 'None'}...")
-    print(f"Refresh token received: {bool(request.refresh_token)}")
-    print("=" * 80)
 
     try:
-        access_token = request.access_token
-        refresh_token = request.refresh_token
+        # Parse raw body first to debug
+        body = await request.json()
+        print(f"Raw body received: {body}")
+
+        # Validate against schema
+        validated = NextAuthSessionRequest(**body)
+        print(f"Access token received: {validated.access_token[:20] if validated.access_token else 'None'}...")
+        print(f"Refresh token received: {bool(validated.refresh_token)}")
+        print("=" * 80)
+
+        access_token = validated.access_token
+        refresh_token = validated.refresh_token
         # use access_token as session_id for consistency
         session_id = access_token
 
