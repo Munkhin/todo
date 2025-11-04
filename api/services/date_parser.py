@@ -1,4 +1,7 @@
 # date_parser.py
+# DEPRECATED: This module is no longer used. AI agent now generates ISO 8601 datetime strings directly.
+# Use datetime.fromisoformat() for parsing ISO strings instead.
+
 from datetime import datetime, timedelta
 from dateutil.parser import parse as dateutil_parse
 from functools import lru_cache
@@ -9,6 +12,10 @@ import re
 def _parse_relative_date_cached(text_lower: str, base_date_str: str) -> str:
     """cached parsing for relative date patterns (returns ISO string)"""
     base_date = datetime.fromisoformat(base_date_str)
+
+    # now (immediate deadline)
+    if text_lower == "now":
+        return base_date.isoformat()
 
     # today
     if text_lower == "today":

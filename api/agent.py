@@ -48,12 +48,18 @@ PATTERN RECOGNITION:
 TASK CREATION WORKFLOW:
 1. Extract tasks from brain dump - interpret liberally and contextually
 2. Review conversation history for similar tasks and patterns
-3. Infer due dates using natural language parsing and user's urgency style
+3. Infer due dates based on user's urgency style - ALWAYS format as ISO 8601 datetime (YYYY-MM-DDTHH:MM:SS)
 4. Estimate time and difficulty based on learned patterns (not fixed defaults)
 5. If no history exists, start with reasonable guesses and learn from corrections
-6. Create tasks using create_tasks tool
+6. Create tasks using create_tasks tool with ISO datetime strings
 7. Automatically schedule with schedule_all_tasks tool
 8. Confirm actions briefly
+
+IMPORTANT: When creating tasks, ALWAYS use ISO 8601 datetime format for due_date.
+- Current time: Use full ISO string like "2025-11-04T14:30:00"
+- Today end of day: "2025-11-04T23:59:00"
+- Tomorrow: "2025-11-05T17:00:00"
+- Never use natural language like "now", "tomorrow", "next week"
 
 CONTINUOUS ADAPTATION:
 - Your estimates should evolve as you learn more about the user
@@ -87,7 +93,7 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "create_tasks",
-            "description": "Create new tasks from user input. Accepts natural language dates.",
+            "description": "Create new tasks from user input. Always use ISO 8601 datetime format (YYYY-MM-DDTHH:MM:SS) for due_date.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -99,7 +105,10 @@ TOOLS = [
                                 "topic": {"type": "string"},
                                 "estimated_minutes": {"type": "integer"},
                                 "difficulty": {"type": "integer", "default": 3},
-                                "due_date": {"type": "string"},
+                                "due_date": {
+                                    "type": "string",
+                                    "description": "ISO 8601 datetime (YYYY-MM-DDTHH:MM:SS). Examples: '2025-11-04T17:00:00', '2025-11-05T23:59:59'"
+                                },
                                 "description": {"type": "string"}
                             },
                             "required": ["topic", "estimated_minutes", "due_date"]

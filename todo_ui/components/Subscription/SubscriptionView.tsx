@@ -5,7 +5,7 @@ import { subscriptionStyles } from "./SubscriptionView.styles"
 import { useUserId } from "@/hooks/use-user-id"
 
 export default function SubscriptionView() {
-  const { subscription, loading, error, fetchSubscription, cancelSubscription } = useSubscriptionStore()
+  const { subscription, loading, error, fetchSubscription } = useSubscriptionStore()
   const userId = useUserId()
 
   useEffect(() => {
@@ -53,22 +53,6 @@ export default function SubscriptionView() {
           ) : (
             <p className="text-gray-600">{loading ? 'Loading…' : 'No subscription info available.'}</p>
           )}
-        </div>
-        <div className={subscriptionStyles.actions}>
-          <button
-            className={subscriptionStyles.btn}
-            onClick={() => cancelSubscription(userId)}
-            disabled={loading}
-          >
-            Cancel plan
-          </button>
-          <a
-            href="/#pricing"
-            className={subscriptionStyles.primary}
-            aria-label="Change plan"
-          >
-            Change plan
-          </a>
         </div>
       </article>
       {error && <p role="alert" className="text-sm text-red-600">{error}</p>}

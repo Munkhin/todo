@@ -11,7 +11,6 @@ from api.services.consts import (
     DEFAULT_LONG_STUDY_THRESHOLD_MIN,
     DEFAULT_MIN_GAP_FOR_BREAK_MIN,
 )
-from api.services.date_parser import parse_natural_date
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Dict
 import json
@@ -32,7 +31,7 @@ def create_tasks(tasks: List[Dict], user_id: int, db: Session) -> Dict:
     """create new tasks from user input
 
     Args:
-        tasks: list of dicts with topic, estimated_minutes, difficulty, due_date (string or natural language)
+        tasks: list of dicts with topic, estimated_minutes, difficulty, due_date (ISO 8601 datetime string)
         user_id: user ID
         db: database session
 
@@ -43,13 +42,17 @@ def create_tasks(tasks: List[Dict], user_id: int, db: Session) -> Dict:
 
     created = []
     for task_data in tasks:
-        # parse due date if string, apply default if missing
+        # parse due date - expect ISO 8601 format from AI
         due_date = task_data.get("due_date")
         if not due_date:
             # apply default due date
-            due_date = datetime.now() + timedelta(days=DEFAULT_DUE_DATE_DAYS)
+            due_date = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=DEFAULT_DUE_DATE_DAYS)
         elif isinstance(due_date, str):
-            due_date = parse_natural_date(due_date)
+            # parse ISO 8601 string directly
+            try:
+                due_date = _parse_iso_to_utc_naive(due_date)
+            except ValueError as e:
+                raise ValueError(f"Invalid ISO datetime format for due_date: {due_date}. Expected format: YYYY-MM-DDTHH:MM:SS. Error: {e}")
 
         task = Task(
             topic=task_data["topic"],
