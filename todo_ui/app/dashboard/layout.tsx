@@ -42,7 +42,7 @@ export default function DashboardLayout({
         <main
           className={
             isSchedule
-              ? "flex min-h-0 h-full flex-1 flex-col overflow-hidden px-[clamp(1rem,2.5vh,1.5rem)] pb-[clamp(1rem,2.5vh,1.5rem)] pt-0"
+              ? "flex min-h-0 h-full flex-1 flex-col overflow-hidden px-[clamp(1rem,2.5vh,1.5rem)] pb-0 pt-0"
               : "flex min-h-0 h-full flex-1 flex-col overflow-hidden px-[clamp(1rem,2.5vh,1.5rem)] pb-[clamp(1rem,2.5vh,1.5rem)] pt-[clamp(1rem,2.5vh,1.5rem)]"
           }
         >
