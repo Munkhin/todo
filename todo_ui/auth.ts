@@ -65,11 +65,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              session_id: account.access_token,
-              email: user.email,
-              name: user.name,
-              google_user_id: user.id,
-              // Note: timezone will be updated from client-side after redirect
+              access_token: account.access_token,
+              refresh_token: account.refresh_token,
             }),
           })
 
