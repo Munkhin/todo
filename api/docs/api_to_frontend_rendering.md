@@ -32,7 +32,7 @@ This document details the complete flow from when `scheduler.py` creates schedul
 ┌─────────────────────────────────────────────────────────────────────┐
 │ 4. API CALL TO CALENDAR ENDPOINT                                    │
 │    calendar-data.ts: fetchCalendarEvents()                          │
-│    GET http://localhost:8000/api/calendar/events?user_id=1&         │
+│    GET https://todo.studybar.academy/api/calendar/events?user_id=1&         │
 │        start_date=2025-10-31T00:00:00.000Z&                         │
 │        end_date=2025-10-31T23:59:59.999Z                            │
 └────────────────────┬────────────────────────────────────────────────┘
@@ -213,7 +213,7 @@ export async function fetchCalendarEvents(
   params.set('end_date', rangeEnd.toISOString());
 
   // Make API call
-  const response = await fetch(`http://localhost:8000/api/calendar/events?${params.toString()}`);
+  const response = await fetch(`https://todo.studybar.academy/api/calendar/events?${params.toString()}`);
   const data = await response.json();
   return data.events || [];
 }
@@ -221,7 +221,7 @@ export async function fetchCalendarEvents(
 
 **Example URL**:
 ```
-GET http://localhost:8000/api/calendar/events?user_id=1&start_date=2025-10-31T00:00:00.000Z&end_date=2025-10-31T23:59:59.999Z
+GET https://todo.studybar.academy/api/calendar/events?user_id=1&start_date=2025-10-31T00:00:00.000Z&end_date=2025-10-31T23:59:59.999Z
 ```
 
 ---

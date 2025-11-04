@@ -27,10 +27,8 @@ app = FastAPI(
 )
 
 # CORS configuration
-allowed_origins = [
-    "https://todo.studybar.academy",
-    "http://localhost:3000",
-]
+origins_env = os.getenv("ALLOWED_ORIGINS", "https://todo.studybar.academy")
+allowed_origins = [o.strip() for o in origins_env.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,

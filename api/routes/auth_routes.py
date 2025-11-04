@@ -26,7 +26,11 @@ sessions = {}
 
 
 def _external_base_url(request: Request) -> str:
-    """Best-effort external base URL using proxy headers if present."""
+    """Best-effort external base URL using env or proxy headers."""
+    # Allow explicit override for backend public URL
+    override = os.getenv('BACKEND_PUBLIC_URL')
+    if override:
+        return override.rstrip('/')
     proto = request.headers.get('x-forwarded-proto', request.url.scheme)
     host = request.headers.get('x-forwarded-host', request.headers.get('host'))
     return f"{proto}://{host}".rstrip('/')
@@ -41,12 +45,8 @@ def _frontend_base_url(request: Request) -> str:
     env_frontend = os.getenv('FRONTEND_BASE_URL') or os.getenv('NEXT_PUBLIC_BASE_URL')
     if env_frontend:
         return env_frontend.rstrip('/')
-
-    # Local dev heuristic
-    ext = _external_base_url(request)
-    if 'localhost' in ext or '127.0.0.1' in ext:
-        return 'http://localhost:3000'
-    return ext
+    # Use external host as-is
+    return _external_base_url(request)
 
 @router.post("/login")
 async def login(request: Request):
