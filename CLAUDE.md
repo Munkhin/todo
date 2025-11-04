@@ -49,7 +49,7 @@ GOOGLE_CLIENT_SECRET=your_client_secret_here
 ### 3. Set Up Google OAuth Credentials
 - Go to [Google Cloud Console](https://console.cloud.google.com)
 - Create OAuth 2.0 credentials
-- Add authorized redirect URI: `http://localhost:8000/api/auth/callback`
+- Add authorized redirect URI: `https://todo.studybar.academy/api/auth/callback`
 - Download credentials as `credentials.json` and place in root directory
 
 ### 4. Run the API
@@ -62,8 +62,8 @@ python api/main.py
 ```
 
 ### 5. Access API Documentation
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
+- Swagger UI: https://todo.studybar.academy/docs
+- ReDoc: https://todo.studybar.academy/redoc
 
 ## API Endpoints
 
@@ -128,11 +128,11 @@ See [api/routes/README.md](api/routes/README.md) for detailed instructions on ad
 import requests
 
 # 1. Login (in browser)
-# Visit: http://localhost:8000/api/auth/login
+# Visit: https://todo.studybar.academy/api/auth/login
 
 # 2. Get todos from classroom
 response = requests.post(
-    "http://localhost:8000/api/classroom/todos",
+    "https://todo.studybar.academy/api/classroom/todos",
     json={
         "session_id": "your_session_id",
         "criteria": "urgent assignments due this week",
@@ -143,7 +143,7 @@ todos = response.json()
 
 # 3. Filter by importance
 response = requests.post(
-    "http://localhost:8000/api/classroom/todos/filter",
+    "https://todo.studybar.academy/api/classroom/todos/filter",
     json={
         "todos": todos["todos"],
         "minimum_importance": 0.7
