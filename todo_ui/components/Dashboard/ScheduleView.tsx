@@ -9,6 +9,10 @@ import TaskDialog from "./TaskDialog"
 import { useChatStore } from "@/lib/store/useChatStore"
 import { scheduleStyles as cal } from "@/components/Dashboard/ScheduleView.styles"
 
+// Visual scale: pixels per hour and minute
+const PX_PER_HOUR = 48
+const PX_PER_MIN = PX_PER_HOUR / 60
+
 type ScheduleViewProps = {
   demoMode?: boolean
   demoMaxMessages?: number
@@ -76,7 +80,7 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
   }
 
   return (
-    <div className="min-h-0 h-full overflow-hidden grid grid-rows-[85%_15%]">
+    <div className="min-h-0 h-full max-h-full overflow-hidden grid grid-rows-[85%_15%]">
     <section className={`${cal.page} min-h-0`} aria-label="Tasks Calendar">
       <div className={cal.calHeader}>
         <div className={cal.calHeaderLeft}>
@@ -105,7 +109,7 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
             {/* Left time column */}
             <div className={cal.timeCol}>
               {hoursSeq.map((h, idx) => (
-                <div key={idx} className={cal.timeLabel}>{formatHour(h)}</div>
+                <div key={idx} className={cal.timeLabel} style={{ height: PX_PER_HOUR }}>{formatHour(h)}</div>
               ))}
             </div>
             {/* Right: headers + 7 day columns */}
@@ -123,7 +127,7 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
                     <div
                       ref={(el) => { (weekHoursRefs as any).current[i] = el }}
                       className={cal.weekHours}
-                      style={{ height: `${spanHours * 64}px` }}
+                      style={{ height: `${spanHours * PX_PER_HOUR}px` }}
                       onMouseDown={(e) => {
                         const min = yToMinutes(e.clientY, (weekHoursRefs as any).current[i], spanMinutes)
                         const snapped = snap15(min)
@@ -161,7 +165,7 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
                       }}
                     >
                       {hoursSeq.map((_, idx) => (
-                        <div key={idx} className={cal.weekHourRow} />
+                        <div key={idx} className={cal.weekHourRow} style={{ height: PX_PER_HOUR }} />
                       ))}
 
                       {tasks
@@ -188,7 +192,7 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
                                 const idx = xToDayIndex(e.clientX, gridRef.current)
                                 const min = yToMinutes(e.clientY, (weekHoursRefs as any).current[idx], spanMinutes)
                                 const snapped = snap15(min)
-                                ;(e.currentTarget as HTMLDivElement).style.top = `${snapped * (64/60)}px`
+                                ;(e.currentTarget as HTMLDivElement).style.top = `${snapped * PX_PER_MIN}px`
                                 const dx = (idx - ((window as any).__dragStartDay ?? i)) * colWidth
                                 ;(e.currentTarget as HTMLDivElement).style.transform = `translateX(${dx}px)`
                               }}
@@ -227,7 +231,7 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
                                   const idx = xToDayIndex(e.clientX, gridRef.current)
                                   const min = yToMinutes(e.clientY, (weekHoursRefs as any).current[idx], spanMinutes)
                                   const snapped = Math.max(snap15(min), dragOriginMin + 15)
-                                  const newHeight = (snapped - dragOriginMin) * (64/60)
+                                  const newHeight = (snapped - dragOriginMin) * PX_PER_MIN
                                   const parent = (e.currentTarget.parentElement as HTMLDivElement)
                                   parent.style.height = `${newHeight}px`
                                 }}
@@ -257,8 +261,8 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
 
                       {isSelecting && (window as any).__selDayIndex === i && selectStartMin !== null && selectEndMin !== null && (
                         (() => {
-                          const top = Math.min(selectStartMin, selectEndMin) * (64/60)
-                          const height = Math.max(16, Math.abs(selectEndMin - selectStartMin) * (64/60))
+                          const top = Math.min(selectStartMin, selectEndMin) * PX_PER_MIN
+                          const height = Math.max(16, Math.abs(selectEndMin - selectStartMin) * PX_PER_MIN)
                           return <div className={cal.selectionBox} style={{ top, height }} />
                         })()
                       )}
@@ -270,17 +274,17 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
           </div>
         ) : (
           <div className={cal.dayArea}>
-            <div className={cal.dayGrid}>
+              <div className={cal.dayGrid}>
               <div className={cal.timeCol}>
                 {hoursSeq.map((h, idx) => (
-                  <div key={idx} className={cal.timeLabel}>{formatHour(h)}</div>
+                  <div key={idx} className={cal.timeLabel} style={{ height: PX_PER_HOUR }}>{formatHour(h)}</div>
                 ))}
               </div>
               <div className={cal.dayCol}>
                 <div
                   ref={dayHoursRef}
                   className={cal.dayHours}
-                  style={{ height: `${spanHours * 64}px` }}
+                  style={{ height: `${spanHours * PX_PER_HOUR}px` }}
                   onMouseDown={(e) => {
                     const min = yToMinutes(e.clientY, dayHoursRef.current, spanMinutes)
                     const snapped = snap15(min)
@@ -318,15 +322,15 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
                   }}
                 >
                   {hoursSeq.map((_, idx) => (
-                    <div key={idx} className={cal.hourRow} />
+                    <div key={idx} className={cal.hourRow} style={{ height: PX_PER_HOUR }} />
                   ))}
                   {isSameDate(currentDate, new Date()) && (
                     <div className={cal.nowLine} style={{ top: `${getNowOffsetPx(wake, spanMinutes)}px` }} />
                   )}
                   {isSelecting && selectStartMin !== null && selectEndMin !== null && (
                     (() => {
-                      const top = Math.min(selectStartMin, selectEndMin) * (64/60)
-                      const height = Math.max(16, Math.abs(selectEndMin - selectStartMin) * (64/60))
+                      const top = Math.min(selectStartMin, selectEndMin) * PX_PER_MIN
+                      const height = Math.max(16, Math.abs(selectEndMin - selectStartMin) * PX_PER_MIN)
                       return <div className={cal.selectionBox} style={{ top, height }} />
                     })()
                   )}
@@ -357,7 +361,7 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
                             if (dragMode !== 'move' || draggingTaskId !== t.id) return
                             const min = yToMinutes(e.clientY, dayHoursRef.current, spanMinutes)
                             const snapped = snap15(min)
-                            ;(e.currentTarget as HTMLDivElement).style.top = `${snapped * (64/60)}px`
+                            ;(e.currentTarget as HTMLDivElement).style.top = `${snapped * PX_PER_MIN}px`
                           }}
                           onMouseUpCapture={async (e) => {
                             if (dragMode !== 'move' || draggingTaskId !== t.id) return
@@ -554,16 +558,19 @@ function minutesSinceStartOfDay(iso: string) { const d = new Date(iso); return d
 function getEventBox(startIso: string, endIso: string, baseHour: number, spanMinutes: number) {
   const startMin = minutesSinceStartOfDay(startIso) - baseHour*60
   const endMin = minutesSinceStartOfDay(endIso) - baseHour*60
-  const pxPerMin = 64/60
   const clampedTopMin = Math.max(0, Math.min(startMin, spanMinutes))
   const clampedEndMin = Math.max(0, Math.min(endMin, spanMinutes))
-  const top = clampedTopMin * pxPerMin
-  const height = Math.max(20, (clampedEndMin - clampedTopMin) * pxPerMin)
+  const top = clampedTopMin * PX_PER_MIN
+  const height = Math.max(20, (clampedEndMin - clampedTopMin) * PX_PER_MIN)
   return { top, height }
 }
-function getNowOffsetPx(baseHour: number, spanMinutes: number) { const now = new Date(); const min = now.getHours()*60+now.getMinutes() - baseHour*60; const pxPerMin = 64/60; return Math.max(0, Math.min(min, spanMinutes)*pxPerMin) }
+function getNowOffsetPx(baseHour: number, spanMinutes: number) {
+  const now = new Date()
+  const min = now.getHours()*60 + now.getMinutes() - baseHour*60
+  return Math.max(0, Math.min(min, spanMinutes) * PX_PER_MIN)
+}
 function taskToSpan(t: any) { const end = new Date(t.scheduled_end || t.due_date); const start = new Date(t.scheduled_start || new Date(end.getTime() - (t.estimated_minutes || 30)*60000)); return { startIso: start.toISOString(), endIso: end.toISOString() } }
-function yToMinutes(clientY: number, el: HTMLDivElement | null, clampTo: number) { if (!el) return 0; const rect = el.getBoundingClientRect(); const y = clientY - rect.top; const min = y/(64/60); return Math.max(0, Math.min(min, clampTo)) }
+function yToMinutes(clientY: number, el: HTMLDivElement | null, clampTo: number) { if (!el) return 0; const rect = el.getBoundingClientRect(); const y = clientY - rect.top; const min = y/PX_PER_MIN; return Math.max(0, Math.min(min, clampTo)) }
 function snap15(min: number) { return Math.round(min/15) * 15 }
 function xToDayIndex(clientX: number, grid: HTMLDivElement | null) { if (!grid) return 0; const rect = grid.getBoundingClientRect(); const colW = rect.width/7; const idx = Math.floor((clientX-rect.left)/colW); return Math.max(0, Math.min(6, idx)) }
 function buildHoursSequence(wake: number, sleep: number) { if (wake===sleep) return Array.from({length:24},(_,i)=> (wake+i)%24); if (wake<sleep) return Array.from({length:sleep-wake+1},(_,i)=> wake+i); const toMidnight=Array.from({length:24-wake},(_,i)=>wake+i); const fromMidnight=Array.from({length:sleep+1},(_,i)=>i); return [...toMidnight,...fromMidnight] }

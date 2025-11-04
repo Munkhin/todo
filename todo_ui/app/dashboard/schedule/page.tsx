@@ -2,7 +2,7 @@ import ScheduleView from '@/components/Dashboard/ScheduleView'
 
 export default function SchedulePage() {
   return (
-    <div className="min-h-0 h-full">
+    <div className="min-h-0 h-full max-h-full">
       <ScheduleView />
     </div>
   )
