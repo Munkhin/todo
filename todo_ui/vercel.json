@@ -3,5 +3,13 @@
     { "source": "/api/auth/:path*", "destination": "/api/auth/:path*" },
     { "source": "/api/cron/:path*", "destination": "/api/cron/:path*" },
     { "source": "/api/:path*", "destination": "https://todo-fufa.onrender.com/api/:path*" }
+  ],
+  "headers": [
+    {
+      "source": "/api/:path*",
+      "headers": [
+        { "key": "X-Forwarded-For", "value": "$remote_addr" }
+      ]
+    }
   ]
 }
