@@ -125,14 +125,14 @@ async def get_calendar_events(
         # query calendar events for user
         query = db.query(CalendarEvent).filter(CalendarEvent.user_id == user_id)
 
-        # filter by date range if provided
+        # filter by date range if provided (events that overlap the range)
         if start_date:
             start_dt = _parse_iso_to_utc_naive(start_date)
-            query = query.filter(CalendarEvent.start_time >= start_dt)
+            query = query.filter(CalendarEvent.end_time > start_dt)
 
         if end_date:
             end_dt = _parse_iso_to_utc_naive(end_date)
-            query = query.filter(CalendarEvent.end_time <= end_dt)
+            query = query.filter(CalendarEvent.start_time < end_dt)
 
         events = query.order_by(CalendarEvent.start_time).all()
         print(f"[get_calendar_events] returning count={len(events)} for user_id={user_id}")
