@@ -1,18 +1,54 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Dict
 from sqlalchemy.orm import Session
 try:
     # test context (when importing as 'services.scheduler')
-    from models import Task, CalendarEvent  # type: ignore
+    from models import Task, CalendarEvent, User  # type: ignore
 except Exception:
     # app context
-    from api.models import Task, CalendarEvent
+    from api.models import Task, CalendarEvent, User
 from api.schemas import CalendarEventCreate
 from api.services.consts import get_user_constants
 import math
 from functools import lru_cache
 import hashlib
 import json
+import pytz
+
+def _get_user_now(user_id: int, db: Session) -> datetime:
+    """Get current time in user's timezone, returned as naive UTC datetime for DB storage"""
+    user = db.query(User).filter(User.id == user_id).first()
+    user_tz = pytz.timezone(user.timezone if user and user.timezone else "UTC")
+
+    # get current time in user's timezone
+    now_utc = datetime.now(timezone.utc)
+    now_user_tz = now_utc.astimezone(user_tz)
+
+    # convert back to naive UTC for database storage
+    return now_user_tz.astimezone(timezone.utc).replace(tzinfo=None)
+
+def _get_user_date(user_id: int, db: Session, dt: datetime) -> datetime:
+    """Convert a naive UTC datetime to user's timezone for date calculations"""
+    user = db.query(User).filter(User.id == user_id).first()
+    user_tz = pytz.timezone(user.timezone if user and user.timezone else "UTC")
+
+    # treat input as UTC, convert to user timezone
+    dt_utc = dt.replace(tzinfo=timezone.utc)
+    dt_user_tz = dt_utc.astimezone(user_tz)
+
+    # return as naive datetime in user's local time (for date/hour operations)
+    return dt_user_tz.replace(tzinfo=None)
+
+def _user_local_to_utc(user_id: int, db: Session, dt: datetime) -> datetime:
+    """Convert naive datetime in user's local timezone to naive UTC for DB storage"""
+    user = db.query(User).filter(User.id == user_id).first()
+    user_tz = pytz.timezone(user.timezone if user and user.timezone else "UTC")
+
+    # localize to user's timezone
+    dt_user_tz = user_tz.localize(dt)
+
+    # convert to UTC and make naive
+    return dt_user_tz.astimezone(timezone.utc).replace(tzinfo=None)
 
 def schedule_tasks(user_id: int, db: Session):
     """schedule tasks for a user based on their energy profile and available time"""
@@ -91,7 +127,7 @@ def detect_conflicts(user_id: int, scheduled_tasks: List[Task], db: Session) -> 
     if not scheduled_tasks:
         return False
 
-    now = datetime.now()
+    now = _get_user_now(user_id, db)
 
     # get all user-created events in the scheduling window
     earliest_scheduled = min(task.scheduled_start for task in scheduled_tasks if task.scheduled_start)
@@ -160,6 +196,7 @@ def get_time_blocks(user_id: int, tasks: List[Task], consts: Dict, db: Session) 
     """
     generate available time blocks up to the last task due date
     optimized: batch query all events upfront, O(n) processing
+    works in user's local timezone for date/hour operations, stores as UTC
     """
     WAKE_TIME = consts['WAKE_TIME']
     SLEEP_TIME = consts['SLEEP_TIME']
@@ -167,7 +204,12 @@ def get_time_blocks(user_id: int, tasks: List[Task], consts: Dict, db: Session) 
     MIN_DURATION = consts['MIN_STUDY_DURATION']
 
     time_blocks = []
-    start_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+
+    # get current time in user's timezone as naive datetime (for date operations)
+    user = db.query(User).filter(User.id == user_id).first()
+    user_tz = pytz.timezone(user.timezone if user and user.timezone else "UTC")
+    now_user = datetime.now(user_tz).replace(tzinfo=None)
+    start_date = now_user.replace(hour=0, minute=0, second=0, microsecond=0)
 
     if not tasks:
         return []
@@ -185,58 +227,75 @@ def get_time_blocks(user_id: int, tasks: List[Task], consts: Dict, db: Session) 
         CalendarEvent.end_time <= range_end
     ).order_by(CalendarEvent.start_time).all()
 
-    # group events by day for O(1) lookup
+    # group events by day in user's local timezone for O(1) lookup
     events_by_day = {}
     for event in all_events:
-        day_key = event.start_time.date()
+        # convert event start time (UTC) to user's local date
+        event_local = _get_user_date(user_id, db, event.start_time)
+        day_key = event_local.date()
         if day_key not in events_by_day:
             events_by_day[day_key] = []
         events_by_day[day_key].append(event)
 
-    # process each day
+    # process each day - work in user's local time, convert to UTC for storage
     for day_offset in range(lookahead_days):
         current_day = start_date + timedelta(days=day_offset)
         day_key = current_day.date()
-        day_start = current_day.replace(hour=WAKE_TIME, minute=0)
-        day_end = current_day.replace(hour=SLEEP_TIME, minute=0)
 
+        # create day boundaries in user's local time
+        day_start_local = current_day.replace(hour=WAKE_TIME, minute=0)
+        day_end_local = current_day.replace(hour=SLEEP_TIME, minute=0)
+
+        # convert to UTC for comparison with DB events
+        day_start_utc = _user_local_to_utc(user_id, db, day_start_local)
+        day_end_utc = _user_local_to_utc(user_id, db, day_end_local)
+
+        # convert events to user's local time for gap calculation
         existing_events = events_by_day.get(day_key, [])
-        current_time = day_start
+        current_time_utc = day_start_utc
 
         if not existing_events:
-            # entire day available - create hourly blocks
+            # entire day available - create hourly blocks in user's local time
             for hour in range(WAKE_TIME, SLEEP_TIME):
-                block_start = current_day.replace(hour=hour, minute=0)
-                block_end = block_start + timedelta(hours=1)
+                block_start_local = current_day.replace(hour=hour, minute=0)
+                block_end_local = block_start_local + timedelta(hours=1)
+
+                # convert to UTC for DB storage
+                block_start_utc = _user_local_to_utc(user_id, db, block_start_local)
+                block_end_utc = _user_local_to_utc(user_id, db, block_end_local)
+
                 time_blocks.append({
-                    'start_time': block_start,
-                    'end_time': block_end,
+                    'start_time': block_start_utc,
+                    'end_time': block_end_utc,
                     'available_minutes': 60,
                     'energy_level': ENERGY_LEVELS.get(hour, 5)
                 })
         else:
-            # fill gaps between events
+            # fill gaps between events (events are already in UTC from DB)
             for event in existing_events:
-                if current_time < event.start_time:
-                    gap_minutes = int((event.start_time - current_time).total_seconds() / 60)
+                if current_time_utc < event.start_time:
+                    gap_minutes = int((event.start_time - current_time_utc).total_seconds() / 60)
                     if gap_minutes >= MIN_DURATION:
+                        # convert to user local time to get hour for energy level
+                        current_time_local = _get_user_date(user_id, db, current_time_utc)
                         time_blocks.append({
-                            'start_time': current_time,
+                            'start_time': current_time_utc,
                             'end_time': event.start_time,
                             'available_minutes': gap_minutes,
-                            'energy_level': ENERGY_LEVELS.get(current_time.hour, 5)
+                            'energy_level': ENERGY_LEVELS.get(current_time_local.hour, 5)
                         })
-                current_time = max(current_time, event.end_time)
+                current_time_utc = max(current_time_utc, event.end_time)
 
             # block after last event
-            if current_time < day_end:
-                gap_minutes = int((day_end - current_time).total_seconds() / 60)
+            if current_time_utc < day_end_utc:
+                gap_minutes = int((day_end_utc - current_time_utc).total_seconds() / 60)
                 if gap_minutes >= MIN_DURATION:
+                    current_time_local = _get_user_date(user_id, db, current_time_utc)
                     time_blocks.append({
-                        'start_time': current_time,
-                        'end_time': day_end,
+                        'start_time': current_time_utc,
+                        'end_time': day_end_utc,
                         'available_minutes': gap_minutes,
-                        'energy_level': ENERGY_LEVELS.get(current_time.hour, 5)
+                        'energy_level': ENERGY_LEVELS.get(current_time_local.hour, 5)
                     })
 
     return time_blocks

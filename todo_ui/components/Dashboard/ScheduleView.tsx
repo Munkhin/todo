@@ -10,6 +10,8 @@ import { useChatStore } from "@/lib/store/useChatStore"
 import { uploadChatFile } from "@/lib/api/chat"
 import { useScheduleStore } from "@/lib/store/useScheduleStore"
 import { scheduleStyles as cal } from "@/components/Dashboard/ScheduleView.styles"
+import type { CalendarEvent } from "@/lib/api/calendar"
+import { demoListEventsInRange, demoCreateTask, demoUpdateTask, demoDeleteTask, demoSendMessage } from "@/lib/demo/localDemo"
 
 // Visual scale: pixels per hour and minute
 const PX_PER_HOUR = 48
@@ -59,6 +61,7 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
   const [sentCount, setSentCount] = useState(0)
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const [demoEvents, setDemoEvents] = useState<CalendarEvent[]>([])
 
   // unified refresh: tasks + calendar events for current view range
   const refreshViewData = async () => {
@@ -67,10 +70,15 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
     const end = view === 'week' ? endOfWeek(currentDate) : new Date(currentDate)
     if (view !== 'week') end.setHours(23, 59, 59, 999)
 
-    await Promise.all([
-      fetchTasks({ include_completed: false }),
-      fetchEvents(start.toISOString(), end.toISOString(), userId)
-    ])
+    if (demoMode) {
+      const ev = await demoListEventsInRange(start.toISOString(), end.toISOString())
+      setDemoEvents(ev)
+    } else {
+      await Promise.all([
+        fetchTasks({ include_completed: false }),
+        fetchEvents(start.toISOString(), end.toISOString(), userId)
+      ])
+    }
   }
 
   useEffect(() => {
@@ -176,7 +184,7 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
                         <div className={cal.nowLine} style={{ top: `${getNowOffsetPx(wake, spanMinutes)}px` }} />
                       )}
 
-                      {events
+                      {(demoMode ? demoEvents : events)
                         .filter(evt => isSameDate(new Date(evt.start_time), dayDate))
                         .map((evt) => {
                           const { top, height } = getEventBox(evt.start_time, evt.end_time, wake, spanMinutes)
@@ -267,7 +275,7 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
                       return <div className={cal.selectionBox} style={{ top, height }} />
                     })()
                   )}
-                  {events
+                  {(demoMode ? demoEvents : events)
                     .filter(evt => isSameDate(new Date(evt.start_time), currentDate))
                     .map((evt) => {
                       const { top, height } = getEventBox(evt.start_time, evt.end_time, wake, spanMinutes)
@@ -305,38 +313,74 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
         initialDueDate={initialDueDate}
         initialDescription={editingTask?.description}
         onSave={async (data) => {
-          if (editingTaskId) {
-            await editTask(String(editingTaskId), {
-              topic: data.topic,
-              estimated_minutes: data.estimated_minutes,
-              difficulty: data.difficulty,
-              due_date: data.due_date,
-              description: data.description,
-            })
+          if (demoMode) {
+            if (editingTaskId) {
+              const scheduledEnd = new Date(data.due_date)
+              const scheduledStart = new Date(scheduledEnd.getTime() - data.estimated_minutes * 60000)
+              await demoUpdateTask(editingTaskId, {
+                topic: data.topic,
+                estimated_minutes: data.estimated_minutes,
+                difficulty: data.difficulty,
+                due_date: data.due_date,
+                description: data.description,
+                scheduled_start: scheduledStart.toISOString(),
+                scheduled_end: scheduledEnd.toISOString(),
+                status: 'scheduled',
+              })
+            } else {
+              const scheduledEnd = new Date(data.due_date)
+              const scheduledStart = new Date(scheduledEnd.getTime() - data.estimated_minutes * 60000)
+              await demoCreateTask({
+                user_id: userId,
+                topic: data.topic,
+                estimated_minutes: data.estimated_minutes,
+                difficulty: data.difficulty,
+                due_date: data.due_date,
+                description: data.description,
+                scheduled_start: scheduledStart.toISOString(),
+                scheduled_end: scheduledEnd.toISOString(),
+                status: 'scheduled',
+              })
+            }
+            await refreshViewData()
           } else {
-            const scheduledEnd = new Date(data.due_date)
-            const scheduledStart = new Date(scheduledEnd.getTime() - data.estimated_minutes * 60000)
-            await addTask({
-              user_id: userId,
-              topic: data.topic,
-              estimated_minutes: data.estimated_minutes,
-              difficulty: data.difficulty,
-              due_date: data.due_date,
-              description: data.description,
-              source_text: 'dashboard-calendar',
-              confidence_score: 1.0,
-              scheduled_start: scheduledStart.toISOString(),
-              scheduled_end: scheduledEnd.toISOString(),
-              status: 'scheduled'
-            } as any)
+            if (editingTaskId) {
+              await editTask(String(editingTaskId), {
+                topic: data.topic,
+                estimated_minutes: data.estimated_minutes,
+                difficulty: data.difficulty,
+                due_date: data.due_date,
+                description: data.description,
+              })
+            } else {
+              const scheduledEnd = new Date(data.due_date)
+              const scheduledStart = new Date(scheduledEnd.getTime() - data.estimated_minutes * 60000)
+              await addTask({
+                user_id: userId,
+                topic: data.topic,
+                estimated_minutes: data.estimated_minutes,
+                difficulty: data.difficulty,
+                due_date: data.due_date,
+                description: data.description,
+                source_text: 'dashboard-calendar',
+                confidence_score: 1.0,
+                scheduled_start: scheduledStart.toISOString(),
+                scheduled_end: scheduledEnd.toISOString(),
+                status: 'scheduled'
+              } as any)
+            }
+            await refreshViewData()
           }
-          await refreshViewData()
           setOpenDialog(false)
           setEditingTaskId(null)
           setEditingTask(null)
         }}
         onDelete={editingTaskId ? async () => {
-          await removeTask(String(editingTaskId))
+          if (demoMode) {
+            await demoDeleteTask(editingTaskId)
+          } else {
+            await removeTask(String(editingTaskId))
+          }
           await refreshViewData()
           setOpenDialog(false)
           setEditingTaskId(null)
@@ -363,8 +407,8 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
           const msg = input
           setInput("")
           try {
-            const resp = await sendMessage(msg, userId)
             if (demoMode) {
+              const resp = await demoSendMessage(userId, msg)
               setSentCount(c => c + 1)
               setNotification(
                 <span>
@@ -373,11 +417,12 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
                 </span>
               )
             } else {
+              const resp = await sendMessage(msg, userId)
               setNotification(resp)
+              // refresh tasks + calendar events after assistant responds
+              await refreshViewData()
+              setTimeout(() => setNotification(null), 4000)
             }
-            // refresh tasks + calendar events after assistant responds
-            await refreshViewData()
-            if (!demoMode) setTimeout(() => setNotification(null), 4000)
           } catch {
             setNotification("Failed to send. Please try again.")
             setTimeout(() => setNotification(null), 2500)
@@ -395,11 +440,15 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
             if (!f) return
             try {
               setUploading(true)
-              const res = await uploadChatFile(userId, f)
-              setNotification(res.message || "File processed successfully.")
-              // Prefill a helpful prompt for the user
-              setInput("Create tasks from my uploaded file")
-              if (!demoMode) setTimeout(() => setNotification(null), 4000)
+              if (demoMode) {
+                setNotification("File uploads are disabled in demo.")
+                setTimeout(() => setNotification(null), 2500)
+              } else {
+                const res = await uploadChatFile(userId, f)
+                setNotification(res.message || "File processed successfully.")
+                setInput("Create tasks from my uploaded file")
+                setTimeout(() => setNotification(null), 4000)
+              }
             } catch (err) {
               setNotification("Upload failed. Please try again.")
               setTimeout(() => setNotification(null), 2500)

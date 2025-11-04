@@ -54,7 +54,17 @@ export default function TaskDialog({
   const [topic, setTopic] = useState(initialTopic)
   const [estimatedMinutes, setEstimatedMinutes] = useState(initialEstimatedMinutes)
   const [difficulty, setDifficulty] = useState(initialDifficulty)
-  const [dueDate, setDueDate] = useState(isoToLocal(initialDueDate))
+  // Represent start/end as datetime-local strings for editing
+  const computeStartFromEnd = (endIso: string, minutes: number) => {
+    if (!endIso || !minutes) return ''
+    const end = new Date(endIso)
+    const start = new Date(end.getTime() - minutes * 60000)
+    return isoToLocal(start.toISOString())
+  }
+  const [startLocal, setStartLocal] = useState(
+    computeStartFromEnd(initialDueDate, initialEstimatedMinutes)
+  )
+  const [endLocal, setEndLocal] = useState(isoToLocal(initialDueDate))
   const [description, setDescription] = useState(initialDescription)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -64,9 +74,24 @@ export default function TaskDialog({
     setTopic(initialTopic)
     setEstimatedMinutes(initialEstimatedMinutes)
     setDifficulty(initialDifficulty)
-    setDueDate(isoToLocal(initialDueDate))
+    setStartLocal(computeStartFromEnd(initialDueDate, initialEstimatedMinutes))
+    setEndLocal(isoToLocal(initialDueDate))
     setDescription(initialDescription)
   }, [initialTopic, initialEstimatedMinutes, initialDifficulty, initialDueDate, initialDescription])
+
+  // Helpers for datetime-local arithmetic
+  function addMinutesLocal(local: string, minutes: number): string {
+    if (!local) return ''
+    const d = new Date(local)
+    d.setMinutes(d.getMinutes() + minutes)
+    return isoToLocal(d.toISOString())
+  }
+  function diffMinutesLocal(start: string, end: string): number {
+    if (!start || !end) return 0
+    const s = new Date(start)
+    const e = new Date(end)
+    return Math.max(0, Math.round((e.getTime() - s.getTime()) / 60000))
+  }
 
   if (!open) return null
 
@@ -92,7 +117,12 @@ export default function TaskDialog({
               type="number"
               className={taskDialogStyles.input}
               value={estimatedMinutes}
-              onChange={(e) => setEstimatedMinutes(Number(e.target.value))}
+              onChange={(e) => {
+                const val = Math.max(1, Number(e.target.value) || 0)
+                setEstimatedMinutes(val)
+                // Adjust end when duration changes
+                setEndLocal(addMinutesLocal(startLocal, val))
+              }}
               min="1"
             />
           </label>
@@ -108,12 +138,32 @@ export default function TaskDialog({
             />
           </label>
           <label className={taskDialogStyles.label}>
-            Due Date
+            Start Time
             <input
               type="datetime-local"
               className={taskDialogStyles.input}
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
+              value={startLocal}
+              onChange={(e) => {
+                const nextStart = e.target.value
+                setStartLocal(nextStart)
+                // Keep duration by moving end relative to new start
+                setEndLocal(addMinutesLocal(nextStart, estimatedMinutes))
+              }}
+            />
+          </label>
+          <label className={taskDialogStyles.label}>
+            End Time
+            <input
+              type="datetime-local"
+              className={taskDialogStyles.input}
+              value={endLocal}
+              onChange={(e) => {
+                const nextEnd = e.target.value
+                setEndLocal(nextEnd)
+                // Recalculate duration from start and end
+                const diff = diffMinutesLocal(startLocal, nextEnd)
+                setEstimatedMinutes(Math.max(1, diff))
+              }}
             />
           </label>
           <label className={taskDialogStyles.label}>
@@ -131,14 +181,14 @@ export default function TaskDialog({
           <button className={taskDialogStyles.cancel} onClick={onClose}>Cancel</button>
           <button
             className={taskDialogStyles.save}
-            disabled={!topic.trim() || !dueDate || saving}
+            disabled={!topic.trim() || !startLocal || !endLocal || diffMinutesLocal(startLocal, endLocal) <= 0 || saving}
             onClick={async () => {
               setSaving(true)
               await onSave({
                 topic,
-                estimated_minutes: estimatedMinutes,
+                estimated_minutes: Math.max(1, diffMinutesLocal(startLocal, endLocal)),
                 difficulty,
-                due_date: localToIso(dueDate),
+                due_date: localToIso(endLocal),
                 description: description || undefined
               })
               setSaving(false)

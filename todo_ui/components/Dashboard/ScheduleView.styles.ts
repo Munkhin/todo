@@ -13,8 +13,8 @@ export const scheduleStyles = {
   /* Calendar grid area */
   calendarArea: "relative z-0 flex-1 overflow-auto p-[clamp(0.75rem,1.8vh,1.25rem)]",
   weekOuterGrid: "grid w-full grid-cols-[64px_1fr] gap-2",
-  // Sticky week header overlay that stays in place when scrolling
-  weekHeader: "sticky top-0 z-10 grid grid-cols-7 gap-2 mb-2 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80",
+  // Sticky week header overlay that spans the full top band above lanes
+  weekHeader: "sticky top-0 z-10 grid grid-cols-7 place-items-center h-12 gap-2 mb-2 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80",
   // Prevent wrapping of weekday labels
   weekHeaderCell: "text-center text-sm font-medium text-gray-700 whitespace-nowrap overflow-hidden text-ellipsis",
   weekGrid: "grid w-full grid-cols-7 gap-2",
@@ -29,8 +29,8 @@ export const scheduleStyles = {
   input: "flex-1 rounded-md border border-gray-300 px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-gray-300",
   attachBtn: "inline-flex h-[42px] w-[42px] items-center justify-center rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-60",
   sendBtn: "inline-flex items-center rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-black disabled:opacity-60",
-  /* Floating response overlay (does not shift layout) */
-  overlayWrap: "pointer-events-none absolute inset-x-0 bottom-6 z-30 flex justify-center px-4",
+  /* Floating model response container: make sticky at bottom of scroll area */
+  overlayWrap: "pointer-events-none sticky bottom-6 z-30 flex justify-center px-4",
   overlayBubble: "pointer-events-auto max-w-[52rem] rounded-md border border-gray-800 bg-gray-900 px-4 py-3 text-sm text-white shadow-lg",
   /* Day view */
   dayArea: "h-full w-full overflow-auto p-[clamp(0.75rem,1.8vh,1.25rem)]",
