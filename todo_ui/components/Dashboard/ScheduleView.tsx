@@ -1,12 +1,13 @@
 "use client"
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, Paperclip } from "lucide-react"
 import { useTaskStore } from "@/lib/store/useTaskStore"
 import { useSettingsStore } from "@/lib/store/useSettingsStore"
 import { DEFAULT_WAKE_TIME, DEFAULT_SLEEP_TIME } from "@/lib/constants/scheduling"
 import { useUserId } from "@/hooks/use-user-id"
 import TaskDialog from "./TaskDialog"
 import { useChatStore } from "@/lib/store/useChatStore"
+import { uploadChatFile } from "@/lib/api/chat"
 import { useScheduleStore } from "@/lib/store/useScheduleStore"
 import { scheduleStyles as cal } from "@/components/Dashboard/ScheduleView.styles"
 
@@ -59,6 +60,8 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
   const [input, setInput] = useState("")
   const [notification, setNotification] = useState<ReactNode | null>(null)
   const [sentCount, setSentCount] = useState(0)
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   // unified refresh: tasks + calendar events for current view range
   const refreshViewData = async () => {
@@ -183,6 +186,10 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
                       {hoursSeq.map((_, idx) => (
                         <div key={idx} className={cal.weekHourRow} style={{ height: PX_PER_HOUR }} />
                       ))}
+
+                      {isSameDate(dayDate, new Date()) && (
+                        <div className={cal.nowLine} style={{ top: `${getNowOffsetPx(wake, spanMinutes)}px` }} />
+                      )}
 
                       {tasks
                         .filter(t => isSameDate(new Date(t.due_date), dayDate))
@@ -537,6 +544,44 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
           }
         }}
       >
+        {/* Hidden file input for uploads */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="application/pdf,image/*,text/plain"
+          className="hidden"
+          onChange={async (e) => {
+            const f = e.target.files?.[0]
+            if (!f) return
+            try {
+              setUploading(true)
+              const res = await uploadChatFile(userId, f)
+              setNotification(res.message || "File processed successfully.")
+              // Prefill a helpful prompt for the user
+              setInput("Create tasks from my uploaded file")
+              if (!demoMode) setTimeout(() => setNotification(null), 4000)
+            } catch (err) {
+              setNotification("Upload failed. Please try again.")
+              setTimeout(() => setNotification(null), 2500)
+            } finally {
+              setUploading(false)
+              if (fileInputRef.current) fileInputRef.current.value = ""
+            }
+          }}
+        />
+
+        {/* Attach (paperclip) button */}
+        <button
+          type="button"
+          aria-label="Upload file for agent"
+          className={cal.attachBtn}
+          disabled={uploading || (demoMode && sentCount >= (demoMaxMessages || 1))}
+          onClick={() => fileInputRef.current?.click()}
+          title={uploading ? "Uploading..." : "Attach file"}
+        >
+          <Paperclip className="h-4 w-4" />
+        </button>
+
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}

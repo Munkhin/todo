@@ -23,8 +23,9 @@ export const scheduleStyles = {
   event: "absolute left-1 right-1 top-6 rounded-md border-l-4 border-blue-400 bg-blue-100 p-2 text-xs font-semibold text-gray-800 shadow-sm",
   /* Chat input bar at bottom of view, layered above calendar */
   chatBar: "relative z-20 flex-shrink-0 border-t bg-white p-[clamp(0.75rem,1.8vh,1.25rem)]",
-  inputForm: "flex gap-2",
+  inputForm: "flex items-center gap-2",
   input: "flex-1 rounded-md border border-gray-300 px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-gray-300",
+  attachBtn: "inline-flex h-[42px] w-[42px] items-center justify-center rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-60",
   sendBtn: "inline-flex items-center rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-black disabled:opacity-60",
   /* Floating response overlay (does not shift layout) */
   overlayWrap: "pointer-events-none absolute inset-x-0 bottom-6 z-30 flex justify-center px-4",
