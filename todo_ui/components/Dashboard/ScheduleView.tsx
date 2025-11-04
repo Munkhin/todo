@@ -118,8 +118,9 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
       <div className={cal.calendarArea}>
         {view === 'week' ? (
           <div className={cal.weekOuterGrid}>
-            {/* Left time column */}
+            {/* Left time column: add spacer equal to sticky header height to align rows */}
             <div className={cal.timeCol}>
+              <div className={cal.weekHeaderSpacer} aria-hidden="true" />
               {hoursSeq.map((h, idx) => (
                 <div key={idx} className={cal.timeLabel} style={{ height: PX_PER_HOUR }}>{formatHour(h)}</div>
               ))}
@@ -416,6 +417,9 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
                   <a href={pricingAnchor} className="font-bold underline">Start scheduling now</a>
                 </span>
               )
+              // pull in newly created demo task/event
+              await refreshViewData()
+              setTimeout(() => setNotification(null), 3000)
             } else {
               const resp = await sendMessage(msg, userId)
               setNotification(resp)

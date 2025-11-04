@@ -181,11 +181,34 @@ export async function demoDeleteEvent(eventId: number): Promise<void> {
 export async function demoSendMessage(_userId: number, message: string): Promise<string> {
   const s = readState()
   const now = nowIso()
+  // record user message
   s.messages = [
     ...s.messages,
     { role: 'user', content: message, timestamp: now },
   ]
-  const reply = 'Done! This is a demo preview — scheduling is simulated.'
+
+  // Create a simple scheduled task + calendar event in the near future
+  const durationMin = 60
+  const start = new Date()
+  // snap start to next 15-minute block
+  const m = start.getMinutes()
+  const snapDelta = (15 - (m % 15)) % 15
+  start.setMinutes(m + snapDelta, 0, 0)
+  const end = new Date(start)
+  end.setMinutes(start.getMinutes() + durationMin)
+
+  await demoCreateTask({
+    topic: message.trim() || 'Scheduled task',
+    estimated_minutes: durationMin,
+    difficulty: 3,
+    due_date: end.toISOString(),
+    description: 'Created from demo chat',
+    scheduled_start: start.toISOString(),
+    scheduled_end: end.toISOString(),
+    status: 'scheduled',
+  })
+
+  const reply = 'Scheduled your request in the next hour (demo).'
   s.messages = [
     ...s.messages,
     { role: 'assistant', content: reply, timestamp: nowIso() },
@@ -197,4 +220,3 @@ export async function demoSendMessage(_userId: number, message: string): Promise
 export async function demoClearAll(): Promise<void> {
   writeState({ nextTaskId: 1, nextEventId: 1, tasks: [], events: [], messages: [] })
 }
-
