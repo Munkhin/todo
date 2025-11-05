@@ -1,6 +1,7 @@
 "use client"
 import { useSession } from "next-auth/react"
 import { useState, useEffect } from "react"
+import { api } from "@/lib/api/client"
 
 export function useUserId(): number {
   const { data } = useSession()
@@ -13,21 +14,13 @@ export function useUserId(): number {
     }
 
     // Call /api/user/me to get or create backend user
-    // No localStorage needed - session is the source of truth
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-    fetch(`${backendUrl}/api/user/me`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: data.user.email,
-        name: data.user.name,
-      }),
+    api.post<{ user_id: number }>('/api/user/me', {
+      email: data.user.email,
+      name: data.user.name,
     })
-      .then((r) => r.ok ? r.json() : Promise.reject())
       .then((res) => {
-        const id = res?.user_id
-        if (id && Number.isFinite(id)) {
-          setUserId(id)
+        if (res.user_id && Number.isFinite(res.user_id)) {
+          setUserId(res.user_id)
         }
       })
       .catch((err) => {
