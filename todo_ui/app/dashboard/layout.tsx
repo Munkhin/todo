@@ -22,6 +22,8 @@ export default function DashboardLayout({
       const timezone = detectTimezone()
       updateUserTimezone(userId, timezone)
         .catch((err) => {
+          // Error is already logged and handled in updateUserTimezone
+          // localStorage will be cleared if user not found (404)
           console.error('Failed to update timezone:', err)
         })
     }

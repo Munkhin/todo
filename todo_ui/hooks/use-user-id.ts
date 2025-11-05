@@ -12,17 +12,8 @@ export function useUserId(): number {
       return
     }
 
-    // Check localStorage first
-    const stored = window.localStorage.getItem('backendUserId')
-    if (stored) {
-      const parsedStored = parseInt(stored, 10)
-      if (Number.isFinite(parsedStored)) {
-        setUserId(parsedStored)
-        return
-      }
-    }
-
-    // Call /api/user/me to get or create user
+    // Call /api/user/me to get or create backend user
+    // No localStorage needed - session is the source of truth
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
     fetch(`${backendUrl}/api/user/me`, {
       method: 'POST',
@@ -37,11 +28,11 @@ export function useUserId(): number {
         const id = res?.user_id
         if (id && Number.isFinite(id)) {
           setUserId(id)
-          window.localStorage.setItem('backendUserId', String(id))
         }
       })
       .catch((err) => {
         console.error('[useUserId] Failed to get user:', err)
+        setUserId(0)
       })
   }, [data])
 
