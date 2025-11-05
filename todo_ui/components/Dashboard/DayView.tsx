@@ -36,13 +36,24 @@ export default function DayView({
 
   return (
     <div className={cal.dayArea}>
-      <div className={cal.dayGrid}>
+      <div className={cal.dayGrid} style={{ height: '100%' }}>
         <div className={cal.timeCol}>
           {hoursSeq.map((h, idx) => (
-            <div key={idx} className={cal.timeLabel} style={{ height: `${100 / hoursSeq.length}%` }}>
+            <div
+              key={idx}
+              className="absolute leading-none -translate-y-1/2"
+              style={{ top: `${(idx / hoursSeq.length) * 100}%` }}
+            >
               {formatHour(h)}
             </div>
           ))}
+          {/* Add final hour marker at bottom */}
+          <div
+            className="absolute leading-none -translate-y-1/2"
+            style={{ top: '100%' }}
+          >
+            {formatHour((hoursSeq[hoursSeq.length - 1] + 1) % 24)}
+          </div>
         </div>
 
         <div className={cal.dayCol}>

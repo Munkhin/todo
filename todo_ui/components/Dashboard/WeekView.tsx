@@ -38,13 +38,26 @@ export default function WeekView({
   return (
     <div className={cal.weekOuterGrid}>
       {/* Left time column: add spacer equal to sticky header height to align rows */}
-      <div className={cal.timeCol}>
+      <div className="flex flex-col">
         <div className={cal.weekHeaderSpacer} aria-hidden="true" />
-        {hoursSeq.map((h, idx) => (
-          <div key={idx} className={cal.timeLabel} style={{ height: `${100 / hoursSeq.length}%` }}>
-            {formatHour(h)}
+        <div className="flex-1 relative text-right pr-2 text-xs text-gray-500">
+          {hoursSeq.map((h, idx) => (
+            <div
+              key={idx}
+              className="absolute leading-none -translate-y-1/2"
+              style={{ top: `${(idx / hoursSeq.length) * 100}%` }}
+            >
+              {formatHour(h)}
+            </div>
+          ))}
+          {/* Add final hour marker at bottom */}
+          <div
+            className="absolute leading-none -translate-y-1/2"
+            style={{ top: '100%' }}
+          >
+            {formatHour((hoursSeq[hoursSeq.length - 1] + 1) % 24)}
           </div>
-        ))}
+        </div>
       </div>
 
       {/* Right: headers + 7 day columns */}

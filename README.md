@@ -1,9 +1,19 @@
 # tasks
-- [ ] landing page
+**HIGH priority**
+- [✔] taskview not syncing from right store
+- [ ] schedule view not persistent
+- [✔] user not found error
 
-# future extensions
+**MID priority**
+- [ ] feedback route not found error
+- [ ] feedback, task views not scaled properly
+
+*Low Priority*
+- [ ] highlight on wasting | hours have unrounded corners on mobile
+- [ ] should have logo on landing page
+
+
+# future extensions(after all tasks)
 - [ ] voice input
-
-# Deployment
-- Frontend (Next.js) to Vercel: see `todo_ui/DEPLOYMENT.md`.
-- Backend (FastAPI) should be hosted separately (Render/Railway/Fly/etc.) and exposed via HTTPS; set `NEXT_PUBLIC_API_URL` in Vercel to point to it.
+- [ ] **Multi-day event support** - Currently events are only displayed on the day they start. For events that span across midnight (e.g., 11 PM Monday to 2 AM Tuesday), implement logic to show the event across multiple day columns. Implementation would use the commented-out `eventOccursOnDate()` function in `todo_ui/lib/utils/calendar.ts` to replace the current `isSameDate()` filtering in `WeekView.tsx` and `DayView.tsx`.
+- [ ] 

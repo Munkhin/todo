@@ -43,6 +43,23 @@ export function isSameDate(a: Date, b: Date): boolean {
   )
 }
 
+// TODO: Multi-day event support
+// Currently events are only shown on the day they start
+// See README.md "Future Extensions" section for implementation plan
+// export function eventOccursOnDate(startIso: string, endIso: string, targetDate: Date): boolean {
+//   const startDate = new Date(startIso) // Converts UTC to local timezone
+//   const endDate = new Date(endIso)
+//
+//   // Create start and end of target day in local timezone
+//   const dayStart = new Date(targetDate)
+//   dayStart.setHours(0, 0, 0, 0)
+//   const dayEnd = new Date(targetDate)
+//   dayEnd.setHours(23, 59, 59, 999)
+//
+//   // Event occurs on this day if it overlaps with the day's time range
+//   return startDate < dayEnd && endDate > dayStart
+// }
+
 // Formatting helpers
 export function formatWeekTitle(date: Date): string {
   const days = getWeekDates(date)
