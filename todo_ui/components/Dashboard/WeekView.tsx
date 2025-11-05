@@ -41,22 +41,19 @@ export default function WeekView({
       <div className="flex flex-col">
         <div className={cal.weekHeaderSpacer} aria-hidden="true" />
         <div className="flex-1 relative text-right pr-2 text-xs text-gray-500">
-          {hoursSeq.map((h, idx) => (
-            <div
-              key={idx}
-              className="absolute leading-none -translate-y-1/2"
-              style={{ top: `${(idx / hoursSeq.length) * 100}%` }}
-            >
-              {formatHour(h)}
-            </div>
-          ))}
-          {/* Add final hour marker at bottom */}
-          <div
-            className="absolute leading-none -translate-y-1/2"
-            style={{ top: '100%' }}
-          >
-            {formatHour((hoursSeq[hoursSeq.length - 1] + 1) % 24)}
-          </div>
+          {hoursSeq.slice(1, -1).map((h, idx) => {
+            // Skip first and last hour, adjust index to account for skipped first hour
+            const actualIdx = idx + 1
+            return (
+              <div
+                key={actualIdx}
+                className="absolute leading-none -translate-y-1/2"
+                style={{ top: `${(actualIdx / hoursSeq.length) * 100}%` }}
+              >
+                {formatHour(h)}
+              </div>
+            )
+          })}
         </div>
       </div>
 

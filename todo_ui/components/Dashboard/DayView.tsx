@@ -38,22 +38,19 @@ export default function DayView({
     <div className={cal.dayArea}>
       <div className={cal.dayGrid} style={{ height: '100%' }}>
         <div className={cal.timeCol}>
-          {hoursSeq.map((h, idx) => (
-            <div
-              key={idx}
-              className="absolute leading-none -translate-y-1/2"
-              style={{ top: `${(idx / hoursSeq.length) * 100}%` }}
-            >
-              {formatHour(h)}
-            </div>
-          ))}
-          {/* Add final hour marker at bottom */}
-          <div
-            className="absolute leading-none -translate-y-1/2"
-            style={{ top: '100%' }}
-          >
-            {formatHour((hoursSeq[hoursSeq.length - 1] + 1) % 24)}
-          </div>
+          {hoursSeq.slice(1, -1).map((h, idx) => {
+            // Skip first and last hour, adjust index to account for skipped first hour
+            const actualIdx = idx + 1
+            return (
+              <div
+                key={actualIdx}
+                className="absolute leading-none -translate-y-1/2"
+                style={{ top: `${(actualIdx / hoursSeq.length) * 100}%` }}
+              >
+                {formatHour(h)}
+              </div>
+            )
+          })}
         </div>
 
         <div className={cal.dayCol}>

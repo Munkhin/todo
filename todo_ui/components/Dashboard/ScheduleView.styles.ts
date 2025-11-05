@@ -14,14 +14,15 @@ export const scheduleStyles = {
   calendarArea: "relative z-0 flex-1 overflow-auto p-[clamp(0.75rem,1.8vh,1.25rem)]",
   weekOuterGrid: "grid w-full grid-cols-[64px_1fr] gap-2",
   // Spacer to align time column with week header height
-  weekHeaderSpacer: "h-14",
+  weekHeaderSpacer: "h-14 sticky -top-[clamp(0.75rem,1.8vh,1.25rem)] z-10 bg-white",
   // Sticky week header overlay that spans the full top band above lanes
   // Offset by container padding to avoid a visible gap/double line when stuck
-  weekHeader: "sticky -top-[clamp(0.75rem,1.8vh,1.25rem)] z-10 grid grid-cols-7 place-items-center h-14 gap-2 pb-2 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80",
+  // Extended left margin to cover time column
+  weekHeader: "sticky -top-[clamp(0.75rem,1.8vh,1.25rem)] z-10 grid grid-cols-7 place-items-center h-14 gap-2 pb-2 bg-white -ml-[72px] pl-[72px]",
   // Prevent wrapping of weekday labels
   weekHeaderCell: "text-center text-sm font-medium text-gray-700 whitespace-nowrap overflow-hidden text-ellipsis",
   weekGrid: "grid w-full grid-cols-7 gap-2",
-  dayCell: "relative min-h-96 rounded-md border border-gray-200 bg-gray-50",
+  dayCell: "relative min-h-[48rem] rounded-md border border-gray-200 bg-gray-50",
   weekHours: "relative h-full",
   weekHourRow: "border-b border-gray-100",
   dayCellToday: "bg-blue-50 border-blue-300",
