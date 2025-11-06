@@ -1,8 +1,9 @@
 # tasks
 **HIGH priority**
 - [✔] taskview not syncing from right store
-- [ ] schedule view not persistent
+- [✔] schedule view not persistent
 - [✔] user not found error
+- [ ] taskview is not synced with the scheduled events(check store)
 
 **MID priority**
 - [ ] feedback route not found error

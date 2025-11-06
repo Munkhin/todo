@@ -38,8 +38,8 @@ export default function DayView({
     <div className={cal.dayArea}>
       <div className={cal.dayGrid} style={{ height: '100%' }}>
         <div className={cal.timeCol}>
-          {hoursSeq.slice(1, -1).map((h, idx) => {
-            // Skip first and last hour, adjust index to account for skipped first hour
+          {hoursSeq.slice(1).map((h, idx) => {
+            // Skip first hour only, adjust index to account for skipped first hour
             const actualIdx = idx + 1
             return (
               <div

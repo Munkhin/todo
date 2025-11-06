@@ -42,6 +42,7 @@ class TaskOut(BaseModel):
     scheduled_end: Optional[datetime] = None
     review_count: int
     confidence_score: float
+    events: Optional[list] = []  # associated calendar events
 
     class Config:
         from_attributes = True  # updated from orm_mode

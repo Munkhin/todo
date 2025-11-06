@@ -4,6 +4,15 @@
 
 import { api } from './client';
 
+export interface TaskEvent {
+  id: number;
+  title: string;
+  start_time: string;
+  end_time: string;
+  event_type: string;
+  source: string;
+}
+
 export interface Task {
   id: number;
   user_id: number;
@@ -17,6 +26,7 @@ export interface Task {
   scheduled_end?: string;
   review_count: number;
   confidence_score: number;
+  events?: TaskEvent[];
 }
 
 export interface TaskCreateData {

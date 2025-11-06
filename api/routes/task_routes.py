@@ -28,6 +28,8 @@ def get_tasks(
     - difficulty: filter by difficulty level (1-5)
     - sort_by: sort tasks by due_date, difficulty, or review_count
     """
+    from api.models import CalendarEvent
+
     query = db.query(Task)
 
     # filter by scheduled status
@@ -59,7 +61,25 @@ def get_tasks(
     elif sort_by == "review_count":
         tasks = sorted(tasks, key=lambda t: t.review_count)
 
-    return tasks
+    # attach associated calendar events to each task
+    result = []
+    for task in tasks:
+        events = db.query(CalendarEvent).filter(CalendarEvent.task_id == task.id).all()
+        task_dict = TaskOut.model_validate(task).model_dump()
+        task_dict['events'] = [
+            {
+                'id': e.id,
+                'title': e.title,
+                'start_time': e.start_time.isoformat(),
+                'end_time': e.end_time.isoformat(),
+                'event_type': e.event_type,
+                'source': e.source
+            }
+            for e in events
+        ]
+        result.append(task_dict)
+
+    return result
 
 # Get single task by ID
 @router.get("/{task_id}")

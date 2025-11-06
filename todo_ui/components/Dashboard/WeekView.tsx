@@ -41,8 +41,8 @@ export default function WeekView({
       <div className="flex flex-col">
         <div className={cal.weekHeaderSpacer} aria-hidden="true" />
         <div className="flex-1 relative text-right pr-2 text-xs text-gray-500">
-          {hoursSeq.slice(1, -1).map((h, idx) => {
-            // Skip first and last hour, adjust index to account for skipped first hour
+          {hoursSeq.slice(1).map((h, idx) => {
+            // Skip first hour only, adjust index to account for skipped first hour
             const actualIdx = idx + 1
             return (
               <div

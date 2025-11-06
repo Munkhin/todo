@@ -5,7 +5,7 @@ import { useUserId } from "@/hooks/use-user-id"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { tasksViewStyles } from "./TasksView.styles"
 import TaskDialog from "./TaskDialog"
-import { Plus } from "lucide-react"
+import { Plus, Calendar } from "lucide-react"
 
 export default function TasksView() {
   const tasks = useTaskStore((s) => s.tasks) ?? []
@@ -17,6 +17,14 @@ export default function TasksView() {
   useEffect(() => {
     fetchTasks({}).catch(() => {})
   }, [fetchTasks, userId])
+
+  // poll for task updates every 3 seconds to catch new tasks from chat
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchTasks({}).catch(() => {})
+    }, 3000)
+    return () => clearInterval(interval)
+  }, [fetchTasks])
 
   return (
     <section className={tasksViewStyles.container} aria-labelledby="tasks-heading">
@@ -43,6 +51,36 @@ export default function TasksView() {
                 <p className={tasksViewStyles.cardDesc}>{t.description || "No description"}</p>
                 <p className={tasksViewStyles.cardDue}>Due: {new Date(t.due_date).toLocaleString()}</p>
                 <p className={tasksViewStyles.cardMeta}>Difficulty: {t.difficulty}/5</p>
+
+                {/* scheduled sessions */}
+                {t.events && t.events.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-gray-200">
+                    <div className="flex items-center gap-1 text-sm font-medium text-gray-700 mb-2">
+                      <Calendar className="h-4 w-4" />
+                      <span>Scheduled Sessions</span>
+                    </div>
+                    <ul className="space-y-1">
+                      {t.events.map((event) => (
+                        <li key={event.id} className="text-sm text-gray-600 flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>
+                            {new Date(event.start_time).toLocaleString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: 'numeric',
+                              minute: '2-digit'
+                            })}
+                            {' - '}
+                            {new Date(event.end_time).toLocaleTimeString('en-US', {
+                              hour: 'numeric',
+                              minute: '2-digit'
+                            })}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </article>
@@ -74,3 +112,4 @@ export default function TasksView() {
     </section>
   )
 }
+
