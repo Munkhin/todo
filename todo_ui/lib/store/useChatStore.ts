@@ -13,6 +13,8 @@ interface ChatStore {
   messages: ChatMessage[]
   isLoading: boolean
   error: string | null
+  onTasksCreated?: () => void  // callback when agent creates tasks
+  setOnTasksCreated: (callback: () => void) => void
   loadHistory: (userId: number) => Promise<void>
   sendMessage: (message: string, userId: number) => Promise<string>
   clearHistory: (userId: number) => Promise<void>
@@ -22,6 +24,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   messages: [],
   isLoading: false,
   error: null,
+  onTasksCreated: undefined,
+
+  setOnTasksCreated: (callback) => {
+    set({ onTasksCreated: callback })
+  },
 
   loadHistory: async (userId) => {
     set({ isLoading: true, error: null })
@@ -45,6 +52,15 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         events: res.events,
       }
       set({ messages: [...get().messages, assistant], isLoading: false })
+
+      // trigger task refresh if events were created (indicates tasks were created/scheduled)
+      if (res.events && res.events.length > 0) {
+        const callback = get().onTasksCreated
+        if (callback) {
+          callback()
+        }
+      }
+
       return res.response
     } catch (e) {
       set({ isLoading: false, error: e instanceof Error ? e.message : 'Failed to send message' })

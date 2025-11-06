@@ -1,6 +1,7 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { useTaskStore } from "@/lib/store/useTaskStore"
+import { useChatStore } from "@/lib/store/useChatStore"
 import { useUserId } from "@/hooks/use-user-id"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { tasksViewStyles } from "./TasksView.styles"
@@ -11,20 +12,23 @@ export default function TasksView() {
   const tasks = useTaskStore((s) => s.tasks) ?? []
   const fetchTasks = useTaskStore((s) => s.fetchTasks)
   const addTask = useTaskStore((s) => s.addTask)
+  const setOnTasksCreated = useChatStore((s) => s.setOnTasksCreated)
   const userId = useUserId()
   const [openDialog, setOpenDialog] = useState(false)
 
+  // initial fetch
   useEffect(() => {
     fetchTasks({}).catch(() => {})
   }, [fetchTasks, userId])
 
-  // poll for task updates every 3 seconds to catch new tasks from chat
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchTasks({}).catch(() => {})
-    }, 3000)
-    return () => clearInterval(interval)
+  // register callback to refresh tasks when chat creates new tasks
+  const handleTasksCreated = useCallback(() => {
+    fetchTasks({}).catch(() => {})
   }, [fetchTasks])
+
+  useEffect(() => {
+    setOnTasksCreated(handleTasksCreated)
+  }, [setOnTasksCreated, handleTasksCreated])
 
   return (
     <section className={tasksViewStyles.container} aria-labelledby="tasks-heading">
