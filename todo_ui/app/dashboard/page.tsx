@@ -1,10 +1,10 @@
-// Dashboard main: simple task list view
-import TaskListView from "@/components/Dashboard/TaskListView"
+// Dashboard main: simple task view
+import TasksView from "@/components/Dashboard/TasksView"
 
 export default function DashboardPage() {
   return (
     <div className="mx-auto max-w-3xl min-h-[60svh]">
-      <TaskListView />
+      <TasksView />
     </div>
   )
 }
