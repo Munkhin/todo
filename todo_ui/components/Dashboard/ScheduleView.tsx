@@ -83,9 +83,26 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
     refreshViewData().catch(() => {})
   }, [currentDate, view, userId])
 
-  const handleEventClick = (event: CalendarEvent) => {
-    // For now, just show event info - future: allow editing events
-    console.log('Event clicked:', event)
+  const handleEventClick = async (event: CalendarEvent) => {
+    // If event has a linked task, fetch and edit it
+    if (!event.task_id) {
+      console.log('Event has no linked task:', event)
+      return
+    }
+
+    // Fetch the task details
+    const task = useTaskStore.getState().tasks.find(t => t.id === event.task_id)
+    if (!task) {
+      console.log('Task not found for event:', event)
+      return
+    }
+
+    // Open dialog in edit mode with task data
+    setEditingTaskId(task.id)
+    setEditingTask(task)
+    setInitialDueDate(task.due_date)
+    setPresetMinutes(task.estimated_minutes)
+    setOpenDialog(true)
   }
 
   const handleTimeSelect = (startMin: number, endMin: number, dayDate?: Date) => {

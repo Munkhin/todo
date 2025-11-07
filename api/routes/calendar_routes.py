@@ -139,8 +139,9 @@ async def create_manual_calendar_event(
     try:
         print(f"[manual-event:create] payload user_id={manual_event.user_id} title={manual_event.title} start={manual_event.start_time} end={manual_event.end_time} difficulty={manual_event.difficulty} est={manual_event.estimated_minutes} task_id={manual_event.task_id}")
         _ensure_user(db, manual_event.user_id)
-        start_time = manual_event.start_time
-        end_time = manual_event.end_time
+        # Convert timezone-aware datetimes from Pydantic to naive UTC for database storage
+        start_time = _parse_iso_to_utc_naive(manual_event.start_time.isoformat()) if manual_event.start_time.tzinfo else manual_event.start_time
+        end_time = _parse_iso_to_utc_naive(manual_event.end_time.isoformat()) if manual_event.end_time.tzinfo else manual_event.end_time
         _validate_time_range(start_time, end_time)
         estimated_minutes = _resolve_estimated_minutes(start_time, end_time, manual_event.estimated_minutes)
 
@@ -230,8 +231,9 @@ async def update_manual_calendar_event(
                 detail="Only user-created events can be updated via this endpoint"
             )
 
-        new_start = manual_update.start_time or db_event.start_time
-        new_end = manual_update.end_time or db_event.end_time
+        # Convert timezone-aware datetimes from Pydantic to naive UTC for database storage
+        new_start = _parse_iso_to_utc_naive(manual_update.start_time.isoformat()) if (manual_update.start_time and manual_update.start_time.tzinfo) else (manual_update.start_time or db_event.start_time)
+        new_end = _parse_iso_to_utc_naive(manual_update.end_time.isoformat()) if (manual_update.end_time and manual_update.end_time.tzinfo) else (manual_update.end_time or db_event.end_time)
         _validate_time_range(new_start, new_end)
         estimated_minutes = _resolve_estimated_minutes(new_start, new_end, manual_update.estimated_minutes)
 
