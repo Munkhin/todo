@@ -95,7 +95,7 @@ export function normaliseResponse(response: EnergyProfileResponse | null): Energ
 
 export async function fetchEnergyProfile(userId: number): Promise<EnergyProfilePayload> {
   try {
-    const response = await api.get<EnergyProfileResponse>(`/api/schedule/energy-profile?user_id=${userId}`);
+    const response = await api.get<EnergyProfileResponse>(`/api/settings/energy-profile?user_id=${userId}`);
     return normaliseResponse(response);
   } catch (error) {
     if (error instanceof APIError && error.status === 404) {
@@ -120,5 +120,5 @@ export async function saveEnergyProfile(userId: number, payload: EnergyProfilePa
     min_gap_for_break_min: payload.min_gap_for_break_min,
   };
 
-  await api.post(`/api/schedule/energy-profile?user_id=${userId}`, body);
+  await api.post(`/api/settings/energy-profile?user_id=${userId}`, body);
 }

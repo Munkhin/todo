@@ -16,6 +16,9 @@ router = APIRouter()
 @router.get("/energy-profile")
 async def get_energy_profile(user_id: int, db: Session = Depends(get_db)):
     """get user's energy profile"""
+    if user_id <= 0:
+        raise HTTPException(status_code=401, detail="Invalid or missing user authentication")
+
     try:
         from api.models import EnergyProfile
         import traceback
@@ -69,6 +72,9 @@ async def update_energy_profile(
     db: Session = Depends(get_db)
 ):
     """update user's energy profile"""
+    if user_id <= 0:
+        raise HTTPException(status_code=401, detail="Invalid or missing user authentication")
+
     try:
         from api.models import EnergyProfile
 
@@ -142,6 +148,9 @@ async def tune_breaks(
     db: Session = Depends(get_db)
 ):
     """Tune rest/break scheduling parameters only (for agent/chat usage)."""
+    if user_id <= 0:
+        raise HTTPException(status_code=401, detail="Invalid or missing user authentication")
+
     try:
         from api.models import EnergyProfile
         profile = db.query(EnergyProfile).filter(EnergyProfile.user_id == user_id).first()

@@ -69,8 +69,7 @@ export default function Pricing() {
   const { subscription, fetchSubscription } = useSubscriptionStore()
 
   useEffect(() => {
-    // Only fetch if likely authenticated or have a valid user id
-    if (userId > 0) {
+    if (userId !== null && userId > 0) {
       fetchSubscription(userId).catch(() => {})
     }
   }, [fetchSubscription, userId])

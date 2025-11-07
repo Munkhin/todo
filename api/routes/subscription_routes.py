@@ -41,6 +41,9 @@ class CancelSubscriptionRequest(BaseModel):
 @router.get("/")
 async def get_subscription(user_id: int, db: Session = Depends(get_db)):
     """get current subscription info and credit usage"""
+    if user_id <= 0:
+        raise HTTPException(status_code=401, detail="Invalid or missing user authentication")
+
     try:
         user = db.query(User).filter(User.id == user_id).first()
         if not user:

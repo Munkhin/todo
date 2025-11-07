@@ -9,7 +9,9 @@ export default function SettingsView() {
   const userId = useUserId()
 
   useEffect(() => {
-    load(userId).catch(() => {})
+    if (userId !== null && userId > 0) {
+      load(userId).catch(() => {})
+    }
   }, [load, userId])
 
   return (
@@ -134,8 +136,12 @@ export default function SettingsView() {
         <div className={settingsStyles.actions}>
           <button
             className={settingsStyles.saveBtn}
-            disabled={isLoading}
-            onClick={() => save(userId)}
+            disabled={isLoading || userId === null || userId <= 0}
+            onClick={() => {
+              if (userId !== null && userId > 0) {
+                save(userId)
+              }
+            }}
           >
             {isLoading ? 'Saving…' : 'Save changes'}
           </button>

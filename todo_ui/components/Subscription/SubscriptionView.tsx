@@ -9,6 +9,7 @@ export default function SubscriptionView() {
   const userId = useUserId()
 
   useEffect(() => {
+    if (userId === null) return
     fetchSubscription(userId).catch(() => {})
   }, [fetchSubscription, userId])
 

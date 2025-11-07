@@ -3,31 +3,38 @@ import { useSession } from "next-auth/react"
 import { useState, useEffect } from "react"
 import { api } from "@/lib/api/client"
 
-export function useUserId(): number {
-  const { data } = useSession()
-  const [userId, setUserId] = useState<number>(0)
+export function useUserId(): number | null {
+  const { data, status } = useSession()
+  const [userId, setUserId] = useState<number | null>(null)
 
   useEffect(() => {
-    if (!data?.user?.email) {
-      setUserId(0)
+    // keep null until session loads
+    if (status === 'loading') {
       return
     }
 
-    // Call /api/user/me to get or create backend user
+    if (!data?.user?.email) {
+      setUserId(null)
+      return
+    }
+
+    // call /api/user/me to get or create backend user
     api.post<{ user_id: number }>('/api/user/me', {
       email: data.user.email,
       name: data.user.name,
     })
       .then((res) => {
-        if (res.user_id && Number.isFinite(res.user_id)) {
+        if (res.user_id && Number.isFinite(res.user_id) && res.user_id > 0) {
           setUserId(res.user_id)
+        } else {
+          setUserId(null)
         }
       })
       .catch((err) => {
         console.error('[useUserId] Failed to get user:', err)
-        setUserId(0)
+        setUserId(null)
       })
-  }, [data])
+  }, [data, status])
 
   return userId
 }
