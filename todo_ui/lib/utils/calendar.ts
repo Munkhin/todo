@@ -81,7 +81,8 @@ export function formatHour(h: number): string {
 // Time calculations
 // Converts UTC ISO string to local time and returns minutes since midnight in user's timezone
 export function minutesSinceStartOfDay(iso: string): number {
-  const d = new Date(iso) // Parses UTC ISO and converts to browser's local timezone
+  const d = new Date(iso) // Parses ISO string (handles both UTC and timezone-aware formats)
+  // Get local time components - Date constructor automatically converts to browser's timezone
   return d.getHours() * 60 + d.getMinutes()
 }
 

@@ -88,7 +88,11 @@ export default function DayView({
                     key={evt.id}
                     className={cal.eventDay}
                     style={{ top, height, minHeight }}
-                    onClick={() => onEventClick(evt)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onEventClick(evt)
+                    }}
+                    onMouseDown={(e) => e.stopPropagation()}
                   >
                     {evt.title}
                   </div>
