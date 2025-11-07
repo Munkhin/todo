@@ -1,20 +1,17 @@
 "use client"
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useCallback } from "react"
 import { useTaskStore } from "@/lib/store/useTaskStore"
 import { useChatStore } from "@/lib/store/useChatStore"
 import { useUserId } from "@/hooks/use-user-id"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { tasksViewStyles } from "./TasksView.styles"
-import TaskDialog from "./TaskDialog"
-import { Plus, Calendar } from "lucide-react"
+import { Calendar } from "lucide-react"
 
 export default function TasksView() {
   const tasks = useTaskStore((s) => s.tasks) ?? []
   const fetchTasks = useTaskStore((s) => s.fetchTasks)
-  const addTask = useTaskStore((s) => s.addTask)
   const setOnTasksCreated = useChatStore((s) => s.setOnTasksCreated)
   const userId = useUserId()
-  const [openDialog, setOpenDialog] = useState(false)
 
   // initial fetch
   useEffect(() => {
@@ -34,12 +31,6 @@ export default function TasksView() {
     <section className={tasksViewStyles.container} aria-labelledby="tasks-heading">
       <div className={tasksViewStyles.header}>
         <h1 id="tasks-heading" className={tasksViewStyles.title}>Your Tasks</h1>
-        <button
-          className={tasksViewStyles.createBtn}
-          onClick={() => setOpenDialog(true)}
-        >
-          <Plus className="h-4 w-4 mr-2" /> Create Task
-        </button>
       </div>
       <div className={tasksViewStyles.grid}>
         {tasks.map((t) => (
@@ -92,28 +83,9 @@ export default function TasksView() {
       </div>
       {tasks.length === 0 && (
         <p className={tasksViewStyles.empty}>
-          No tasks found. Click "Create Task" to add your first task
+          No tasks found. Schedule one with AI in the schedule tab.
         </p>
       )}
-
-      <TaskDialog
-        open={openDialog}
-        onClose={() => setOpenDialog(false)}
-        onSave={async (data) => {
-          await addTask({
-            user_id: userId,
-            topic: data.topic,
-            estimated_minutes: data.estimated_minutes,
-            difficulty: data.difficulty,
-            due_date: data.due_date,
-            description: data.description,
-            source_text: 'manual',
-            confidence_score: 1.0
-          } as any)
-          setOpenDialog(false)
-        }}
-      />
     </section>
   )
 }
-

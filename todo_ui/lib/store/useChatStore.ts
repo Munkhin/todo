@@ -53,12 +53,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       }
       set({ messages: [...get().messages, assistant], isLoading: false })
 
-      // trigger task refresh if events were created (indicates tasks were created/scheduled)
-      if (res.events && res.events.length > 0) {
-        const callback = get().onTasksCreated
-        if (callback) {
-          callback()
-        }
+      // trigger task refresh (agent may create tasks with or without events)
+      const callback = get().onTasksCreated
+      if (callback) {
+        callback()
       }
 
       return res.response
@@ -77,4 +75,3 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 }))
-

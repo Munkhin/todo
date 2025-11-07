@@ -4,6 +4,8 @@
 - [✔] schedule view not persistent
 - [✔] user not found error
 - [ ] taskview is not synced with the scheduled events(check store)
+- [ ] wrong time (630 -8 instead of 1030 - 12(utc and sgt timezone correction needed))
+- [ ] items take long time to load (red line, schedule view events)
 
 **MID priority**
 - [ ] feedback route not found error

@@ -92,34 +92,23 @@ def get_task(task_id: int, db: Session = Depends(get_db)):
 # Create new task
 @router.post("/", response_model=TaskOut, status_code=201)
 def create_task(task: TaskCreate, db: Session = Depends(get_db)):
-    from api.models import CalendarEvent
+
     from api.services.consts import DEFAULT_DUE_DATE_DAYS
     from datetime import timedelta
 
-    # apply default due_date if not provided
-    task_data = task.dict()
-    if not task_data.get("due_date"):
-        task_data["due_date"] = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=DEFAULT_DUE_DATE_DAYS)
+    # unpack the data
+    task_data = task.model_dump()
 
+    # enforce the due date
+    if not task_data.get("due_date"):
+        # due date, including the timezone information
+        task_data["due_date"] = datetime.now(timezone.utc) + timedelta(days=DEFAULT_DUE_DATE_DAYS)
+
+    # repack the data
     db_task = Task(**task_data)
     db.add(db_task)
     db.commit()
     db.refresh(db_task)
-
-    # create calendar event if task is scheduled
-    if db_task.scheduled_start and db_task.scheduled_end:
-        calendar_event = CalendarEvent(
-            user_id=db_task.user_id,
-            title=db_task.topic,
-            description=f"Study session for {db_task.topic}",
-            start_time=db_task.scheduled_start,
-            end_time=db_task.scheduled_end,
-            event_type="study",
-            source="user",
-            task_id=db_task.id
-        )
-        db.add(calendar_event)
-        db.commit()
 
     return db_task
 
