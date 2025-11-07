@@ -3,6 +3,7 @@ import { useEffect } from "react"
 import { useSettingsStore } from "@/lib/store/useSettingsStore"
 import { settingsStyles } from "./SettingsView.styles"
 import { useUserId } from "@/hooks/use-user-id"
+import EnergyGraph from "./EnergyGraph"
 
 export default function SettingsView() {
   const { settings, isLoading, error, load, updateField, save } = useSettingsStore()
@@ -76,6 +77,17 @@ export default function SettingsView() {
                 onChange={(e) => updateField('due_date_days', Number(e.target.value))}
               />
             </label>
+          </div>
+
+          {/* Energy Profile Graph */}
+          <div className="mt-6">
+            <h3 className="text-sm font-semibold text-gray-700 mb-2">Hourly Energy Levels</h3>
+            <EnergyGraph
+              wakeHour={settings.wake_time ?? 7}
+              sleepHour={settings.sleep_time ?? 23}
+              energyLevels={settings.energy_levels ?? {}}
+              onChange={(levels) => updateField('energy_levels', levels)}
+            />
           </div>
         </div>
         <div className={settingsStyles.section}>

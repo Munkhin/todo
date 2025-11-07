@@ -115,6 +115,12 @@ def create_task(task: TaskCreate, db: Session = Depends(get_db)):
         # convert aware datetime to naive UTC for storage
         task_data["due_date"] = task_data["due_date"].astimezone(timezone.utc).replace(tzinfo=None)
 
+    # convert scheduled_start and scheduled_end if timezone-aware
+    if task_data.get("scheduled_start") and isinstance(task_data["scheduled_start"], datetime) and task_data["scheduled_start"].tzinfo:
+        task_data["scheduled_start"] = task_data["scheduled_start"].astimezone(timezone.utc).replace(tzinfo=None)
+    if task_data.get("scheduled_end") and isinstance(task_data["scheduled_end"], datetime) and task_data["scheduled_end"].tzinfo:
+        task_data["scheduled_end"] = task_data["scheduled_end"].astimezone(timezone.utc).replace(tzinfo=None)
+
     # repack the data
     db_task = Task(**task_data)
     db.add(db_task)
@@ -132,7 +138,11 @@ def update_task(task_id: int, task: TaskUpdate, db: Session = Depends(get_db)):
     if not db_task:
         raise HTTPException(status_code=404, detail="Task not found")
 
-    for field, value in task.model_dump(exclude_unset=True).items():
+    # convert timezone-aware datetimes to naive UTC before setting
+    task_updates = task.model_dump(exclude_unset=True)
+    for field, value in task_updates.items():
+        if field in ['due_date', 'scheduled_start', 'scheduled_end'] and isinstance(value, datetime) and value.tzinfo:
+            value = value.astimezone(timezone.utc).replace(tzinfo=None)
         setattr(db_task, field, value)
 
     # update associated calendar events to match task changes

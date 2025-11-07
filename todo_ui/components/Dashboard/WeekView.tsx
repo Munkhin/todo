@@ -101,7 +101,7 @@ export default function WeekView({
                   .map((evt) => {
                     const { top, height, minHeight } = getEventBox(evt.start_time, evt.end_time, wake, spanMinutes)
                     return (
-                      <div
+                      <button
                         key={evt.id}
                         className={cal.eventDay}
                         style={{ top, height, minHeight }}
@@ -110,9 +110,10 @@ export default function WeekView({
                           onEventClick(evt)
                         }}
                         onMouseDown={(e) => e.stopPropagation()}
+                        type="button"
                       >
                         {evt.title}
-                      </div>
+                      </button>
                     )
                   })}
 

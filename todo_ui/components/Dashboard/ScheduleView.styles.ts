@@ -45,7 +45,7 @@ export const scheduleStyles = {
   dayCol: "relative flex-1",
   dayHours: "relative h-full",
   hourRow: "border-b border-gray-100",
-  eventDay: "absolute left-2 right-2 rounded-md border-l-4 border-blue-400 bg-blue-100 p-2 text-xs font-semibold text-gray-800 shadow-sm",
+  eventDay: "absolute left-2 right-2 rounded-md border-l-4 border-blue-400 bg-blue-100 p-2 text-xs font-semibold text-gray-800 shadow-sm cursor-pointer hover:bg-blue-200 transition-colors text-left w-auto",
   eventDayHandle: "absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize rounded-b-md bg-blue-400/40",
   eventDayDragging: "opacity-80 ring-2 ring-blue-400",
   selectionBox: "absolute left-2 right-2 rounded-md border border-blue-400 bg-blue-500/20",

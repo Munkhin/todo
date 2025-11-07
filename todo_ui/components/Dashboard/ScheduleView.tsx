@@ -90,8 +90,14 @@ export default function ScheduleView({ demoMode = false, demoMaxMessages = 0, pr
       return
     }
 
-    // Fetch the task details
-    const task = useTaskStore.getState().tasks.find(t => t.id === event.task_id)
+    // Fetch the task details from store
+    const tasks = useTaskStore.getState().tasks
+    if (!tasks || !Array.isArray(tasks)) {
+      console.log('Tasks not loaded yet')
+      return
+    }
+
+    const task = tasks.find(t => t.id === event.task_id)
     if (!task) {
       console.log('Task not found for event:', event)
       return
