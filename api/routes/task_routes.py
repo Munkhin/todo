@@ -62,16 +62,24 @@ def get_tasks(
         tasks = sorted(tasks, key=lambda t: t.review_count)
 
     # attach associated calendar events to each task
+    from api.utils.timezone import naive_utc_to_iso_z
+
     result = []
     for task in tasks:
         events = db.query(CalendarEvent).filter(CalendarEvent.task_id == task.id).all()
         task_dict = TaskOut.model_validate(task).model_dump()
+
+        # convert datetime fields to ISO 8601 with Z
+        task_dict['due_date'] = naive_utc_to_iso_z(task.due_date)
+        task_dict['scheduled_start'] = naive_utc_to_iso_z(task.scheduled_start) if task.scheduled_start else None
+        task_dict['scheduled_end'] = naive_utc_to_iso_z(task.scheduled_end) if task.scheduled_end else None
+
         task_dict['events'] = [
             {
                 'id': e.id,
                 'title': e.title,
-                'start_time': e.start_time.isoformat(),
-                'end_time': e.end_time.isoformat(),
+                'start_time': naive_utc_to_iso_z(e.start_time),
+                'end_time': naive_utc_to_iso_z(e.end_time),
                 'event_type': e.event_type,
                 'source': e.source
             }
@@ -101,8 +109,11 @@ def create_task(task: TaskCreate, db: Session = Depends(get_db)):
 
     # enforce the due date
     if not task_data.get("due_date"):
-        # due date, including the timezone information
-        task_data["due_date"] = datetime.now(timezone.utc) + timedelta(days=DEFAULT_DUE_DATE_DAYS)
+        # default due date as naive UTC
+        task_data["due_date"] = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=DEFAULT_DUE_DATE_DAYS)
+    elif isinstance(task_data["due_date"], datetime) and task_data["due_date"].tzinfo:
+        # convert aware datetime to naive UTC for storage
+        task_data["due_date"] = task_data["due_date"].astimezone(timezone.utc).replace(tzinfo=None)
 
     # repack the data
     db_task = Task(**task_data)
@@ -121,7 +132,7 @@ def update_task(task_id: int, task: TaskUpdate, db: Session = Depends(get_db)):
     if not db_task:
         raise HTTPException(status_code=404, detail="Task not found")
 
-    for field, value in task.dict(exclude_unset=True).items():
+    for field, value in task.model_dump(exclude_unset=True).items():
         setattr(db_task, field, value)
 
     # update associated calendar events to match task changes

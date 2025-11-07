@@ -1,7 +1,7 @@
 # agent_tools.py
 from sqlalchemy.orm import Session
 from api.models import Task, CalendarEvent, EnergyProfile, BrainDump
-from api.services.scheduler import schedule_tasks as run_scheduler
+from api.services.scheduler import schedule_study_sessions
 from api.services.consts import (
     DEFAULT_DUE_DATE_DAYS,
     DEFAULT_ENERGY_LEVELS,
@@ -16,16 +16,8 @@ from typing import List, Optional, Dict
 import json
 
 
-def _parse_iso_to_utc_naive(iso_string: str) -> datetime:
-    """Parse ISO datetime string to naive UTC datetime for database storage.
-    Handles timezone-aware and naive ISO strings.
-    """
-    dt = datetime.fromisoformat(iso_string.replace('Z', '+00:00'))
-    if dt.tzinfo is not None:
-        # convert to UTC and make naive
-        dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
-    # if naive, assume it's already UTC (for backwards compatibility)
-    return dt
+# import timezone utilities
+from api.utils.timezone import parse_iso_to_utc_naive as _parse_iso_to_utc_naive
 
 def create_tasks(tasks: List[Dict], user_id: int, db: Session) -> Dict:
     """create new tasks from user input
@@ -69,7 +61,7 @@ def create_tasks(tasks: List[Dict], user_id: int, db: Session) -> Dict:
     db.commit()
     return {"created_tasks": created, "count": len(created)}
 
-def schedule_all_tasks(user_id: int, db: Session) -> Dict:
+async def schedule_all_tasks(user_id: int, db: Session) -> Dict:
     """generate schedule for all unscheduled tasks with credit checking
 
     Args:
@@ -119,8 +111,121 @@ def schedule_all_tasks(user_id: int, db: Session) -> Dict:
         user.credits_used += credits_needed
         db.commit()
 
-    result = run_scheduler(user_id, db)
-    return result
+    # fetch unscheduled tasks
+    from datetime import timedelta
+    import json
+    import numpy as np
+
+    unscheduled_tasks = db.query(Task).filter(
+        Task.user_id == user_id,
+        Task.status == "unscheduled"
+    ).all()
+
+    if not unscheduled_tasks:
+        return {
+            "message": "No unscheduled tasks to schedule",
+            "scheduled_count": 0,
+            "total_tasks": 0,
+            "unscheduled_count": 0,
+            "events": []
+        }
+
+    # get user's energy profile
+    profile = db.query(EnergyProfile).filter(EnergyProfile.user_id == user_id).first()
+    if not profile:
+        profile = EnergyProfile(user_id=user_id)
+        db.add(profile)
+        db.commit()
+
+    # prepare tasks for scheduler (add duration property)
+    class TaskWrapper:
+        def __init__(self, task):
+            self.id = task.id
+            self.due_date = task.due_date if task.due_date.tzinfo else task.due_date.replace(tzinfo=timezone.utc)
+            self.difficulty = task.difficulty
+            self.duration = task.estimated_minutes / 60.0  # convert to hours
+            self.topic = task.topic
+
+    wrapped_tasks = [TaskWrapper(t) for t in unscheduled_tasks]
+
+    # prepare settings object
+    class Settings:
+        def __init__(self, profile):
+            self.min_study_duration = (profile.min_study_duration or 30) / 60.0  # to hours
+            self.max_study_duration = (profile.max_study_duration or 180) / 60.0  # to hours
+            self.break_duration = (getattr(profile, 'short_break_min', 5) or 5) / 60.0  # to hours
+            self.max_study_duration_before_break = (getattr(profile, 'long_study_threshold_min', 90) or 90) / 60.0  # to hours
+
+            # parse energy levels
+            if profile.energy_levels:
+                energy_dict = json.loads(profile.energy_levels)
+                # convert to array indexed by hour
+                self.energy_plot = np.array([energy_dict.get(str(h), 5) for h in range(24)])
+            else:
+                # default energy plot
+                self.energy_plot = np.array([5] * 24)
+
+    settings = Settings(profile)
+
+    # calculate date range
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    earliest_due = min(t.due_date for t in unscheduled_tasks)
+    start_date = now
+    end_date = earliest_due + timedelta(days=1)
+
+    # call the new scheduler
+    schedule = await schedule_study_sessions(wrapped_tasks, user_id, start_date, end_date, settings, db)
+
+    # convert schedule to calendar events
+    events = []
+    for item in schedule:
+        task_id = item.get("task_id")
+        start_hour = item["start_time"]
+        duration_hours = item["duration"]
+
+        # convert hours to datetime
+        start_dt = start_date + timedelta(hours=start_hour)
+        end_dt = start_dt + timedelta(hours=duration_hours)
+
+        if task_id:
+            task = db.query(Task).filter(Task.id == task_id).first()
+            event = CalendarEvent(
+                user_id=user_id,
+                title=f"Study: {task.topic}",
+                description=task.description,
+                start_time=start_dt,
+                end_time=end_dt,
+                event_type="study",
+                source="system",
+                task_id=task_id
+            )
+        else:
+            # break event
+            event = CalendarEvent(
+                user_id=user_id,
+                title="Break",
+                start_time=start_dt,
+                end_time=end_dt,
+                event_type="break",
+                source="system"
+            )
+
+        db.add(event)
+        events.append(event)
+
+    # update task statuses
+    for task in unscheduled_tasks:
+        task.status = "scheduled"
+
+    db.commit()
+
+    return {
+        "message": "Schedule generated successfully",
+        "scheduled_count": len([e for e in events if e.event_type == "study"]),
+        "total_tasks": len(unscheduled_tasks),
+        "unscheduled_count": 0,
+        "events": events
+    }
 
 def get_user_tasks(
     user_id: int,

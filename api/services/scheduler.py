@@ -3,11 +3,10 @@ import numpy as np
 import math
 from collections import deque
 from datetime import datetime, timezone, timedelta
-from database import db
 
-def schedule_study_sessions(tasks, user_id, start_date, end_date, settings):
+async def schedule_study_sessions(tasks, user_id, start_date, end_date, settings, db):
 
-    empty_slots = get_empty_slots(user_id, start_date, end_date, settings.min_study_duration, settings.max_study_duration, settings.break_duration, db)
+    empty_slots = await get_empty_slots(user_id, start_date, end_date, settings.min_study_duration, settings.max_study_duration, settings.break_duration, db)
     energy_values = get_energy_values(settings.energy_plot, empty_slots)
     sorted_empty_slots  = sort_by_energy_values(empty_slots, energy_values)
     schedule = schedule_tasks_with_energy_ranking(tasks, sorted_empty_slots, 

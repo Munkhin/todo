@@ -2,7 +2,7 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 from api.database import SessionLocal
 from api.models import Task, User
-from api.services.scheduler import schedule_tasks
+from api.services.scheduler import schedule_study_sessions
 from datetime import datetime
 
 scheduler = BackgroundScheduler()
@@ -28,9 +28,10 @@ def check_and_reschedule():
                     task.status = "missed"
                 db.commit()
 
-                # reschedule
-                schedule_tasks(user.id, db)
-                print(f"Auto-rescheduled {len(missed)} missed tasks for user {user.id}")
+                # reschedule (DEPRECATED - needs reimplementation)
+                # schedule_tasks(user.id, db)
+                # TODO: reimplement using schedule_study_sessions(tasks, user_id, start_date, end_date, settings)
+                print(f"Found {len(missed)} missed tasks for user {user.id} (auto-reschedule disabled)")
 
     except Exception as e:
         print(f"Error in cron job: {e}")

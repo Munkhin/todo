@@ -1,11 +1,7 @@
 # models.py
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Float, Boolean
 from api.database import Base
-from datetime import datetime, timezone
-
-def utc_now_naive():
-    """Get current UTC time as naive datetime for database storage"""
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+from api.utils.timezone import utc_now_naive
 
 class Task(Base):
     __tablename__ = "tasks"

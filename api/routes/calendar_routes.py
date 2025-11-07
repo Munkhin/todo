@@ -64,26 +64,9 @@ def _resolve_estimated_minutes(start_time: datetime, end_time: datetime, fallbac
     return duration_minutes
 
 
-def _parse_iso_to_utc_naive(iso_string: str) -> datetime:
-    """Parse ISO datetime string to naive UTC datetime for database storage.
-    Handles timezone-aware and naive ISO strings.
-    """
-    dt = datetime.fromisoformat(iso_string.replace('Z', '+00:00'))
-    if dt.tzinfo is not None:
-        # convert to UTC and make naive
-        dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
-    # if naive, assume it's already UTC (for backwards compatibility)
-    return dt
-
-
-def _to_utc_iso(dt: datetime) -> str:
-    """Convert a datetime to an ISO8601 UTC string with 'Z'.
-    Database stores naive UTC datetimes, so we just add UTC timezone info.
-    """
-    if dt.tzinfo is None:
-        # Database stores naive UTC datetimes
-        dt = dt.replace(tzinfo=timezone.utc)
-    return dt.astimezone(timezone.utc).isoformat().replace('+00:00', 'Z')
+# import timezone utilities
+from api.utils.timezone import parse_iso_to_utc_naive as _parse_iso_to_utc_naive
+from api.utils.timezone import naive_utc_to_iso_z as _to_utc_iso
 
 
 def _serialize_event_utc(ev: CalendarEvent) -> dict:
