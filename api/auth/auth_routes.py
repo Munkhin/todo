@@ -50,7 +50,7 @@ def _frontend_base_url(request: Request) -> str:
 @router.post("/login")
 async def login(request: Request):
     """Login user (email/password or OAuth token)"""
-    from api_handwritten.database import create_session
+    from api.database import create_session
 
     flow = Flow.from_client_secrets_file(
         "credentials.json",
@@ -71,7 +71,7 @@ async def login(request: Request):
 @router.post("/logout")
 async def logout(session_id: str):
     """Logout and revoke session"""
-    from api_handwritten.database import delete_session
+    from api.database import delete_session
 
     success = delete_session(session_id)
     if success:
@@ -82,7 +82,7 @@ async def logout(session_id: str):
 @router.get("/google-oauth")
 async def google_oauth(request: Request):
     """Initiate Google OAuth for calendar integration"""
-    from api_handwritten.database import create_session
+    from api.database import create_session
 
     flow = Flow.from_client_secrets_file(
         "credentials.json",
@@ -103,7 +103,7 @@ async def google_oauth(request: Request):
 @router.get("/google-oauth/callback")
 async def google_oauth_callback(request: Request, code: str = None, state: str = None):
     """Receive OAuth callback and store refresh/access tokens"""
-    from api_handwritten.database import get_session, create_session
+    from api.database import get_session, create_session
 
     if not code or not state:
         raise HTTPException(status_code=400, detail="Missing code or state parameter")
@@ -144,7 +144,7 @@ async def google_oauth_callback(request: Request, code: str = None, state: str =
 @router.get("/user")
 async def get_user(session_id: str):
     """Retrieves authenticated user information from Google"""
-    from api_handwritten.database import get_session, create_or_update_user, get_user_credits
+    from api.database import get_session, create_or_update_user, get_user_credits
 
     session = get_session(session_id)
     if not session or "credentials" not in session.get("credentials", {}):
@@ -173,7 +173,7 @@ async def get_user(session_id: str):
 @router.get("/status")
 async def auth_status(session_id: str = None):
     """Checks if user is authenticated"""
-    from api_handwritten.database import get_session
+    from api.database import get_session
 
     if not session_id:
         return {"authenticated": False}
@@ -190,7 +190,7 @@ async def auth_status(session_id: str = None):
 @router.get("/credits")
 async def get_credits(session_id: str):
     """Get user"s credit balance and plan information"""
-    from api_handwritten.database import get_session, get_user_credits, get_user_by_id
+    from api.database import get_session, get_user_credits, get_user_by_id
 
     session = get_session(session_id)
     if not session or "credentials" not in session.get("credentials", {}):
@@ -203,7 +203,7 @@ async def get_credits(session_id: str):
     google_user_id = user_info.get("id")
 
     # get user from database by google_user_id
-    from api_handwritten.database import supabase
+    from api.database import supabase
     response = supabase.table("users").select("id").eq("google_user_id", google_user_id).execute()
     if not response.data:
         raise HTTPException(status_code=404, detail="User not found")
@@ -218,7 +218,7 @@ async def get_credits(session_id: str):
 @router.post("/upgrade-plan")
 async def upgrade_plan(session_id: str, plan_type: str):
     """Upgrade user"s subscription plan (valid: "free", "pro", "unlimited")"""
-    from api_handwritten.database import get_session, update_user_plan, get_user_credits, supabase
+    from api.database import get_session, update_user_plan, get_user_credits, supabase
 
     session = get_session(session_id)
     if not session or "credentials" not in session.get("credentials", {}):
@@ -301,7 +301,7 @@ async def register_nextauth_session(request: Request):
         }
 
         # store in database
-        from api_handwritten.database import create_session, create_or_update_user
+        from api.database import create_session, create_or_update_user
         create_session(session_id, {
             "state": session_id,
             "credentials": creds_dict
@@ -343,7 +343,7 @@ class UpdateTimezoneRequest(BaseModel):
 @router.post("/update-timezone")
 async def update_user_timezone(request: UpdateTimezoneRequest):
     """Update user's timezone setting"""
-    from api_handwritten.database import update_user_timezone, get_user_by_id
+    from api.database import update_user_timezone, get_user_by_id
 
     user = get_user_by_id(request.user_id)
     if not user:

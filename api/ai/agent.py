@@ -3,16 +3,16 @@
 import asyncio # for parallel execution to drastically decrease runtime
 from datetime import datetime, timezone
 from openai import OpenAI
-from api_handwritten.ai.intent_classifier import classify_intent
-from api_handwritten.ai.semantic_matcher import match_tasks
-from api_handwritten.preprocess_user_input.file_processing import file_to_text
-from api_handwritten.consts import * # get all prompts and schemas
-from api_handwritten.database import get_user_conversation_id, update_user_conversation_id, get_tasks_by_user, get_calendar_events_by_task_id, get_energy_profile, get_calendar_events, create_or_update_energy_profile, supabase
+from api.ai.intent_classifier import classify_intent
+from api.ai.semantic_matcher import match_tasks
+from api.preprocess_user_input.file_processing import file_to_text
+from api.consts import * # get all prompts and schemas
+from api.database import get_user_conversation_id, update_user_conversation_id, get_tasks_by_user, get_calendar_events_by_task_id, get_energy_profile, get_calendar_events, create_or_update_energy_profile, supabase
 
 client = OpenAI()
 
-from api_handwritten.scheduler import schedule_tasks
-from api_handwritten.calendar.user_actions import create_calendar_event, get_calendar_events, delete_calendar_event
+from api.scheduler import schedule_tasks
+from api.calendar.user_actions import create_calendar_event, get_calendar_events, delete_calendar_event
 
 
 async def run_agent(user_input):

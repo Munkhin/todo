@@ -57,9 +57,9 @@ def favicon():
     return Response(status_code=204)
 
 # routes
-from api_handwritten.auth.auth_routes import router as auth_router
-from api_handwritten.calendar.user_actions import router as calendar_router
-from api_handwritten.chat_routes import router as chat_router
+from api.auth.auth_routes import router as auth_router
+from api.calendar.user_actions import router as calendar_router
+from api.chat_routes import router as chat_router
 
 # register routers with prefixes
 app.include_router(auth_router, prefix="/api/auth", tags=["Authentication"])

@@ -1,7 +1,7 @@
 -- Migration: Add computed columns to tasks table for app compatibility
 -- Date: 2025-11-09
 -- Description: Adds 'duration' (hours) and 'scheduled' (boolean) as computed columns
---              to maintain compatibility with api_handwritten application code
+--              to maintain compatibility with api application code
 
 -- Add duration column (computed from estimated_minutes)
 -- Duration is in hours (decimal), estimated_minutes is in minutes (integer)

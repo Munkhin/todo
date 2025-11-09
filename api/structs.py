@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text
 from sqlalchemy.ext.declarative import declarative_base
-from api_handwritten.timezone.conversions import utc_now
+from api.timezone.conversions import utc_now
 
 Base = declarative_base()
 

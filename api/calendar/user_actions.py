@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException
 from typing import Optional
 from pydantic import BaseModel
 from datetime import datetime
-from api_handwritten.database import supabase, create_calendar_event, update_calendar_event, delete_calendar_event
+from api.database import supabase, create_calendar_event, update_calendar_event, delete_calendar_event
 
 router = APIRouter()
 

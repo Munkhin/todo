@@ -3,7 +3,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional
-from api_handwritten.ai.agent import run_agent
+from api.ai.agent import run_agent
 
 router = APIRouter()
 
