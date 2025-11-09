@@ -1,2 +1,0 @@
-# Delegate to the project-level requirements (pip resolves this relative path)
--r ../requirements.txt

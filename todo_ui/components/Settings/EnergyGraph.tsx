@@ -71,11 +71,12 @@ export default function EnergyGraph({ wakeHour, sleepHour, energyLevels, onChang
       ctx.lineTo(x, height - padding)
       ctx.stroke()
 
-      // hour labels
+      // hour labels with AM/PM format
       ctx.fillStyle = '#6b7280'
       ctx.font = '11px sans-serif'
       ctx.textAlign = 'center'
-      ctx.fillText(String(h), x, height - padding + 20)
+      const label = h === 0 ? '12am' : h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h - 12}pm`
+      ctx.fillText(label, x, height - padding + 20)
     }
 
     // highlight wake/sleep region

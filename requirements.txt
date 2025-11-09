@@ -22,7 +22,7 @@ pydantic==2.11.1
 pydantic-settings==2.1.0
 
 # Database
-sqlalchemy>=2.0.31  # Python 3.13 support added in 2.0.31
+supabase==2.10.0
 
 # AI Agent & Scheduling
 # Note: openai-agents not available yet, using openai function calling instead
@@ -38,3 +38,6 @@ pytesseract==0.3.10
 
 # Testing
 pytest-asyncio==0.23.5
+
+# payment
+stripe

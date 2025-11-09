@@ -93,16 +93,21 @@ export default function SettingsView() {
         <div className={settingsStyles.section}>
           <h2 className={settingsStyles.sectionTitle}>Breaks & Rest</h2>
           <p className={settingsStyles.sectionDesc}>Configure short/long breaks between study sessions</p>
-          <div className={settingsStyles.formGrid}>
-            <label className={settingsStyles.label}>
-              Insert Breaks
+
+          {/* Insert Breaks checkbox - inline with larger text */}
+          <div className="mb-4">
+            <label className="flex items-center gap-3 text-base font-medium text-gray-700 cursor-pointer">
+              <span>Insert Breaks</span>
               <input
                 type="checkbox"
-                className={settingsStyles.input}
+                className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                 checked={!!settings.insert_breaks}
                 onChange={(e) => updateField('insert_breaks', e.target.checked)}
               />
             </label>
+          </div>
+
+          <div className={settingsStyles.formGrid}>
             <label className={settingsStyles.label}>
               Short Break (min)
               <input
