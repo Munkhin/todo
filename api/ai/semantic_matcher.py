@@ -1,28 +1,5 @@
-import requests
 import numpy as np
-from requests.exceptions import ConnectionError, Timeout
-
-# ------------------- Embedding functions -------------------
-
-def get_ollama_embedding(text, model="nomic-embed-text"):
-    """Get embedding from Ollama API with error handling"""
-    try:
-        url = "http://localhost:11434/api/embeddings"
-        payload = {"model": model, "prompt": text}
-        response = requests.post(url, json=payload, timeout=5)
-        response.raise_for_status()
-        return np.array(response.json()["embedding"])
-    except (ConnectionError, Timeout) as e:
-        # Ollama is not available - return None to trigger fallback
-        return None
-    except Exception as e:
-        # Other errors (API errors, invalid response, etc.)
-        print(f"Warning: Ollama embedding failed: {e}")
-        return None
-
-def embed(texts):
-    """Embed multiple texts and return numpy matrix"""
-    return np.vstack([get_ollama_embedding(t) for t in texts])
+from api.ai.embeddings import get_embedding
 
 def cosine_similarity(vec1, vec2):
     """Compute cosine similarity between two vectors"""
@@ -68,11 +45,11 @@ def match_tasks(user_input, tasks, similarity_threshold=0.75):
     Returns:
         List of matched tasks
     """
-    user_vec = get_ollama_embedding(user_input)
+    user_vec = get_embedding(user_input)
 
     # Fallback to keyword matching if embeddings unavailable
     if user_vec is None:
-        print("Warning: Using keyword-based fallback for task matching (Ollama unavailable)")
+        print("Warning: Using keyword-based fallback for task matching")
         return match_tasks_keyword_fallback(user_input, tasks)
 
     user_vec /= np.linalg.norm(user_vec)
@@ -84,7 +61,7 @@ def match_tasks(user_input, tasks, similarity_threshold=0.75):
         if not task_text:
             continue
 
-        task_vec = get_ollama_embedding(task_text)
+        task_vec = get_embedding(task_text)
         if task_vec is None:
             # If embedding fails, skip this task
             continue

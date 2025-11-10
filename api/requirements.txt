@@ -25,6 +25,7 @@ sqlalchemy==2.0.36
 # Data processing
 numpy==1.26.4
 requests==2.32.3
+sentence-transformers==3.3.1
 
 # File Processing
 PyPDF2==3.0.1

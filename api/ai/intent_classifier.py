@@ -1,31 +1,5 @@
-import requests
 import numpy as np
-from requests.exceptions import ConnectionError, Timeout
-
-# ------------------- Embedding functions -------------------
-
-def get_ollama_embedding(text, model="nomic-embed-text"):
-    """Get embedding from Ollama API with error handling"""
-    try:
-        url = "http://localhost:11434/api/embeddings"
-        payload = {"model": model, "prompt": text}
-        response = requests.post(url, json=payload, timeout=5)
-        response.raise_for_status()
-        return np.array(response.json()["embedding"])
-    except (ConnectionError, Timeout) as e:
-        # Ollama is not available - return None to trigger fallback
-        return None
-    except Exception as e:
-        # Other errors (API errors, invalid response, etc.)
-        print(f"Warning: Ollama embedding failed: {e}")
-        return None
-
-def embed(texts):
-    """Embed multiple texts and return numpy matrix, returns None if any embedding fails"""
-    embeddings = [get_ollama_embedding(t) for t in texts]
-    if any(e is None for e in embeddings):
-        return None
-    return np.vstack(embeddings)
+from api.ai.embeddings import get_embedding, embed_batch, is_embedding_available
 
 # ------------------- Intent setup -------------------
 
@@ -43,26 +17,26 @@ intent_examples = {
                            ]
 }
 
-# Precompute mean embeddings per intent (if Ollama is available)
+# Precompute mean embeddings per intent
 intent_vectors = {}
-ollama_available = True
+embeddings_available = is_embedding_available()
 
-try:
-    for intent, examples in intent_examples.items():
-        embedded = embed(examples)
-        if embedded is None:
-            # Ollama not available, skip embeddings
-            ollama_available = False
-            break
-        vec = embedded.mean(axis=0)
-        vec /= np.linalg.norm(vec)
-        intent_vectors[intent] = vec
-except Exception as e:
-    print(f"Warning: Could not precompute intent embeddings: {e}")
-    ollama_available = False
+if embeddings_available:
+    try:
+        for intent, examples in intent_examples.items():
+            embedded = embed_batch(examples)
+            if embedded is None:
+                embeddings_available = False
+                break
+            vec = embedded.mean(axis=0)
+            vec /= np.linalg.norm(vec)
+            intent_vectors[intent] = vec
+    except Exception as e:
+        print(f"Warning: Could not precompute intent embeddings: {e}")
+        embeddings_available = False
 
-if not ollama_available:
-    print("Warning: Ollama unavailable - intent classification will use keyword-based fallback")
+if not embeddings_available:
+    print("Warning: Embeddings unavailable - intent classification will use keyword-based fallback")
 
 # ------------------- Classification -------------------
 
@@ -115,11 +89,11 @@ def classify_intent(text: str, intents: list[str], dynamic_ratio: float = 0.8) -
         List of detected intent strings
     """
     # Use keyword fallback if embeddings unavailable
-    if not ollama_available or not intent_vectors:
+    if not embeddings_available or not intent_vectors:
         print("Warning: Using keyword-based fallback for intent classification")
         return classify_intent_keyword_fallback(text, intents)
 
-    msg_vec = get_ollama_embedding(text)
+    msg_vec = get_embedding(text)
 
     # If embedding fails at runtime, use fallback
     if msg_vec is None:
