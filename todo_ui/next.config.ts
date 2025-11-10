@@ -16,6 +16,22 @@ const nextConfig: NextConfig = {
     if (!isServer) {
       config.cache = false;
     }
+
+    // ensure TUI Calendar uses the same React instance to prevent ReactCurrentDispatcher errors
+    // only apply to specific packages that have issues, not globally
+    const originalResolve = config.resolve.alias || {};
+    config.resolve.alias = {
+      ...originalResolve,
+      '@toast-ui/react-calendar$': require.resolve('@toast-ui/react-calendar'),
+    };
+
+    // ensure external packages can resolve React from node_modules
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+      };
+    }
+
     return config;
   },
   images: {
