@@ -114,7 +114,9 @@
       "Bash(gh pr list:*)",
       "Bash(gh pr close:*)",
       "Bash(.gitignore)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)"
     ],
     "deny": [],
     "ask": []
