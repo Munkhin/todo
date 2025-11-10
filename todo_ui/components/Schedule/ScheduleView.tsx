@@ -13,6 +13,7 @@ import TUICalendar from "../Schedule/TUICalendarWrapper"
 import TaskDialog from "../Schedule/TaskDialog"
 import { ChatBar } from "../Schedule/ChatBar"
 import "@toast-ui/calendar/dist/toastui-calendar.min.css"
+import "./ScheduleView.css"
 
 // state management utility functions
 import { useSession } from "next-auth/react"
@@ -79,19 +80,20 @@ export function ScheduleView() {
     }
 
     return (
-        // grid of 85% calendar and 15% chatbar
-        <div style={{ display: "grid", gridTemplateRows: "85% 15%", height: "100%" }}>
-            <div>
+        <div className="schedule-view-container">
+            <div className="schedule-view-calendar-wrapper">
                 <TUICalendar events={calendarEvents} />
                 {responseMessage && <TaskDialog text={responseMessage} />}
             </div>
-            <ChatBar
-                value={chatValue}
-                onChange={setChatValue}
-                onSubmit={handleChatSubmit}
-                usagePercent={usagePercent}
-            />
-      </div>
+            <div className="schedule-view-chat-wrapper">
+                <ChatBar
+                    value={chatValue}
+                    onChange={setChatValue}
+                    onSubmit={handleChatSubmit}
+                    usagePercent={usagePercent}
+                />
+            </div>
+        </div>
     )
 }
 

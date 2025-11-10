@@ -1,0 +1,24 @@
+/* schedule view container styles */
+
+.schedule-view-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background-color: #ffffff;
+}
+
+.schedule-view-calendar-wrapper {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.schedule-view-chat-wrapper {
+  flex-shrink: 0;
+  padding: 1rem;
+  border-top: 1px solid #e5e7eb;
+  background-color: #ffffff;
+}
