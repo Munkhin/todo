@@ -15,22 +15,29 @@
 .schedule-view-calendar-wrapper {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
   position: relative;
 }
 
-/* ensure TUI Calendar sections don't create separate scroll areas */
-.schedule-view-calendar-wrapper .toastui-calendar-week-view,
-.schedule-view-calendar-wrapper .toastui-calendar-week-view-day-names,
-.schedule-view-calendar-wrapper .toastui-calendar-panel,
-.schedule-view-calendar-wrapper .toastui-calendar-layout {
+/* force unified scrolling - remove all internal scroll containers */
+.schedule-view-calendar-wrapper * {
   overflow: visible !important;
 }
 
-/* make calendar fill the wrapper height */
+/* make calendar sections stack vertically without separate scrolls */
+.schedule-view-calendar-wrapper .toastui-calendar-week-view-day-names,
+.schedule-view-calendar-wrapper .toastui-calendar-panel,
+.schedule-view-calendar-wrapper .toastui-calendar-week-view {
+  height: auto !important;
+  max-height: none !important;
+}
+
+/* ensure all calendar content is visible in single scroll */
 .schedule-view-calendar-wrapper > div {
   min-height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .schedule-view-chat-wrapper {
