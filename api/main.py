@@ -60,11 +60,13 @@ def favicon():
 from api.auth.auth_routes import router as auth_router
 from api.calendar.user_actions import router as calendar_router
 from api.chat_routes import router as chat_router
+from api.credits_routes import router as credits_router
 
 # register routers with prefixes
 app.include_router(auth_router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(calendar_router, prefix="/api/calendar", tags=["Calendar"])
 app.include_router(chat_router, prefix="/api/chat", tags=["Chat"])
+app.include_router(credits_router, prefix="/api", tags=["Credits"])
 
 if __name__ == "__main__":
     import uvicorn
