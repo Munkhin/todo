@@ -1,3 +1,4 @@
+"use client"
 // defines the schedule tab content
 
 // installing controllers
@@ -12,6 +13,9 @@ import ChatBar from "../Schedule/ChatBar"
 
 import { useState } from "react"
 import { useSession } from "next-auth/react"
+// react query
+import { taskEvents } from "@/lib/events/taskEvents"
+// end react query
 
 export function ScheduleView(demo_mode?: boolean) {
 
@@ -32,6 +36,9 @@ export function ScheduleView(demo_mode?: boolean) {
 
         // 3. reload calendar to reflect newly scheduled tasks
         await CalendarController.loadEvents(userId)
+
+        // 4. notify task list to refresh (react query)
+        taskEvents.emit()
     }
 
     return (

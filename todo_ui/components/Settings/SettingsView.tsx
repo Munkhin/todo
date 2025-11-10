@@ -1,19 +1,14 @@
 "use client"
-import { useEffect } from "react"
-import { useSettingsStore } from "@/lib/store/useSettingsStore"
+// react query
+import { useSettings } from "@/hooks/use-settings"
+// end react query
 import { settingsStyles } from "./SettingsView.styles"
 import { useUserId } from "@/hooks/use-user-id"
 import EnergyGraph from "./EnergyGraph"
 
 export default function SettingsView() {
-  const { settings, isLoading, error, load, updateField, save } = useSettingsStore()
   const userId = useUserId()
-
-  useEffect(() => {
-    if (userId !== null && userId > 0) {
-      load(userId).catch(() => {})
-    }
-  }, [load, userId])
+  const { settings, isLoading, error, updateField, save } = useSettings(userId)
 
   return (
     <section className={settingsStyles.container} aria-labelledby="settings-title">
@@ -154,11 +149,7 @@ export default function SettingsView() {
           <button
             className={settingsStyles.saveBtn}
             disabled={isLoading || userId === null || userId <= 0}
-            onClick={() => {
-              if (userId !== null && userId > 0) {
-                save(userId)
-              }
-            }}
+            onClick={() => save()}
           >
             {isLoading ? 'Saving…' : 'Save changes'}
           </button>

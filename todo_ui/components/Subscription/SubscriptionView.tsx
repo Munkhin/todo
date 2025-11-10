@@ -1,17 +1,13 @@
 "use client"
-import { useEffect } from "react"
-import { useSubscriptionStore } from "@/lib/store/useSubscriptionStore"
+// react query
+import { useSubscription } from "@/hooks/use-subscription"
+// end react query
 import { subscriptionStyles } from "./SubscriptionView.styles"
 import { useUserId } from "@/hooks/use-user-id"
 
 export default function SubscriptionView() {
-  const { subscription, loading, error, fetchSubscription } = useSubscriptionStore()
   const userId = useUserId()
-
-  useEffect(() => {
-    if (userId === null) return
-    fetchSubscription(userId).catch(() => {})
-  }, [fetchSubscription, userId])
+  const { subscription, loading, error } = useSubscription(userId)
 
   const used = subscription?.credits_used ?? 0
   const cap = subscription?.credits_limit ?? 0

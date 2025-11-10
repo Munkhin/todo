@@ -1,9 +1,11 @@
 "use client"
 import Link from "next/link"
-import { useCallback, useEffect } from "react"
+import { useCallback } from "react"
 import { useSession, signIn } from "next-auth/react"
 import { pricingStyles } from "./pricing.styles"
-import { useSubscriptionStore } from "@/lib/store/useSubscriptionStore"
+// react query
+import { useSubscription } from "@/hooks/use-subscription"
+// end react query
 import { useUserId } from "@/hooks/use-user-id"
 
 type Plan = {
@@ -66,13 +68,7 @@ const isPaidPlan = (variant: Plan['variant']): variant is 'pro' | 'unlimited' =>
 export default function Pricing() {
   const { status } = useSession()
   const userId = useUserId()
-  const { subscription, fetchSubscription } = useSubscriptionStore()
-
-  useEffect(() => {
-    if (userId !== null && userId > 0) {
-      fetchSubscription(userId).catch(() => {})
-    }
-  }, [fetchSubscription, userId])
+  const { subscription } = useSubscription(userId)
 
   const startPlan = useCallback((plan: Plan['variant']) => {
     if (!isPaidPlan(plan)) {
