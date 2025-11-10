@@ -4,14 +4,21 @@ from typing import Optional, Dict, Any
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
-load_dotenv()
+# load environment variables from .env file if it exists
+# try both current directory and parent directory
+load_dotenv()  # looks in current directory
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'))  # looks in parent
 
 # initialize supabase client
 supabase_url = os.getenv("SUPABASE_URL")
 supabase_key = os.getenv("SUPABASE_SERVICE_KEY")  # use service key for backend operations
 
 if not supabase_url or not supabase_key:
-    raise ValueError("SUPABASE_URL and SUPABASE_SERVICE_KEY must be set in .env")
+    raise ValueError(
+        "SUPABASE_URL and SUPABASE_SERVICE_KEY must be set. "
+        "In production, set these as environment variables. "
+        "For local development, add them to a .env file."
+    )
 
 supabase: Client = create_client(supabase_url, supabase_key)
 

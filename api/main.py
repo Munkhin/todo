@@ -6,8 +6,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Load environment variables from .env file if it exists
+# try both current directory and parent directory
+load_dotenv()  # looks in current directory
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'))  # looks in parent
 
 
 # Initialize FastAPI app
