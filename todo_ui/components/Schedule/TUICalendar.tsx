@@ -67,9 +67,12 @@ export default function TUICalendar({ events = [] }: TUICalendarProps) {
     const updateDateRange = useCallback(() => {
         const instance = calendarInstanceRef.current
         if (instance) {
-            const date = instance.getDate()
-            const start = instance.getDateRangeStart()
-            const end = instance.getDateRangeEnd()
+            // TUI Calendar returns TZDate objects, convert to native Date
+            const toDate = (tzDate: any) => tzDate instanceof Date ? tzDate : new Date(tzDate)
+
+            const date = toDate(instance.getDate())
+            const start = toDate(instance.getDateRangeStart())
+            const end = toDate(instance.getDateRangeEnd())
 
             if (view === "month") {
                 setDateRange(`${date.toLocaleDateString("en-US", { month: "long", year: "numeric" })}`)
