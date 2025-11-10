@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import { scheduleStyles as cal } from "./ScheduleView.styles"
+import { scheduleStyles as cal } from "../Schedule/ScheduleView.styles"
 
 type CalendarHeaderProps = {
   currentDate: Date

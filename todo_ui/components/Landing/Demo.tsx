@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic'
 
 // Reuse the dashboard schedule view, but in demo mode
-const ScheduleView = dynamic(() => import('@/components/Dashboard/ScheduleView'), { ssr: false })
+const ScheduleView = dynamic(() => import('@/components/Schedule/ScheduleView'), { ssr: false })
 
 export default function DemoSection() {
   return (

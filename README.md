@@ -1,3 +1,7 @@
+# speed of chat -> response:
+1-2.5 s
+
+
 # tasks
 **HIGH priority**
 - [✔] taskview not syncing from right store

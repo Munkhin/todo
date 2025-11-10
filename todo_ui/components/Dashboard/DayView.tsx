@@ -1,5 +1,5 @@
 import { useRef } from "react"
-import { scheduleStyles as cal } from "./ScheduleView.styles"
+import { scheduleStyles as cal } from "../Schedule/ScheduleView.styles"
 import { isSameDate, formatHour, getEventBox, getNowOffsetPercent } from "@/lib/utils/calendar"
 import type { CalendarEvent } from "@/lib/api/calendar"
 

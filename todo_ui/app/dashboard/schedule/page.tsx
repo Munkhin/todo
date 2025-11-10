@@ -1,4 +1,4 @@
-import ScheduleView from '@/components/Dashboard/ScheduleView'
+import ScheduleView from '@/components/Schedule/ScheduleView'
 
 export default function SchedulePage() {
   return (
