@@ -272,7 +272,7 @@ async def register_nextauth_session(request: Request):
 
         # Validate against schema
         validated = NextAuthSessionRequest(**body)
-        print(f"Access token received: {validated.access_token[:20] if validated.access_token else "None"}...")
+        print(f"Access token received: {validated.access_token[:20] if validated.access_token else 'None'}...")
         print(f"Refresh token received: {bool(validated.refresh_token)}")
         print("=" * 80)
 
