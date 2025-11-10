@@ -1,8 +1,8 @@
 "use client"
-// comprehensive calendar component using tui.calendar
+// comprehensive calendar component using vanilla tui.calendar (not React wrapper)
 
-import React, { useRef, useState, useCallback } from "react"
-import Calendar from "@toast-ui/react-calendar"
+import React, { useRef, useState, useCallback, useEffect } from "react"
+import Calendar from "@toast-ui/calendar"
 import "@toast-ui/calendar/dist/toastui-calendar.min.css"
 import type { EventObject } from "@toast-ui/calendar"
 
@@ -13,13 +13,59 @@ interface TUICalendarProps {
 }
 
 export default function TUICalendar({ events = [] }: TUICalendarProps) {
-    const calendarRef = useRef<any>(null)
+    const containerRef = useRef<HTMLDivElement>(null)
+    const calendarInstanceRef = useRef<Calendar | null>(null)
     const [view, setView] = useState<CalendarView>("week")
     const [dateRange, setDateRange] = useState("")
 
-    // update date range display when calendar renders
-    const handleAfterRenderEvent = useCallback(() => {
-        const instance = calendarRef.current?.getInstance()
+    // initialize vanilla calendar instance
+    useEffect(() => {
+        if (!containerRef.current) return
+
+        // create vanilla calendar instance
+        calendarInstanceRef.current = new Calendar(containerRef.current, {
+            defaultView: view,
+            useFormPopup: false,
+            useDetailPopup: false,
+            week: {
+                showTimezoneCollapseButton: false,
+                timezonesCollapsed: true,
+                eventView: true,
+                taskView: true,
+            },
+            month: {
+                startDayOfWeek: 0,
+            },
+            usageStatistics: false,
+        })
+
+        updateDateRange()
+
+        // cleanup on unmount
+        return () => {
+            calendarInstanceRef.current?.destroy()
+        }
+    }, [])
+
+    // update events when they change
+    useEffect(() => {
+        if (calendarInstanceRef.current && events) {
+            calendarInstanceRef.current.clear()
+            calendarInstanceRef.current.createEvents(events)
+        }
+    }, [events])
+
+    // update view when it changes
+    useEffect(() => {
+        if (calendarInstanceRef.current) {
+            calendarInstanceRef.current.changeView(view)
+            updateDateRange()
+        }
+    }, [view])
+
+    // update date range display
+    const updateDateRange = useCallback(() => {
+        const instance = calendarInstanceRef.current
         if (instance) {
             const date = instance.getDate()
             const start = instance.getDateRangeStart()
@@ -39,23 +85,22 @@ export default function TUICalendar({ events = [] }: TUICalendarProps) {
 
     // navigation handlers
     const handleToday = () => {
-        calendarRef.current?.getInstance()?.today()
-        handleAfterRenderEvent()
+        calendarInstanceRef.current?.today()
+        updateDateRange()
     }
 
     const handlePrev = () => {
-        calendarRef.current?.getInstance()?.prev()
-        handleAfterRenderEvent()
+        calendarInstanceRef.current?.prev()
+        updateDateRange()
     }
 
     const handleNext = () => {
-        calendarRef.current?.getInstance()?.next()
-        handleAfterRenderEvent()
+        calendarInstanceRef.current?.next()
+        updateDateRange()
     }
 
     const handleViewChange = (newView: CalendarView) => {
         setView(newView)
-        handleAfterRenderEvent()
     }
 
     return (
@@ -118,25 +163,9 @@ export default function TUICalendar({ events = [] }: TUICalendarProps) {
                 </div>
             </div>
 
-            {/* calendar component */}
+            {/* calendar container */}
             <div className="flex-1">
-                <Calendar
-                    ref={calendarRef}
-                    height="100%"
-                    view={view}
-                    week={{
-                        showTimezoneCollapseButton: false,
-                        timezonesCollapsed: true,
-                        eventView: true,
-                        taskView: true,
-                    }}
-                    month={{
-                        startDayOfWeek: 0,
-                    }}
-                    usageStatistics={false}
-                    events={events}
-                    onAfterRenderEvent={handleAfterRenderEvent}
-                />
+                <div ref={containerRef} style={{ height: "100%" }} />
             </div>
         </div>
     )

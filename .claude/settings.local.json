@@ -116,7 +116,9 @@
       "Bash(.gitignore)",
       "Bash(git push:*)",
       "Bash(git pull:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "WebFetch(domain:nhn.github.io)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": [],
     "ask": []
