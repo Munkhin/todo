@@ -44,3 +44,4 @@ todo_ui/.vercel
 # typescript
 todo_ui/*.tsbuildinfo
 todo_ui/next-env.d.ts
+__pycache__/
