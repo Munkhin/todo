@@ -1,20 +1,52 @@
-'use client'
+// demo version of schedule view with no backend calls
 
-import dynamic from 'next/dynamic'
+// ui
+import CalendarHeader from "../Schedule/CalendarHeader"
+import Calendar from "../Schedule/Calendar"
+import { ChatBar } from "../Schedule/ChatBar"
+import "../Schedule/TaskDialog.css"
 
-// Reuse the dashboard schedule view, but in demo mode
-const ScheduleView = dynamic(() => import('@/components/Schedule/ScheduleView'), { ssr: false })
+import { useState } from "react"
 
-export default function DemoSection() {
-  return (
-    <section id="demo" className="mx-auto mt-12 max-w-[60rem] px-4 scroll-mt-24 md:scroll-mt-28">
-      <div className="rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        {/* Constrain height for landing demo */}
-        <div className="bg-white min-h-0 h-[60svh] md:h-[70svh] max-h-[calc(100svh-8rem)] overflow-hidden">
-          {/* Demo mode limits to one message and appends CTA to pricing */}
-          <ScheduleView demoMode demoMaxMessages={1} pricingAnchor="#pricing" />
-        </div>
+export function Demo() {
+
+    // state management
+    const [showMessage, setShowMessage] = useState<boolean>(false)
+    const [chatValue, setChatValue] = useState<string>("")
+
+    // static demo events for calendar display
+    const calendarEvents: any[] = []
+
+    function handleChatSubmit() {
+        // show hardcoded demo message with pricing CTA
+        setShowMessage(true)
+
+        // clear chatbox
+        setChatValue("")
+    }
+
+    return (
+        // grid of 85% calendar+header and 15% chatbar
+        <div style={{ display: "grid", gridTemplateRows: "85% 15%", height: "100%" }}>
+            <div>
+                <CalendarHeader />
+                <Calendar events={calendarEvents} />
+                {showMessage && (
+                    <div className="task-dialog-container">
+                        <div className="task-dialog-box">
+                            <p className="task-dialog-text">
+                                Task scheduled successfully! This is a demo version - no actual scheduling occurred.
+                                Ready to get started? <a href="#pricing" style={{ textDecoration: "underline" }}>Check out our pricing plans</a> to unlock full scheduling capabilities!
+                            </p>
+                        </div>
+                    </div>
+                )}
+            </div>
+            <ChatBar
+                value={chatValue}
+                onChange={setChatValue}
+                onSubmit={handleChatSubmit}
+            />
       </div>
-    </section>
-  )
+    )
 }
