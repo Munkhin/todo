@@ -1,5 +1,5 @@
 // Dashboard main: simple task view
-import TasksView from "@/components/Dashboard/TasksView"
+import TasksView from "@/components/Tasks/TasksView"
 
 export default function DashboardPage() {
   return (

@@ -7,15 +7,16 @@ import CalendarController from "@/controllers/calendar"
 import CreditsController from "@/controllers/credits"
 
 // ui
-import CalendarHeader from "../Schedule/CalendarHeader"
-import Calendar from "../Schedule/Calendar"
+import TUICalendar from "../Schedule/TUICalendarWrapper"
 import TaskDialog from "../Schedule/TaskDialog"
 import { ChatBar } from "../Schedule/ChatBar"
+import "@toast-ui/calendar/dist/toastui-calendar.min.css"
 
 // state management utility functions
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { calculateUsagePercent } from "@/lib/utils"
+
 
 export function ScheduleView() {
 
@@ -29,12 +30,23 @@ export function ScheduleView() {
     const { data: session } = useSession()
     const userId = session?.user?.id || ""
 
-    // fetch credit usage on mount
+    // fetch credit usage and calendar events on mount
     useEffect(() => {
         if (userId) {
             fetchUsage()
+            loadCalendarEvents()
         }
     }, [userId])
+
+    // load calendar events
+    async function loadCalendarEvents() {
+        try {
+            const events = await CalendarController.loadEvents(userId)
+            setCalendarEvents(events || [])
+        } catch (error) {
+            console.error("Failed to load calendar events:", error)
+        }
+    }
 
     // fetch usage for percentage display on the chatbox
     async function fetchUsage() {
@@ -56,7 +68,7 @@ export function ScheduleView() {
         setResponseMessage(text)
 
         // 3. reload calendar to reflect newly scheduled tasks
-        await CalendarController.loadEvents(userId)
+        await loadCalendarEvents()
 
         // 4. update credit usage
         await fetchUsage()
@@ -66,11 +78,10 @@ export function ScheduleView() {
     }
 
     return (
-        // grid of 85% calendar+header and 15% chatbar
+        // grid of 85% calendar and 15% chatbar
         <div style={{ display: "grid", gridTemplateRows: "85% 15%", height: "100%" }}>
             <div>
-                <CalendarHeader />
-                <Calendar events={calendarEvents} />
+                <TUICalendar events={calendarEvents} />
                 {responseMessage && <TaskDialog text={responseMessage} />}
             </div>
             <ChatBar
@@ -82,3 +93,5 @@ export function ScheduleView() {
       </div>
     )
 }
+
+export default ScheduleView

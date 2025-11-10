@@ -1,18 +1,20 @@
 // controllers/task.ts
-import { supabase } from "@/lib/supabaseClient"
+import { createTask, listTasks } from "@/lib/api/tasks"
 
-export default class TaskController{
+export default class TaskController {
   async createTaskFromAI(aiText: string, userId: string) {
-    const { data, error } = await supabase.from("tasks").insert([
-      { user_id: userId, description: aiText },
-    ])
-    if (error) throw error
+    const data = await createTask({
+      user_id: Number(userId),
+      topic: aiText,
+      estimated_minutes: 60,
+      due_date: new Date().toISOString(),
+      description: "",
+    })
     return data
   }
 
   async listTasks(userId: string) {
-    const { data, error } = await supabase.from("tasks").select("*").eq("user_id", userId)
-    if (error) throw error
-    return data
+    const { tasks } = await listTasks()
+    return tasks
   }
 }

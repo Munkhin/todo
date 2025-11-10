@@ -1,13 +1,9 @@
 // controllers/calendar.ts
-import { supabase } from "@/lib/supabaseClient"
+import { getEvents } from "@/lib/api/calendar"
 
-export default class CalendarController{
+export default class CalendarController {
   static async loadEvents(userId: string) {
-    const { data, error } = await supabase
-      .from("events")
-      .select("*")
-      .eq("user_id", userId)
-    if (error) throw error
-    return data
+    const { events } = await getEvents(Number(userId))
+    return events
   }
 }
