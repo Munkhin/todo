@@ -1,7 +1,7 @@
 "use client"
 // comprehensive calendar component using tui.calendar
 
-import { useRef, useState, useCallback } from "react"
+import React, { useRef, useState, useCallback } from "react"
 import Calendar from "@toast-ui/react-calendar"
 import "@toast-ui/calendar/dist/toastui-calendar.min.css"
 import type { EventObject } from "@toast-ui/calendar"

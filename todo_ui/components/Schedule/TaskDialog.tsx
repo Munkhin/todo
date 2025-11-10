@@ -1,5 +1,6 @@
 // simple textbox to display AI response messages
 
+import React from "react"
 import "./TaskDialog.css"
 
 export default function TaskDialog({ text }: { text: string }) {

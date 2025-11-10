@@ -1,19 +1,29 @@
-import requests
+import os
 import numpy as np
+from openai import OpenAI
+
+# Initialize OpenAI client
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # ------------------- Embedding functions -------------------
 
-def get_ollama_embedding(text, model="nomic-embed-text"):
-    """Get embedding from Ollama API"""
-    url = "http://localhost:11434/api/embeddings"
-    payload = {"model": model, "prompt": text}
-    response = requests.post(url, json=payload)
-    response.raise_for_status()
-    return np.array(response.json()["embedding"])
+def get_openai_embedding(text, model="text-embedding-3-small"):
+    """Get embedding from OpenAI API"""
+    response = client.embeddings.create(
+        model=model,
+        input=text
+    )
+    return np.array(response.data[0].embedding)
 
 def embed(texts):
     """Embed multiple texts and return numpy matrix"""
-    return np.vstack([get_ollama_embedding(t) for t in texts])
+    if isinstance(texts, str):
+        texts = [texts]
+    response = client.embeddings.create(
+        model="text-embedding-3-small",
+        input=texts
+    )
+    return np.vstack([np.array(emb.embedding) for emb in response.data])
 
 # ------------------- Intent setup -------------------
 
@@ -43,7 +53,7 @@ for intent, examples in intent_examples.items():
 def classify_intent(text: str, intents: list[str], dynamic_ratio: float = 0.8) -> list[str]:
     """
     Classify text into one or more intents using dynamic thresholding.
-    
+
     Args:
         text: User input message
         intents: List of intent names (must be keys in intent_vectors)
@@ -52,7 +62,7 @@ def classify_intent(text: str, intents: list[str], dynamic_ratio: float = 0.8) -
     Returns:
         List of detected intent strings
     """
-    msg_vec = get_ollama_embedding(text)
+    msg_vec = get_openai_embedding(text)
     msg_vec /= np.linalg.norm(msg_vec)
 
     # Compute cosine similarity with each intent vector

@@ -1,19 +1,29 @@
-import requests
+import os
 import numpy as np
+from openai import OpenAI
+
+# Initialize OpenAI client
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # ------------------- Embedding functions -------------------
 
-def get_ollama_embedding(text, model="nomic-embed-text"):
-    """Get embedding from Ollama API"""
-    url = "http://localhost:11434/api/embeddings"
-    payload = {"model": model, "prompt": text}
-    response = requests.post(url, json=payload)
-    response.raise_for_status()
-    return np.array(response.json()["embedding"])
+def get_openai_embedding(text, model="text-embedding-3-small"):
+    """Get embedding from OpenAI API"""
+    response = client.embeddings.create(
+        model=model,
+        input=text
+    )
+    return np.array(response.data[0].embedding)
 
 def embed(texts):
     """Embed multiple texts and return numpy matrix"""
-    return np.vstack([get_ollama_embedding(t) for t in texts])
+    if isinstance(texts, str):
+        texts = [texts]
+    response = client.embeddings.create(
+        model="text-embedding-3-small",
+        input=texts
+    )
+    return np.vstack([np.array(emb.embedding) for emb in response.data])
 
 def cosine_similarity(vec1, vec2):
     """Compute cosine similarity between two vectors"""
@@ -33,7 +43,7 @@ def match_tasks(user_input, tasks, similarity_threshold=0.75):
     Returns:
         List of matched tasks
     """
-    user_vec = get_ollama_embedding(user_input)
+    user_vec = get_openai_embedding(user_input)
     user_vec /= np.linalg.norm(user_vec)
 
     matched_tasks = []
@@ -43,7 +53,7 @@ def match_tasks(user_input, tasks, similarity_threshold=0.75):
         if not task_text:
             continue
 
-        task_vec = get_ollama_embedding(task_text)
+        task_vec = get_openai_embedding(task_text)
         task_vec /= np.linalg.norm(task_vec)
         if cosine_similarity(user_vec, task_vec) >= similarity_threshold:
             matched_tasks.append(task)

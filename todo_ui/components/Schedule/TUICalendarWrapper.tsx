@@ -1,6 +1,7 @@
 "use client"
 // dynamic wrapper for TUICalendar to prevent SSR issues
 
+import React from "react"
 import dynamic from "next/dynamic"
 import type { EventObject } from "@toast-ui/calendar"
 

@@ -1,7 +1,7 @@
 # API Handwritten - Existing Functionalities
 
 ## Architecture
-FastAPI + Supabase + OpenAI/Ollama hybrid AI scheduler with Google OAuth
+FastAPI + Supabase + OpenAI AI scheduler with Google OAuth
 
 ## Core Modules
 
@@ -41,7 +41,7 @@ FastAPI + Supabase + OpenAI/Ollama hybrid AI scheduler with Google OAuth
 Uses GPT-5 (intended) for structured JSON outputs via OpenAI SDK
 
 ### AI Utilities
-**Intent Classifier** (`ai/intent_classifier.py`): Ollama nomic-embed-text embeddings → cosine similarity → top-k intent selection
+**Intent Classifier** (`ai/intent_classifier.py`): OpenAI text-embedding-3-small embeddings → cosine similarity → top-k intent selection
 **Semantic Matcher** (`ai/semantic_matcher.py`): Matches user descriptions to tasks via vector similarity (threshold 0.75)
 
 ### Calendar API (`calendar/user_actions.py`)
@@ -61,7 +61,7 @@ UTC ↔ local timezone conversions with pytz
 ```
 User Input → Intent Classifier → Route to function → OpenAI call → Database write → Response
               ↓
-         Ollama embeddings
+         OpenAI embeddings
 ```
 
 ## Schemas

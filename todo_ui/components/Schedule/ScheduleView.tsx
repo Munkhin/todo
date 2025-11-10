@@ -1,6 +1,8 @@
 "use client"
 // defines the schedule tab content
 
+import React, { useState, useEffect } from "react"
+
 // installing controllers
 import ModelResponseController from "@/controllers/model_response"
 import CalendarController from "@/controllers/calendar"
@@ -13,7 +15,6 @@ import { ChatBar } from "../Schedule/ChatBar"
 import "@toast-ui/calendar/dist/toastui-calendar.min.css"
 
 // state management utility functions
-import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { calculateUsagePercent } from "@/lib/utils"
 

@@ -1,5 +1,6 @@
 "use client"
 // react query
+import React from "react"
 import { useSettings } from "@/hooks/use-settings"
 // end react query
 import { settingsStyles } from "./SettingsView.styles"

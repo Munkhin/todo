@@ -1,5 +1,6 @@
 // handles file uploads, user text input and sending
 
+import React, { useRef, useState } from "react"
 import { IconPlus } from "@tabler/icons-react"
 import { ArrowUpIcon } from "lucide-react"
 import {
@@ -11,7 +12,6 @@ import {
 } from "@/components/ui/input-group"
 import { Separator } from "@/components/ui/separator"
 import "./ChatBar.css"
-import { useRef, useState } from "react"
 
 type ChatBarProps = {
   value?: string

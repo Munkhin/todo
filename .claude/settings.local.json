@@ -106,7 +106,11 @@
       "Bash(env)",
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs",
-      "Bash(npm ls:*)"
+      "Bash(npm ls:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npx eslint:*)",
+      "Bash(git rebase:*)",
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "ask": []
