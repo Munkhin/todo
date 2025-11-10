@@ -1,31 +1,23 @@
 "use client"
-import { useEffect, useCallback } from "react"
-import { useTaskStore } from "@/lib/store/useTaskStore"
-import { useChatStore } from "@/lib/store/useChatStore"
-import { useUserId } from "@/hooks/use-user-id"
+import { useEffect } from "react"
+// react query
+import { useTasks } from "@/hooks/use-tasks"
+import { taskEvents } from "@/lib/events/taskEvents"
+// end react query
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { tasksViewStyles } from "./TasksView.styles"
 import { Calendar } from "lucide-react"
 
 export default function TasksView() {
-  const tasks = useTaskStore((s) => s.tasks) ?? []
-  const fetchTasks = useTaskStore((s) => s.fetchTasks)
-  const setOnTasksCreated = useChatStore((s) => s.setOnTasksCreated)
-  const userId = useUserId()
+  const { tasks, fetchTasks } = useTasks()
 
-  // initial fetch
+  // subscribe to task events (when chat creates tasks)
   useEffect(() => {
-    fetchTasks({}).catch(() => {})
-  }, [fetchTasks, userId])
-
-  // register callback to refresh tasks when chat creates new tasks
-  const handleTasksCreated = useCallback(() => {
-    fetchTasks({}).catch(() => {})
+    const unsubscribe = taskEvents.subscribe(() => {
+      fetchTasks({}).catch(() => {})
+    })
+    return unsubscribe
   }, [fetchTasks])
-
-  useEffect(() => {
-    setOnTasksCreated(handleTasksCreated)
-  }, [setOnTasksCreated, handleTasksCreated])
 
   return (
     <section className={tasksViewStyles.container} aria-labelledby="tasks-heading">

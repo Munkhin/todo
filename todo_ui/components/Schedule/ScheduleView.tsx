@@ -1,3 +1,4 @@
+"use client"
 // defines the schedule tab content
 
 // installing controllers
