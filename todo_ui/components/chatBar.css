@@ -1,0 +1,14 @@
+/* chatBar component styles */
+
+.chat-bar-container {
+  width: 100%;
+  max-width: 32rem; /* max-w-sm */
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .chat-bar-container {
+    max-width: 42rem; /* Slightly wider on larger screens */
+  }
+}
