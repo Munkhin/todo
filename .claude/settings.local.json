@@ -110,7 +110,9 @@
       "Bash(npm run lint:*)",
       "Bash(npx eslint:*)",
       "Bash(git rebase:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr close:*)"
     ],
     "deny": [],
     "ask": []
