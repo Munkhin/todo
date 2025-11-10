@@ -2,7 +2,13 @@
 
 import PyPDF2
 from PIL import Image
-import pytesseract
+
+# make pytesseract optional for deployments without tesseract-ocr
+try:
+    import pytesseract
+    PYTESSERACT_AVAILABLE = True
+except ImportError:
+    PYTESSERACT_AVAILABLE = False
 
 def file_to_text(file) -> str:
     """convert file to text based on file type (PDF or image)"""
@@ -43,6 +49,9 @@ def extract_text_from_pdf(file_path: str) -> str:
 
 def extract_text_from_image(file_path: str) -> str:
     """extract text from image using OCR (requires pytesseract)"""
+    if not PYTESSERACT_AVAILABLE:
+        return "[Image OCR not available - pytesseract not installed]"
+
     try:
         image = Image.open(file_path)
         text = pytesseract.image_to_string(image)
