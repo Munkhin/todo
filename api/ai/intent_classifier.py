@@ -1,19 +1,31 @@
 import requests
 import numpy as np
+from requests.exceptions import ConnectionError, Timeout
 
 # ------------------- Embedding functions -------------------
 
 def get_ollama_embedding(text, model="nomic-embed-text"):
-    """Get embedding from Ollama API"""
-    url = "http://localhost:11434/api/embeddings"
-    payload = {"model": model, "prompt": text}
-    response = requests.post(url, json=payload)
-    response.raise_for_status()
-    return np.array(response.json()["embedding"])
+    """Get embedding from Ollama API with error handling"""
+    try:
+        url = "http://localhost:11434/api/embeddings"
+        payload = {"model": model, "prompt": text}
+        response = requests.post(url, json=payload, timeout=5)
+        response.raise_for_status()
+        return np.array(response.json()["embedding"])
+    except (ConnectionError, Timeout) as e:
+        # Ollama is not available - return None to trigger fallback
+        return None
+    except Exception as e:
+        # Other errors (API errors, invalid response, etc.)
+        print(f"Warning: Ollama embedding failed: {e}")
+        return None
 
 def embed(texts):
-    """Embed multiple texts and return numpy matrix"""
-    return np.vstack([get_ollama_embedding(t) for t in texts])
+    """Embed multiple texts and return numpy matrix, returns None if any embedding fails"""
+    embeddings = [get_ollama_embedding(t) for t in texts]
+    if any(e is None for e in embeddings):
+        return None
+    return np.vstack(embeddings)
 
 # ------------------- Intent setup -------------------
 
@@ -31,19 +43,69 @@ intent_examples = {
                            ]
 }
 
-# Precompute mean embeddings per intent
+# Precompute mean embeddings per intent (if Ollama is available)
 intent_vectors = {}
-for intent, examples in intent_examples.items():
-    vec = embed(examples).mean(axis=0)
-    vec /= np.linalg.norm(vec)
-    intent_vectors[intent] = vec
+ollama_available = True
+
+try:
+    for intent, examples in intent_examples.items():
+        embedded = embed(examples)
+        if embedded is None:
+            # Ollama not available, skip embeddings
+            ollama_available = False
+            break
+        vec = embedded.mean(axis=0)
+        vec /= np.linalg.norm(vec)
+        intent_vectors[intent] = vec
+except Exception as e:
+    print(f"Warning: Could not precompute intent embeddings: {e}")
+    ollama_available = False
+
+if not ollama_available:
+    print("Warning: Ollama unavailable - intent classification will use keyword-based fallback")
 
 # ------------------- Classification -------------------
+
+def classify_intent_keyword_fallback(text: str, intents: list[str]) -> list[str]:
+    """
+    Keyword-based intent classification fallback when embeddings unavailable.
+
+    Args:
+        text: User input message
+        intents: List of intent names (must be keys in intent_examples)
+
+    Returns:
+        List of detected intent strings
+    """
+    text_lower = text.lower()
+    detected = []
+
+    # Define keyword patterns for each intent
+    keyword_patterns = {
+        "recommend-slots": ["when should", "best time", "recommend", "suggest time"],
+        "schedule-tasks": ["schedule", "add", "create", "upload", "meeting", "session"],
+        "delete-tasks": ["delete", "remove", "clear", "cancel"],
+        "reschedule": ["move", "reschedule", "delegate", "reassign", "plan again", "change time"],
+        "check-calendar": ["when am i free", "what's scheduled", "check calendar", "show tasks", "what are my"],
+        "update-preferences": ["limit", "preference", "keep", "free", "try not to", "focused in", "max", "break"]
+    }
+
+    for intent in intents:
+        if intent in keyword_patterns:
+            # Check if any keyword pattern matches
+            if any(keyword in text_lower for keyword in keyword_patterns[intent]):
+                detected.append(intent)
+
+    # If no matches found, default to schedule-tasks
+    if not detected:
+        detected = ["schedule-tasks"]
+
+    return detected
 
 def classify_intent(text: str, intents: list[str], dynamic_ratio: float = 0.8) -> list[str]:
     """
     Classify text into one or more intents using dynamic thresholding.
-    
+
     Args:
         text: User input message
         intents: List of intent names (must be keys in intent_vectors)
@@ -52,7 +114,18 @@ def classify_intent(text: str, intents: list[str], dynamic_ratio: float = 0.8) -
     Returns:
         List of detected intent strings
     """
+    # Use keyword fallback if embeddings unavailable
+    if not ollama_available or not intent_vectors:
+        print("Warning: Using keyword-based fallback for intent classification")
+        return classify_intent_keyword_fallback(text, intents)
+
     msg_vec = get_ollama_embedding(text)
+
+    # If embedding fails at runtime, use fallback
+    if msg_vec is None:
+        print("Warning: Using keyword-based fallback for intent classification")
+        return classify_intent_keyword_fallback(text, intents)
+
     msg_vec /= np.linalg.norm(msg_vec)
 
     # Compute cosine similarity with each intent vector
