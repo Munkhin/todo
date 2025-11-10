@@ -55,6 +55,34 @@ def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
         print(f"Error getting user: {e}")
         return None
 
+def create_or_update_user_by_email(email: str, name: Optional[str] = None) -> int:
+    """create or update user by email (for NextAuth integration), returns user id"""
+    try:
+        # check if user exists by email
+        response = supabase.table("users").select("id").eq("email", email).execute()
+
+        if response.data:
+            # update existing user
+            user_id = response.data[0]["id"]
+            if name:
+                supabase.table("users").update({
+                    "name": name
+                }).eq("id", user_id).execute()
+            return user_id
+        else:
+            # create new user without google_user_id (NextAuth user)
+            response = supabase.table("users").insert({
+                "email": email,
+                "name": name or email.split("@")[0],
+                "subscription_plan": "free",
+                "credits_used": 0,
+                "subscription_status": "active"
+            }).execute()
+            return response.data[0]["id"]
+    except Exception as e:
+        print(f"Error creating/updating user by email: {e}")
+        raise
+
 def get_user_credits(user_id: int) -> Optional[Dict[str, Any]]:
     """get user's credit information"""
     try:
