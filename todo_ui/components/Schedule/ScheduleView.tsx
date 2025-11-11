@@ -6,7 +6,7 @@ import React, { useState, useEffect } from "react"
 // installing controllers
 import ModelResponseController from "@/controllers/model_response"
 import CalendarController from "@/controllers/calendar"
-import CreditsController from "@/controllers/credits"
+import SubscriptionController from "@/controllers/subscription"
 
 // event mapper
 import { toTUIEvent, fromTUIEvent } from "@/lib/mappers/calendarEventMapper"
@@ -104,7 +104,7 @@ export function ScheduleView() {
     // fetch usage for percentage display on the chatbox
     async function fetchUsage() {
         try {
-            const { used, limit } = await CreditsController.getUsage(userId)
+            const { used, limit } = await SubscriptionController.getUsage(userId)
             setUsagePercent(calculateUsagePercent(used, limit))
         } catch (error) {
             console.error("Failed to fetch credit usage:", error)

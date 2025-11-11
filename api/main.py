@@ -58,17 +58,20 @@ def favicon():
 
 # routes
 from api.auth.auth_routes import router as auth_router
-from api.calendar.user_actions import router as calendar_router
-from api.chat_routes import router as chat_router
-from api.credits_routes import router as credits_router
-from api.user_routes import router as user_router
+from api.calendar.event_routes import router as calendar_router
+from api.tasks.task_routes import router as task_router
+from api.ai.chat_routes import router as chat_router
+from api.business_logic.subscription_routes import router as subscription_router
+from api.auth.user_routes import router as user_router
 
 # register routers with prefixes
 app.include_router(auth_router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(calendar_router, prefix="/api/calendar", tags=["Calendar"])
+app.include_router(task_router, prefix="/api", tags=["Tasks"])
 app.include_router(chat_router, prefix="/api/chat", tags=["Chat"])
-app.include_router(credits_router, prefix="/api", tags=["Credits"])
+app.include_router(subscription_router, prefix="/api", tags=["Subscription"])
 app.include_router(user_router, prefix="/api/user", tags=["User"])
+
 
 if __name__ == "__main__":
     import uvicorn

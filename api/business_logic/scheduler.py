@@ -32,7 +32,7 @@ async def get_empty_slots(user_id, start_date, end_date, min_study_duration, max
         return get_empty_slots._cache[cache_key]
     # ---------------------------------------------------------- #
 
-    from api.calendar.user_actions import get_calendar_events
+    from api.calendar.event_routes import get_calendar_events
 
     # get calendar events using existing route function
     result = await get_calendar_events(

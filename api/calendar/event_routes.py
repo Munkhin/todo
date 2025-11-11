@@ -1,15 +1,20 @@
-# routes for the user to edit tasks manually
-# for small scale edits on the calendar
+# routes for calendar event management
+# allows users to manually create, update, and delete calendar events
 
 from fastapi import APIRouter, HTTPException
 from typing import Optional
 from pydantic import BaseModel
 from datetime import datetime
-from api.database import supabase, create_calendar_event, update_calendar_event, delete_calendar_event
+from api.database import (
+    supabase,
+    create_calendar_event,
+    update_calendar_event,
+    delete_calendar_event
+)
 
 router = APIRouter()
 
-# request models
+# request models for calendar events
 class CreateCalendarEventRequest(BaseModel):
     user_id: int
     title: str
@@ -28,6 +33,8 @@ class UpdateCalendarEventRequest(BaseModel):
     event_type: Optional[str] = None
     source: Optional[str] = None
     task_id: Optional[int] = None
+
+# ============ CALENDAR EVENT ROUTES ============
 
 @router.get("/events")
 async def get_calendar_events(
