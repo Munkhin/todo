@@ -37,7 +37,7 @@ def match_tasks(user_input, tasks, similarity_threshold=0.75):
 
     Args:
         user_input: String describing task to delete
-        tasks: List of dicts, each with "description" or "topic" key
+        tasks: List of dicts, each with "title" or "description" key
         similarity_threshold: Min cosine similarity to consider a match
 
     Returns:
@@ -48,8 +48,8 @@ def match_tasks(user_input, tasks, similarity_threshold=0.75):
 
     matched_tasks = []
     for task in tasks:
-        # Use description if available (from app), otherwise fall back to topic (from database)
-        task_text = task.get("description") or task.get("topic", "")
+        # Use title or description for matching
+        task_text = task.get("title") or task.get("description", "")
         if not task_text:
             continue
 

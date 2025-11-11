@@ -16,34 +16,38 @@ export interface TaskEvent {
 export interface Task {
   id: number;
   user_id: number;
-  topic: string;
-  estimated_minutes: number;
-  difficulty: number;
-  due_date: string;
+  title: string;
+  estimated_duration?: number;
+  difficulty?: number;
+  priority: string;  // 'low' | 'medium' | 'high'
+  due_date?: string;
   description?: string;
   status: string;
   scheduled_start?: string;
   scheduled_end?: string;
-  review_count: number;
-  confidence_score: number;
+  created_at: string;
+  updated_at: string;
   events?: TaskEvent[];
 }
 
 export interface TaskCreateData {
   user_id: number;
-  topic: string;
-  estimated_minutes: number;
+  title: string;
+  estimated_duration?: number;
   difficulty?: number;
-  due_date: string;
+  priority?: string;
+  due_date?: string;
   description?: string;
-  source_text?: string;
-  confidence_score?: number;
+  status?: string;
+  scheduled_start?: string;
+  scheduled_end?: string;
 }
 
 export interface TaskUpdateData {
-  topic?: string;
-  estimated_minutes?: number;
+  title?: string;
+  estimated_duration?: number;
   difficulty?: number;
+  priority?: string;
   due_date?: string;
   description?: string;
   status?: string;

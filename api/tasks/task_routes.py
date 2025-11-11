@@ -21,17 +21,23 @@ class CreateTaskRequest(BaseModel):
     title: str
     description: Optional[str] = None
     priority: Optional[str] = "medium"  # low, medium, high
+    difficulty: Optional[int] = None  # 1-10 scale
     status: str = "pending"  # pending, in_progress, completed
     due_date: Optional[str] = None  # ISO format datetime string
     estimated_duration: Optional[int] = None  # minutes
+    scheduled_start: Optional[str] = None  # ISO format datetime string
+    scheduled_end: Optional[str] = None  # ISO format datetime string
 
 class UpdateTaskRequest(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     priority: Optional[str] = None
+    difficulty: Optional[int] = None
     status: Optional[str] = None
     due_date: Optional[str] = None
     estimated_duration: Optional[int] = None
+    scheduled_start: Optional[str] = None
+    scheduled_end: Optional[str] = None
 
 # ============ TASK ROUTES ============
 
@@ -62,15 +68,34 @@ async def create_new_task(request: CreateTaskRequest):
             except ValueError:
                 raise HTTPException(status_code=400, detail="Invalid due_date format. Use ISO format (e.g., 2024-01-01T10:00:00Z)")
 
+        # validate scheduled times if provided
+        if request.scheduled_start:
+            try:
+                datetime.fromisoformat(request.scheduled_start.replace("Z", "+00:00"))
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid scheduled_start format. Use ISO format")
+        if request.scheduled_end:
+            try:
+                datetime.fromisoformat(request.scheduled_end.replace("Z", "+00:00"))
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid scheduled_end format. Use ISO format")
+
+        # validate difficulty if provided
+        if request.difficulty is not None and (request.difficulty < 1 or request.difficulty > 10):
+            raise HTTPException(status_code=400, detail="Difficulty must be between 1 and 10")
+
         # create task data
         task_data = {
             "user_id": request.user_id,
             "title": request.title,
             "description": request.description,
             "priority": request.priority,
+            "difficulty": request.difficulty,
             "status": request.status,
             "due_date": request.due_date,
-            "estimated_duration": request.estimated_duration
+            "estimated_duration": request.estimated_duration,
+            "scheduled_start": request.scheduled_start,
+            "scheduled_end": request.scheduled_end
         }
 
         task_id = create_task(task_data)
@@ -107,6 +132,10 @@ async def update_existing_task(task_id: int, request: UpdateTaskRequest):
             update_data["description"] = request.description
         if request.priority is not None:
             update_data["priority"] = request.priority
+        if request.difficulty is not None:
+            if request.difficulty < 1 or request.difficulty > 10:
+                raise HTTPException(status_code=400, detail="Difficulty must be between 1 and 10")
+            update_data["difficulty"] = request.difficulty
         if request.status is not None:
             update_data["status"] = request.status
         if request.due_date is not None:
@@ -118,6 +147,18 @@ async def update_existing_task(task_id: int, request: UpdateTaskRequest):
             update_data["due_date"] = request.due_date
         if request.estimated_duration is not None:
             update_data["estimated_duration"] = request.estimated_duration
+        if request.scheduled_start is not None:
+            try:
+                datetime.fromisoformat(request.scheduled_start.replace("Z", "+00:00"))
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid scheduled_start format. Use ISO format")
+            update_data["scheduled_start"] = request.scheduled_start
+        if request.scheduled_end is not None:
+            try:
+                datetime.fromisoformat(request.scheduled_end.replace("Z", "+00:00"))
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid scheduled_end format. Use ISO format")
+            update_data["scheduled_end"] = request.scheduled_end
 
         if not update_data:
             raise HTTPException(status_code=400, detail="No fields to update")

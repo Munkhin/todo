@@ -30,14 +30,15 @@ export default function TasksView() {
             <Card>
               <CardHeader className={tasksViewStyles.cardHeader}>
                 <div className={tasksViewStyles.cardHeaderRow}>
-                  <h2 className={tasksViewStyles.cardTitle}>{t.topic}</h2>
-                  <span className={tasksViewStyles.cardMeta} aria-label="Estimated minutes">{t.estimated_minutes}m</span>
+                  <h2 className={tasksViewStyles.cardTitle}>{t.title}</h2>
+                  <span className={tasksViewStyles.cardMeta} aria-label="Estimated duration">{t.estimated_duration || 0}m</span>
                 </div>
               </CardHeader>
               <CardContent>
                 <p className={tasksViewStyles.cardDesc}>{t.description || "No description"}</p>
-                <p className={tasksViewStyles.cardDue}>Due: {new Date(t.due_date).toLocaleString()}</p>
-                <p className={tasksViewStyles.cardMeta}>Difficulty: {t.difficulty}/5</p>
+                <p className={tasksViewStyles.cardDue}>Due: {t.due_date ? new Date(t.due_date).toLocaleString() : 'No due date'}</p>
+                <p className={tasksViewStyles.cardMeta}>Priority: {t.priority}</p>
+                {t.difficulty && <p className={tasksViewStyles.cardMeta}>Difficulty: {t.difficulty}/10</p>}
 
                 {/* scheduled sessions */}
                 {t.events && t.events.length > 0 && (

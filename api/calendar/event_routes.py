@@ -22,6 +22,7 @@ class CreateCalendarEventRequest(BaseModel):
     start_time: str  # ISO format datetime string
     end_time: str  # ISO format datetime string
     event_type: str = "study"  # study, rest, break
+    priority: str = "medium"  # low, medium, high
     source: str = "user"  # user or system
     task_id: Optional[int] = None
 
@@ -31,6 +32,7 @@ class UpdateCalendarEventRequest(BaseModel):
     start_time: Optional[str] = None
     end_time: Optional[str] = None
     event_type: Optional[str] = None
+    priority: Optional[str] = None
     source: Optional[str] = None
     task_id: Optional[int] = None
 
@@ -92,6 +94,7 @@ async def create_event(request: CreateCalendarEventRequest):
             "start_time": request.start_time,
             "end_time": request.end_time,
             "event_type": request.event_type,
+            "priority": request.priority,
             "source": request.source,
             "task_id": request.task_id
         }
@@ -144,6 +147,8 @@ async def update_event(event_id: int, request: UpdateCalendarEventRequest):
             update_data["end_time"] = request.end_time
         if request.event_type is not None:
             update_data["event_type"] = request.event_type
+        if request.priority is not None:
+            update_data["priority"] = request.priority
         if request.source is not None:
             update_data["source"] = request.source
         if request.task_id is not None:

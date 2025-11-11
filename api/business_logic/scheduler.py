@@ -209,6 +209,15 @@ def schedule_task(schedule, task, min_duration, max_duration, current_time, rema
 
         effective_duration = task_duration - leftover
 
+    # map difficulty to priority (1-3: low, 4-7: medium, 8-10: high)
+    difficulty = task.get("difficulty", 5)
+    if difficulty <= 3:
+        priority = "low"
+    elif difficulty <= 7:
+        priority = "medium"
+    else:
+        priority = "high"
+
     # concordant with EVENT_SCHEMA from consts.py
     schedule.append({
             "user_id": task.get("user_id"),
@@ -217,6 +226,7 @@ def schedule_task(schedule, task, min_duration, max_duration, current_time, rema
             "start_time": datetime.now(timezone.utc).replace(hour=int(current_time), minute=int((current_time % 1) * 60)).isoformat(),
             "end_time": datetime.now(timezone.utc).replace(hour=int(current_time + effective_duration), minute=int(((current_time + effective_duration) % 1) * 60)).isoformat(),
             "event_type": "study",
+            "priority": priority,
             "source": "scheduler",
             "task_id": task.get("task_id")
         })
@@ -245,6 +255,7 @@ def insert_break(schedule, min_duration, break_duration, current_time, remaining
             "start_time": datetime.now(timezone.utc).replace(hour=int(current_time), minute=int((current_time % 1) * 60)).isoformat(),
             "end_time": datetime.now(timezone.utc).replace(hour=int(current_time + break_time), minute=int(((current_time + break_time) % 1) * 60)).isoformat(),
             "event_type": "break",
+            "priority": "low",  # breaks are low priority
             "source": "scheduler",
             "task_id": None
         })

@@ -332,6 +332,7 @@ EVENT_SCHEMA = {
         "start_time": {"type": "string"},  # ISO 8601 timestamp
         "end_time": {"type": "string"},    # ISO 8601 timestamp
         "event_type": {"type": "string"},  # 'study', 'break', etc.
+        "priority": {"type": "string"},    # 'low', 'medium', 'high'
         "source": {"type": "string"},      # 'user', 'scheduler', etc.
         "task_id": {"type": ["number", "null"]}
     },

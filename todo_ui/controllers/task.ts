@@ -5,8 +5,9 @@ export default class TaskController {
   async createTaskFromAI(aiText: string, userId: string) {
     const data = await createTask({
       user_id: Number(userId),
-      topic: aiText,
-      estimated_minutes: 60,
+      title: aiText,
+      estimated_duration: 60,
+      priority: "medium",
       due_date: new Date().toISOString(),
       description: "",
     })

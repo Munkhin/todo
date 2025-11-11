@@ -52,6 +52,71 @@ export default function TUICalendar({
             month: {
                 startDayOfWeek: 0,
             },
+            // customize popup template to include priority, event_type, description
+            template: {
+                popupEdit: function() {
+                    return `
+                        <div class="custom-event-form">
+                            <div class="form-group">
+                                <label>Title</label>
+                                <input type="text" name="title" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label>Description</label>
+                                <textarea name="body" class="form-control" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Event Type</label>
+                                <select name="eventType" class="form-control">
+                                    <option value="study">Study</option>
+                                    <option value="break">Break</option>
+                                    <option value="rest">Rest</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Priority</label>
+                                <select name="priority" class="form-control">
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Start</label>
+                                <input type="datetime-local" name="start" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label>End</label>
+                                <input type="datetime-local" name="end" class="form-control" />
+                            </div>
+                        </div>
+                    `;
+                },
+                popupDetailBody: function(event: EventObject) {
+                    const raw = event.raw || {};
+                    return `
+                        <div class="event-details">
+                            <div class="detail-row">
+                                <strong>Title:</strong> ${event.title || 'Untitled'}
+                            </div>
+                            ${event.body ? `<div class="detail-row"><strong>Description:</strong> ${event.body}</div>` : ''}
+                            <div class="detail-row">
+                                <strong>Event Type:</strong> ${raw.eventType || 'study'}
+                            </div>
+                            <div class="detail-row">
+                                <strong>Priority:</strong> ${raw.priority || 'medium'}
+                            </div>
+                            <div class="detail-row">
+                                <strong>Time:</strong> ${event.start?.toLocaleString()} - ${event.end?.toLocaleString()}
+                            </div>
+                            ${raw.taskId ? `<div class="detail-row"><strong>Task ID:</strong> ${raw.taskId}</div>` : ''}
+                            <div class="detail-row">
+                                <strong>Source:</strong> ${raw.source || 'user'}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
         }
 
         calendarInstanceRef.current = new Calendar(containerRef.current, options)
