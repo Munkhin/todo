@@ -1,0 +1,43 @@
+/* custom tui calendar styling - minimal overrides since we configure via options */
+
+/* ensure calendar fills container properly */
+.toastui-calendar-week-view {
+    height: 100% !important;
+}
+
+/* maximize timeline space */
+.toastui-calendar-time {
+    flex: 1 !important;
+}
+
+/* handle long event text wrapping */
+.toastui-calendar-event-time {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    line-height: 1.2 !important;
+}
+
+.toastui-calendar-event-time .toastui-calendar-template-time {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+}
+
+/* ensure event container allows wrapping */
+.toastui-calendar-event-time-content {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+}
+
+/* make event containers clickable */
+.toastui-calendar-event {
+    cursor: pointer !important;
+    pointer-events: auto !important;
+}
+
+/* ensure event content is clickable */
+.toastui-calendar-event * {
+    pointer-events: auto !important;
+}

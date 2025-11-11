@@ -1,42 +1,89 @@
 "use client"
-// comprehensive calendar component using vanilla tui.calendar (not React wrapper)
+// tui.calendar implementation following official docs
 
 import React, { useRef, useState, useCallback, useEffect } from "react"
 import Calendar from "@toast-ui/calendar"
 import "@toast-ui/calendar/dist/toastui-calendar.min.css"
+import "tui-date-picker/dist/tui-date-picker.css"
+import "tui-time-picker/dist/tui-time-picker.css"
+import "./TUICalendar.css"
 import type { EventObject } from "@toast-ui/calendar"
 
 type CalendarView = "day" | "week" | "month"
 
 interface TUICalendarProps {
     events?: EventObject[]
+    onEventCreate?: (event: EventObject) => Promise<void>
+    onEventUpdate?: (event: EventObject) => Promise<void>
+    onEventDelete?: (eventId: string) => Promise<void>
 }
 
-export default function TUICalendar({ events = [] }: TUICalendarProps) {
+export default function TUICalendar({
+    events = [],
+    onEventCreate,
+    onEventUpdate,
+    onEventDelete
+}: TUICalendarProps) {
     const containerRef = useRef<HTMLDivElement>(null)
     const calendarInstanceRef = useRef<Calendar | null>(null)
     const [view, setView] = useState<CalendarView>("week")
     const [dateRange, setDateRange] = useState("")
 
-    // initialize vanilla calendar instance
+    // initialize calendar instance per docs
     useEffect(() => {
         if (!containerRef.current) return
 
-        // create vanilla calendar instance
-        calendarInstanceRef.current = new Calendar(containerRef.current, {
+        // create calendar instance with options per docs
+        const options = {
             defaultView: view,
-            useFormPopup: false,
-            useDetailPopup: false,
+            useFormPopup: true,
+            useDetailPopup: true,
+            usageStatistics: false,
             week: {
                 showTimezoneCollapseButton: false,
                 timezonesCollapsed: true,
-                eventView: true,
-                taskView: true,
+                // show only time events, hide milestone/task panels to maximize timeline
+                eventView: ['time'],
+                taskView: false,
+                // focus on core working hours for better space utilization
+                hourStart: 6,
+                hourEnd: 22,
             },
             month: {
                 startDayOfWeek: 0,
             },
-            usageStatistics: false,
+        }
+
+        calendarInstanceRef.current = new Calendar(containerRef.current, options)
+
+        // set up event listeners for popup interactions only if handlers provided
+        const calendar = calendarInstanceRef.current
+
+        // handle event creation via popup
+        if (onEventCreate) {
+            calendar.on('beforeCreateEvent', async (eventData: any) => {
+                await onEventCreate(eventData as EventObject)
+            })
+        }
+
+        // handle event update via popup
+        if (onEventUpdate) {
+            calendar.on('beforeUpdateEvent', async ({ event, changes }: any) => {
+                const updatedEvent = { ...event, ...changes }
+                await onEventUpdate(updatedEvent as EventObject)
+            })
+        }
+
+        // handle event deletion
+        if (onEventDelete) {
+            calendar.on('beforeDeleteEvent', async ({ event }: any) => {
+                await onEventDelete(event.id)
+            })
+        }
+
+        // add clickEvent listener for debugging
+        calendar.on('clickEvent', ({ event }: any) => {
+            console.log('Event clicked:', event.title)
         })
 
         updateDateRange()
@@ -47,9 +94,9 @@ export default function TUICalendar({ events = [] }: TUICalendarProps) {
         }
     }, [])
 
-    // update events when they change
+    // update events when they change using createEvents method per docs
     useEffect(() => {
-        if (calendarInstanceRef.current && events) {
+        if (calendarInstanceRef.current && events.length > 0) {
             calendarInstanceRef.current.clear()
             calendarInstanceRef.current.createEvents(events)
         }
@@ -166,8 +213,8 @@ export default function TUICalendar({ events = [] }: TUICalendarProps) {
                 </div>
             </div>
 
-            {/* calendar container */}
-            <div className="flex-1">
+            {/* calendar container - must have explicit height per docs (min 600px) */}
+            <div className="flex-1" style={{ minHeight: "600px" }}>
                 <div ref={containerRef} style={{ height: "100%" }} />
             </div>
         </div>

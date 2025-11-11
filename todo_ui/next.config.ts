@@ -1,10 +1,13 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   // disable file system cache to prevent ENOENT errors
   experimental: {
     webpackBuildWorker: true,
   },
+  // set explicit workspace root to resolve multiple lockfiles warning
+  outputFileTracingRoot: path.join(__dirname, '../'),
   eslint: {
     ignoreDuringBuilds: true,
   },

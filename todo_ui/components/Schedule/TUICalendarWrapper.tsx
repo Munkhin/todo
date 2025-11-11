@@ -7,6 +7,9 @@ import type { EventObject } from "@toast-ui/calendar"
 
 interface TUICalendarProps {
     events?: EventObject[]
+    onEventCreate?: (event: EventObject) => Promise<void>
+    onEventUpdate?: (event: EventObject) => Promise<void>
+    onEventDelete?: (eventId: string) => Promise<void>
 }
 
 // dynamically import TUICalendar with no SSR
@@ -19,6 +22,18 @@ const TUICalendar = dynamic(() => import("./TUICalendar"), {
     ),
 })
 
-export default function TUICalendarWrapper({ events }: TUICalendarProps) {
-    return <TUICalendar events={events} />
+export default function TUICalendarWrapper({
+    events,
+    onEventCreate,
+    onEventUpdate,
+    onEventDelete
+}: TUICalendarProps) {
+    return (
+        <TUICalendar
+            events={events}
+            onEventCreate={onEventCreate}
+            onEventUpdate={onEventUpdate}
+            onEventDelete={onEventDelete}
+        />
+    )
 }

@@ -1,0 +1,68 @@
+/* demo calendar container */
+.demo-container {
+    display: grid;
+    grid-template-rows: 85% 15%;
+    height: 100%;
+}
+
+/* main content wrapper at 80% width with border */
+.demo-content-wrapper {
+    width: 80%;
+    margin: 0 auto;
+    border: 2px solid #000000;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* calendar wrapper */
+.demo-calendar-wrapper {
+    flex: 1;
+    overflow: hidden;
+}
+
+/* calendar inner container */
+.demo-calendar-inner {
+    height: 100%;
+    min-height: 600px;
+}
+
+/* chatbar wrapper */
+.demo-chatbar-wrapper {
+    padding: 1rem;
+    background-color: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+}
+
+.demo-chatbar-inner {
+    width: 100%;
+}
+
+/* demo-specific task dialog positioning */
+.demo-calendar-wrapper {
+    position: relative;
+}
+
+.demo-calendar-wrapper .task-dialog-container {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 48rem;
+    width: 90%;
+    padding: 0 1rem;
+    z-index: 10;
+}
+
+.demo-calendar-wrapper .task-dialog-box {
+    background-color: white;
+    border: 3px solid #000000 !important;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    padding: 1.5rem;
+}
+
+/* demo link styling */
+.demo-link {
+    text-decoration: underline;
+}

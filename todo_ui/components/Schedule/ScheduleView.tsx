@@ -8,6 +8,11 @@ import ModelResponseController from "@/controllers/model_response"
 import CalendarController from "@/controllers/calendar"
 import CreditsController from "@/controllers/credits"
 
+// event mapper
+import { toTUIEvent, fromTUIEvent } from "@/lib/mappers/calendarEventMapper"
+import { createManualEvent, updateManualEvent, deleteEvent } from "@/lib/api/calendar"
+import type { EventObject } from "@toast-ui/calendar"
+
 // ui
 import TUICalendar from "../Schedule/TUICalendarWrapper"
 import TaskDialog from "../Schedule/TaskDialog"
@@ -40,13 +45,59 @@ export function ScheduleView() {
         }
     }, [userId])
 
-    // load calendar events
+    // load calendar events and transform to TUI format
     async function loadCalendarEvents() {
         try {
             const events = await CalendarController.loadEvents(userId)
-            setCalendarEvents(events || [])
+            const tuiEvents = (events || []).map(toTUIEvent)
+            setCalendarEvents(tuiEvents)
         } catch (error) {
             console.error("Failed to load calendar events:", error)
+        }
+    }
+
+    // handle event creation from popup
+    async function handleEventCreate(event: EventObject) {
+        try {
+            const eventData = fromTUIEvent(event)
+            await createManualEvent({
+                user_id: Number(userId),
+                title: eventData.title || '',
+                start_time: eventData.start_time || '',
+                end_time: eventData.end_time || '',
+                event_type: eventData.event_type,
+            })
+            await loadCalendarEvents()
+        } catch (error) {
+            console.error("Failed to create event:", error)
+        }
+    }
+
+    // handle event update from popup
+    async function handleEventUpdate(event: EventObject) {
+        try {
+            const eventData = fromTUIEvent(event)
+            if (eventData.id) {
+                await updateManualEvent(eventData.id, {
+                    title: eventData.title,
+                    start_time: eventData.start_time,
+                    end_time: eventData.end_time,
+                    event_type: eventData.event_type,
+                })
+                await loadCalendarEvents()
+            }
+        } catch (error) {
+            console.error("Failed to update event:", error)
+        }
+    }
+
+    // handle event deletion from popup
+    async function handleEventDelete(eventId: string) {
+        try {
+            await deleteEvent(Number(eventId))
+            await loadCalendarEvents()
+        } catch (error) {
+            console.error("Failed to delete event:", error)
         }
     }
 
@@ -82,7 +133,12 @@ export function ScheduleView() {
     return (
         <div className="schedule-view-container">
             <div className="schedule-view-calendar-wrapper">
-                <TUICalendar events={calendarEvents} />
+                <TUICalendar
+                    events={calendarEvents}
+                    onEventCreate={handleEventCreate}
+                    onEventUpdate={handleEventUpdate}
+                    onEventDelete={handleEventDelete}
+                />
                 {responseMessage && <TaskDialog text={responseMessage} />}
             </div>
             <div className="schedule-view-chat-wrapper">
