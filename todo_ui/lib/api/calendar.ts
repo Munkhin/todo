@@ -28,7 +28,7 @@ export async function createManualEvent(payload: {
   event_type?: CalendarEventType
   task_id?: number
 }) {
-  return api.post<{ id: number }>(`/api/calendar/manual-event`, payload)
+  return api.post<{ id: number }>(`/api/calendar/events`, payload)
 }
 
 export async function updateManualEvent(eventId: number, updates: Partial<{
@@ -37,7 +37,7 @@ export async function updateManualEvent(eventId: number, updates: Partial<{
   end_time: string
   event_type: CalendarEventType
 }>) {
-  return api.put<{ ok: boolean }>(`/api/calendar/manual-event/${eventId}`, updates)
+  return api.put<{ ok: boolean }>(`/api/calendar/events/${eventId}`, updates)
 }
 
 export async function deleteEvent(eventId: number) {
