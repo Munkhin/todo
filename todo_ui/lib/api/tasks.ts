@@ -72,11 +72,6 @@ export const listTasks = async (params?: {
   );
 };
 
-// get single task
-export const getTask = async (taskId: string) => {
-  return api.get<{ task: Task }>(`/api/tasks/${taskId}`);
-};
-
 // create new task
 export const createTask = async (data: TaskCreateData) => {
   return api.post<{ task_id: string; message: string }>('/api/tasks', data);
@@ -90,9 +85,4 @@ export const updateTask = async (taskId: string, data: TaskUpdateData) => {
 // delete task
 export const deleteTask = async (taskId: string) => {
   return api.delete<{ message: string }>(`/api/tasks/${taskId}`);
-};
-
-// mark task as completed
-export const completeTask = async (taskId: string) => {
-  return api.post<{ message: string }>(`/api/tasks/${taskId}/complete`);
 };
