@@ -36,8 +36,11 @@ class UpdateTaskRequest(BaseModel):
 # ============ TASK ROUTES ============
 
 @router.get("/tasks")
-async def get_tasks(user_id: int):
+async def get_tasks(user_id: Optional[int] = None):
     """get all tasks for user"""
+    if user_id is None:
+        raise HTTPException(status_code=400, detail="user_id query parameter is required")
+
     try:
         tasks = get_tasks_by_user(user_id)
         return {

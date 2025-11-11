@@ -38,11 +38,14 @@ class UpdateCalendarEventRequest(BaseModel):
 
 @router.get("/events")
 async def get_calendar_events(
-    user_id: int,
+    user_id: Optional[int] = None,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None
 ):
     """get calendar events for user, optionally filtered by date range (overlap logic)"""
+    if user_id is None:
+        raise HTTPException(status_code=400, detail="user_id query parameter is required")
+
     try:
         # build query
         query = supabase.table("calendar_events").select("*").eq("user_id", user_id)
