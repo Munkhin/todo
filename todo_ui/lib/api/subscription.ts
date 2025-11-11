@@ -8,7 +8,7 @@ export interface Subscription {
 }
 
 export async function getSubscription(userId: number) {
-  return api.get<Subscription>(`/api/subscription?user_id=${userId}`)
+  return api.get<Subscription>(`/api/users/${userId}/subscription`)
 }
 
 export async function changePlan(userId: number, newPlan: Subscription['plan']) {
