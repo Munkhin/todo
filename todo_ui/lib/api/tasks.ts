@@ -53,12 +53,16 @@ export interface TaskUpdateData {
 
 // list all tasks with optional filters
 export const listTasks = async (params?: {
+  user_id?: number;
   include_completed?: boolean;
   source?: string;
   start_date?: string;
   end_date?: string;
 }) => {
   const queryParams = new URLSearchParams();
+  if (params?.user_id !== undefined) {
+    queryParams.append('user_id', String(params.user_id));
+  }
   if (params?.include_completed !== undefined) {
     queryParams.append('include_completed', String(params.include_completed));
   }

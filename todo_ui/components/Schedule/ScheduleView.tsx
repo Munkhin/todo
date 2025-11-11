@@ -21,7 +21,7 @@ import "@toast-ui/calendar/dist/toastui-calendar.min.css"
 import "./ScheduleView.css"
 
 // state management utility functions
-import { useSession } from "next-auth/react"
+import { useUserId } from "@/hooks/use-user-id"
 import { calculateUsagePercent } from "@/lib/utils"
 
 
@@ -34,8 +34,7 @@ export function ScheduleView() {
     const [usagePercent, setUsagePercent] = useState<number>(0)
 
     // get user id from auth
-    const { data: session } = useSession()
-    const userId = session?.user?.id || ""
+    const userId = useUserId()
 
     // fetch credit usage and calendar events on mount
     useEffect(() => {
@@ -48,7 +47,7 @@ export function ScheduleView() {
     // load calendar events and transform to TUI format
     async function loadCalendarEvents() {
         try {
-            const events = await CalendarController.loadEvents(userId)
+            const events = await CalendarController.loadEvents(String(userId))
             const tuiEvents = (events || []).map(toTUIEvent)
             setCalendarEvents(tuiEvents)
         } catch (error) {
@@ -61,7 +60,7 @@ export function ScheduleView() {
         try {
             const eventData = fromTUIEvent(event)
             await createManualEvent({
-                user_id: Number(userId),
+                user_id: userId || 0,
                 title: eventData.title || '',
                 start_time: eventData.start_time || '',
                 end_time: eventData.end_time || '',
@@ -104,7 +103,7 @@ export function ScheduleView() {
     // fetch usage for percentage display on the chatbox
     async function fetchUsage() {
         try {
-            const { used, limit } = await SubscriptionController.getUsage(userId)
+            const { used, limit } = await SubscriptionController.getUsage(String(userId))
             setUsagePercent(calculateUsagePercent(used, limit))
         } catch (error) {
             console.error("Failed to fetch credit usage:", error)
@@ -114,7 +113,7 @@ export function ScheduleView() {
     // handling sending via chatbox
     async function handleChatSubmit(query: string, file?: File) {
         // 1. send query to backend (AI + scheduling)
-        const response = await ModelResponseController.call(query, userId, file)
+        const response = await ModelResponseController.call(query, String(userId), file)
 
         // 2. show any feedback message via task dialog
         const text = ModelResponseController.extractText(response)

@@ -1,6 +1,7 @@
 // react query
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { listTasks, type Task } from '@/lib/api/tasks'
+import { useUserId } from './use-user-id'
 
 interface UseTasksOptions {
   filters?: {
@@ -14,14 +15,17 @@ interface UseTasksOptions {
 export function useTasks(options: UseTasksOptions = {}) {
   const queryClient = useQueryClient()
   const { filters } = options
+  const userId = useUserId()
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['tasks', filters],
+    queryKey: ['tasks', filters, userId],
     queryFn: async () => {
-      const response = await listTasks(filters)
+      if (!userId) return []
+      const response = await listTasks({ ...filters, user_id: userId })
       return response.tasks
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
+    enabled: !!userId, // only run query when userId is available
   })
 
   const tasks = data ?? []
