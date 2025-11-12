@@ -161,9 +161,11 @@ export default function TUICalendar({
 
     // update events when they change using createEvents method per docs
     useEffect(() => {
-        if (calendarInstanceRef.current && events.length > 0) {
+        if (calendarInstanceRef.current) {
             calendarInstanceRef.current.clear()
-            calendarInstanceRef.current.createEvents(events)
+            if (events.length > 0) {
+                calendarInstanceRef.current.createEvents(events)
+            }
         }
     }, [events])
 

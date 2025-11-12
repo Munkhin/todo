@@ -15,14 +15,9 @@
 .schedule-view-calendar-wrapper {
   flex: 1;
   min-height: 0;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
+  overflow-y: auto;
+  overflow-x: hidden;
   position: relative;
-}
-
-/* force unified scrolling - remove all internal scroll containers */
-.schedule-view-calendar-wrapper * {
-  overflow: visible !important;
 }
 
 /* make calendar sections stack vertically without separate scrolls */
