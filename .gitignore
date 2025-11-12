@@ -45,3 +45,6 @@ todo_ui/.vercel
 todo_ui/*.tsbuildinfo
 todo_ui/next-env.d.ts
 __pycache__/
+.playwright-mcp
+.vscode
+.claude
