@@ -15,25 +15,15 @@
 .schedule-view-calendar-wrapper {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   position: relative;
 }
 
-/* make calendar sections stack vertically without separate scrolls */
-.schedule-view-calendar-wrapper .toastui-calendar-week-view-day-names,
-.schedule-view-calendar-wrapper .toastui-calendar-panel,
-.schedule-view-calendar-wrapper .toastui-calendar-week-view {
-  height: auto !important;
-  max-height: none !important;
+.schedule-view-calendar-inner {
+  height: 100%;
+  min-height: 600px;
 }
 
-/* ensure all calendar content is visible in single scroll */
-.schedule-view-calendar-wrapper > div {
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-}
 
 .schedule-view-chat-wrapper {
   flex-shrink: 0;
