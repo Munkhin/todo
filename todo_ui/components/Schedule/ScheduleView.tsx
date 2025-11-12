@@ -132,15 +132,13 @@ export function ScheduleView() {
     return (
         <div className="schedule-view-container">
             <div className="schedule-view-calendar-wrapper">
-                <div className="schedule-view-calendar-inner">
-                    <TUICalendar
-                        events={calendarEvents}
-                        onEventCreate={handleEventCreate}
-                        onEventUpdate={handleEventUpdate}
-                        onEventDelete={handleEventDelete}
-                    />
-                    {responseMessage && <TaskDialog text={responseMessage} />}
-                </div>
+                <TUICalendar
+                    events={calendarEvents}
+                    onEventCreate={handleEventCreate}
+                    onEventUpdate={handleEventUpdate}
+                    onEventDelete={handleEventDelete}
+                />
+                {responseMessage && <TaskDialog text={responseMessage} />}
             </div>
             <div className="schedule-view-chat-wrapper">
                 <ChatBar

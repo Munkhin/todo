@@ -15,10 +15,8 @@
   overflow-y: auto;
   overflow-x: hidden;
   position: relative;
-}
-
-.schedule-view-calendar-inner {
-  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 
