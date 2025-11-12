@@ -280,8 +280,8 @@ export default function TUICalendar({
                 </div>
             </div>
 
-            {/* calendar container - must have explicit height per docs (min 600px) */}
-            <div className="flex-1" style={{ minHeight: "600px" }}>
+            {/* calendar container - flex-1 allows it to take available space */}
+            <div className="flex-1" style={{ minHeight: "400px" }}>
                 <div ref={containerRef} style={{ height: "100%" }} />
             </div>
         </div>
