@@ -1,0 +1,146 @@
+[
+  {
+    "route": "/",
+    "name": "home",
+    "success": true,
+    "errors": [],
+    "warnings": [
+      "1 alert messages visible"
+    ],
+    "elements": {
+      "buttons": 19,
+      "links": 24,
+      "inputs": 1,
+      "forms": 0
+    },
+    "title": "Todo — AI Study Scheduler"
+  },
+  {
+    "route": "/signin",
+    "name": "signin",
+    "success": true,
+    "errors": [],
+    "warnings": [
+      "1 alert messages visible"
+    ],
+    "elements": {
+      "buttons": 4,
+      "links": 5,
+      "inputs": 0,
+      "forms": 0
+    },
+    "title": "Todo — AI Study Scheduler"
+  },
+  {
+    "route": "/signup",
+    "name": "signup",
+    "success": true,
+    "errors": [],
+    "warnings": [
+      "1 alert messages visible"
+    ],
+    "elements": {
+      "buttons": 4,
+      "links": 5,
+      "inputs": 0,
+      "forms": 0
+    },
+    "title": "Todo — AI Study Scheduler"
+  },
+  {
+    "route": "/purchase",
+    "name": "purchase",
+    "success": true,
+    "errors": [],
+    "warnings": [
+      "1 alert messages visible"
+    ],
+    "elements": {
+      "buttons": 19,
+      "links": 24,
+      "inputs": 1,
+      "forms": 0
+    },
+    "title": "Todo — AI Study Scheduler"
+  },
+  {
+    "route": "/dashboard",
+    "name": "dashboard",
+    "success": true,
+    "errors": [],
+    "warnings": [
+      "1 alert messages visible"
+    ],
+    "elements": {
+      "buttons": 4,
+      "links": 5,
+      "inputs": 0,
+      "forms": 0
+    },
+    "title": "Todo — AI Study Scheduler"
+  },
+  {
+    "route": "/dashboard/schedule",
+    "name": "schedule",
+    "success": true,
+    "errors": [],
+    "warnings": [
+      "1 alert messages visible"
+    ],
+    "elements": {
+      "buttons": 12,
+      "links": 5,
+      "inputs": 1,
+      "forms": 0
+    },
+    "title": "Todo — AI Study Scheduler"
+  },
+  {
+    "route": "/dashboard/settings",
+    "name": "settings",
+    "success": true,
+    "errors": [],
+    "warnings": [
+      "1 alert messages visible"
+    ],
+    "elements": {
+      "buttons": 5,
+      "links": 5,
+      "inputs": 10,
+      "forms": 0
+    },
+    "title": "Todo — AI Study Scheduler"
+  },
+  {
+    "route": "/dashboard/feedback",
+    "name": "feedback",
+    "success": true,
+    "errors": [],
+    "warnings": [
+      "1 alert messages visible"
+    ],
+    "elements": {
+      "buttons": 5,
+      "links": 5,
+      "inputs": 1,
+      "forms": 0
+    },
+    "title": "Todo — AI Study Scheduler"
+  },
+  {
+    "route": "/dashboard/subscription",
+    "name": "subscription",
+    "success": true,
+    "errors": [],
+    "warnings": [
+      "1 alert messages visible"
+    ],
+    "elements": {
+      "buttons": 4,
+      "links": 5,
+      "inputs": 0,
+      "forms": 0
+    },
+    "title": "Todo — AI Study Scheduler"
+  }
+]

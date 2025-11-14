@@ -1,0 +1,1038 @@
+[
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:15.247Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1763081174938",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:15.291Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/css/app/page.css?v=1763081174938",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:15.292Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/webpack.js?v=1763081174938",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:15.397Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app-pages-internals.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:15.398Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/error.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:15.399Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/layout.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:15.399Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/page.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:15.402Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/main-app.js?v=1763081174938",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:15.568Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/css/_app-pages-browser_components_Schedule_TUICalendar_tsx.css",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:16.170Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/api/auth/session",
+    "status": 500,
+    "statusText": "Internal Server Error",
+    "timestamp": "2025-11-14T00:46:16.255Z"
+  },
+  {
+    "method": "POST",
+    "url": "http://localhost:3000/__nextjs_original-stack-frames",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:16.299Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/api/auth/session",
+    "status": 500,
+    "statusText": "Internal Server Error",
+    "timestamp": "2025-11-14T00:46:16.340Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/__nextjs_font/geist-latin.woff2",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:16.348Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/_app-pages-browser_components_Schedule_TUICalendar_tsx.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:16.355Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/signin",
+    "status": 307,
+    "statusText": "Temporary Redirect",
+    "timestamp": "2025-11-14T00:46:24.155Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/dashboard",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:24.286Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1763081184216",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:24.307Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/webpack.js?v=1763081184216",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:24.324Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/error.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:24.325Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app-pages-internals.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:24.326Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/layout.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:24.331Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/dashboard/page.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:24.342Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/dashboard/layout.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:24.364Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/page.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:24.374Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/main-app.js?v=1763081184216",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:24.535Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/__nextjs_font/geist-latin.woff2",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:24.930Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/api/auth/session",
+    "status": 500,
+    "statusText": "Internal Server Error",
+    "timestamp": "2025-11-14T00:46:25.052Z"
+  },
+  {
+    "method": "POST",
+    "url": "http://localhost:3000/__nextjs_original-stack-frames",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:25.081Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/api/auth/session",
+    "status": 500,
+    "statusText": "Internal Server Error",
+    "timestamp": "2025-11-14T00:46:25.170Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/__nextjs_font/geist-mono-latin.woff2",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:28.696Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/signup",
+    "status": 307,
+    "statusText": "Temporary Redirect",
+    "timestamp": "2025-11-14T00:46:31.136Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/dashboard",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:31.242Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1763081191177",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:31.267Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/webpack.js?v=1763081191177",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:31.292Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app-pages-internals.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:31.292Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/layout.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:31.296Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/error.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:31.298Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/dashboard/page.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:31.308Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/dashboard/layout.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:31.331Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/page.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:31.341Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/main-app.js?v=1763081191177",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:31.498Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/__nextjs_font/geist-latin.woff2",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:31.902Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/__nextjs_font/geist-mono-latin.woff2",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:31.902Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/api/auth/session",
+    "status": 500,
+    "statusText": "Internal Server Error",
+    "timestamp": "2025-11-14T00:46:32.012Z"
+  },
+  {
+    "method": "POST",
+    "url": "http://localhost:3000/__nextjs_original-stack-frames",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:32.045Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/api/auth/session",
+    "status": 500,
+    "statusText": "Internal Server Error",
+    "timestamp": "2025-11-14T00:46:32.085Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/webpack/f6d43e1e1e382e0b.webpack.hot-update.json",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:38.716Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/purchase",
+    "status": 307,
+    "statusText": "Temporary Redirect",
+    "timestamp": "2025-11-14T00:46:39.053Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/webpack/webpack.f6d43e1e1e382e0b.hot-update.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:39.065Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:39.303Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1763081199114",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:39.339Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/css/app/page.css?v=1763081199114",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:39.340Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/webpack.js?v=1763081199114",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:39.387Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app-pages-internals.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:39.388Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/error.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:39.388Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/layout.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:39.390Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/page.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:39.416Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/main-app.js?v=1763081199114",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:39.590Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/__nextjs_font/geist-latin.woff2",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:40.017Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/__nextjs_font/geist-mono-latin.woff2",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:40.018Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/css/_app-pages-browser_components_Schedule_TUICalendar_tsx.css",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:40.133Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/api/auth/session",
+    "status": 500,
+    "statusText": "Internal Server Error",
+    "timestamp": "2025-11-14T00:46:40.220Z"
+  },
+  {
+    "method": "POST",
+    "url": "http://localhost:3000/__nextjs_original-stack-frames",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:40.243Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/api/auth/session",
+    "status": 500,
+    "statusText": "Internal Server Error",
+    "timestamp": "2025-11-14T00:46:40.290Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/_app-pages-browser_components_Schedule_TUICalendar_tsx.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:40.309Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/dashboard",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:48.080Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1763081208006",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:48.141Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/webpack.js?v=1763081208006",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:48.162Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/error.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:48.163Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app-pages-internals.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:48.168Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/layout.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:48.172Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/dashboard/page.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:48.191Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/dashboard/layout.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:48.211Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/page.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:48.219Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/main-app.js?v=1763081208006",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:48.402Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/__nextjs_font/geist-latin.woff2",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:48.866Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/__nextjs_font/geist-mono-latin.woff2",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:48.866Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/api/auth/session",
+    "status": 500,
+    "statusText": "Internal Server Error",
+    "timestamp": "2025-11-14T00:46:49.033Z"
+  },
+  {
+    "method": "POST",
+    "url": "http://localhost:3000/__nextjs_original-stack-frames",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:49.074Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/api/auth/session",
+    "status": 500,
+    "statusText": "Internal Server Error",
+    "timestamp": "2025-11-14T00:46:49.118Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/webpack/f76a2b01bbe36eed.webpack.hot-update.json",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:55.851Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/dashboard/schedule",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:56.095Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1763081215924",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:56.126Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/css/app/dashboard/schedule/page.css?v=1763081215924",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:56.127Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/webpack.js?v=1763081215924",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:56.150Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/error.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:56.151Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app-pages-internals.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:56.152Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/layout.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:56.154Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/dashboard/schedule/page.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:56.177Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/page.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:56.200Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/dashboard/layout.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:56.202Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/main-app.js?v=1763081215924",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:56.370Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/__nextjs_font/geist-latin.woff2",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:56.827Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/__nextjs_font/geist-mono-latin.woff2",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:56.827Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/css/_app-pages-browser_components_Schedule_TUICalendar_tsx.css",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:56.901Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/api/auth/session",
+    "status": 500,
+    "statusText": "Internal Server Error",
+    "timestamp": "2025-11-14T00:46:56.995Z"
+  },
+  {
+    "method": "POST",
+    "url": "http://localhost:3000/__nextjs_original-stack-frames",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:57.043Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/_app-pages-browser_components_Schedule_TUICalendar_tsx.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:46:57.083Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/api/auth/session",
+    "status": 500,
+    "statusText": "Internal Server Error",
+    "timestamp": "2025-11-14T00:46:57.085Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/webpack/cc67219940a1448e.webpack.hot-update.json",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:03.559Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/dashboard/settings",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:03.797Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1763081223640",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:03.814Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/webpack.js?v=1763081223640",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:03.843Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/error.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:03.845Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app-pages-internals.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:03.847Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/layout.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:03.849Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/dashboard/settings/page.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:03.867Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/dashboard/layout.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:03.873Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/page.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:03.886Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/main-app.js?v=1763081223640",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:04.059Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/__nextjs_font/geist-latin.woff2",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:04.485Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/__nextjs_font/geist-mono-latin.woff2",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:04.485Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/api/auth/session",
+    "status": 500,
+    "statusText": "Internal Server Error",
+    "timestamp": "2025-11-14T00:47:04.795Z"
+  },
+  {
+    "method": "POST",
+    "url": "http://localhost:3000/__nextjs_original-stack-frames",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:04.833Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/api/auth/session",
+    "status": 500,
+    "statusText": "Internal Server Error",
+    "timestamp": "2025-11-14T00:47:04.875Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/webpack/dec82b4986607fdd.webpack.hot-update.json",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:12.194Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/dashboard/feedback",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:12.407Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1763081232266",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:12.427Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/webpack.js?v=1763081232266",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:12.440Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/error.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:12.444Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app-pages-internals.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:12.453Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/layout.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:12.456Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/dashboard/feedback/page.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:12.462Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/dashboard/layout.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:12.492Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/page.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:12.499Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/main-app.js?v=1763081232266",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:12.671Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/__nextjs_font/geist-latin.woff2",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:13.070Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/__nextjs_font/geist-mono-latin.woff2",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:13.070Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/api/auth/session",
+    "status": 500,
+    "statusText": "Internal Server Error",
+    "timestamp": "2025-11-14T00:47:13.203Z"
+  },
+  {
+    "method": "POST",
+    "url": "http://localhost:3000/__nextjs_original-stack-frames",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:13.231Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/api/auth/session",
+    "status": 500,
+    "statusText": "Internal Server Error",
+    "timestamp": "2025-11-14T00:47:13.267Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/webpack/d63897f3dc9d2505.webpack.hot-update.json",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:20.597Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/dashboard/subscription",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:20.803Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1763081240669",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:20.832Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/webpack.js?v=1763081240669",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:20.839Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/error.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:20.874Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app-pages-internals.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:20.876Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/layout.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:20.877Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/dashboard/subscription/page.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:20.882Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/dashboard/layout.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:20.897Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/app/page.js",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:20.907Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/_next/static/chunks/main-app.js?v=1763081240669",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:21.084Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/__nextjs_font/geist-latin.woff2",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:21.464Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/__nextjs_font/geist-mono-latin.woff2",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:21.464Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/api/auth/session",
+    "status": 500,
+    "statusText": "Internal Server Error",
+    "timestamp": "2025-11-14T00:47:21.630Z"
+  },
+  {
+    "method": "POST",
+    "url": "http://localhost:3000/__nextjs_original-stack-frames",
+    "status": 200,
+    "statusText": "OK",
+    "timestamp": "2025-11-14T00:47:21.658Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:3000/api/auth/session",
+    "status": 500,
+    "statusText": "Internal Server Error",
+    "timestamp": "2025-11-14T00:47:21.699Z"
+  }
+]
