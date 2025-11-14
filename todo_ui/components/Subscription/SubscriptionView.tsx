@@ -22,7 +22,7 @@ export default function SubscriptionView() {
             <>
               <div>
                 <p className={subscriptionStyles.planTitle}>
-                  {subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1)} Plan
+                  {subscription.plan ? subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1) : 'Free'} Plan
                 </p>
                 <p className={subscriptionStyles.subText}>
                   Renews {new Date(subscription.renews_at).toLocaleDateString('en-US')}

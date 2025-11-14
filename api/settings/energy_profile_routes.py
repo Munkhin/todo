@@ -30,7 +30,20 @@ async def get_user_energy_profile(user_id: int = Query(...)):
     try:
         profile = get_energy_profile(user_id)
         if not profile:
-            raise HTTPException(status_code=404, detail="Energy profile not found")
+            # return default values instead of 404 for new users
+            return {
+                "wake_time": 7,
+                "sleep_time": 23,
+                "max_study_duration": 120,
+                "min_study_duration": 25,
+                "energy_levels": None,  # will be parsed as defaults by frontend
+                "due_date_days": None,
+                "insert_breaks": True,
+                "short_break_min": None,
+                "long_break_min": None,
+                "long_study_threshold_min": None,
+                "min_gap_for_break_min": None,
+            }
 
         return profile
     except HTTPException:
