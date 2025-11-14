@@ -1,0 +1,110 @@
+
+> todo_ui@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.5.6
+   - Local:        http://localhost:3000
+   - Network:      http://21.0.0.86:3000
+   - Experiments (use with caution):
+     ✓ webpackBuildWorker
+
+ ✓ Starting...
+ ✓ Ready in 3.5s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 1292ms (247 modules)
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (webpack-internal:///(middleware)/./node_modules/@auth/core/lib/utils/assert.js:66:16)
+    at Auth (webpack-internal:///(middleware)/./node_modules/@auth/core/index.js:91:95)
+ ○ Compiling / ...
+Failed to fetch font `Geist`: https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap
+Please check your network connection.
+
+Retrying 1/3...
+Failed to fetch font `Geist Mono`: https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap
+Please check your network connection.
+
+Retrying 1/3...
+Failed to fetch font `Geist`: https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap
+Please check your network connection.
+
+Retrying 2/3...
+Failed to fetch font `Geist Mono`: https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap
+Please check your network connection.
+
+Retrying 2/3...
+Failed to fetch font `Geist`: https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap
+Please check your network connection.
+
+Retrying 3/3...
+Failed to fetch font `Geist Mono`: https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap
+Please check your network connection.
+
+Retrying 3/3...
+[Error: Failed to fetch font `Geist`: https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap
+Please check your network connection.]
+ ⨯ Failed to download `Geist` from Google Fonts. Using fallback font instead.
+
+Failed to fetch `Geist` from Google Fonts.}
+[Error: Failed to fetch font `Geist Mono`: https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap
+Please check your network connection.]
+ ⨯ Failed to download `Geist Mono` from Google Fonts. Using fallback font instead.
+
+Failed to fetch `Geist Mono` from Google Fonts.}
+ ✓ Compiled / in 8.5s (1117 modules)
+ GET / 200 in 9307ms
+ ✓ Compiled in 1128ms (417 modules)
+ ✓ Compiled in 105ms (402 modules)
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (webpack-internal:///(middleware)/./node_modules/@auth/core/lib/utils/assert.js:66:16)
+    at Auth (webpack-internal:///(middleware)/./node_modules/@auth/core/index.js:91:95)
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (webpack-internal:///(middleware)/./node_modules/@auth/core/lib/utils/assert.js:66:16)
+    at Auth (webpack-internal:///(middleware)/./node_modules/@auth/core/index.js:91:95)
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (webpack-internal:///(middleware)/./node_modules/@auth/core/lib/utils/assert.js:66:16)
+    at Auth (webpack-internal:///(middleware)/./node_modules/@auth/core/index.js:91:95)
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 774ms (1043 modules)
+ GET /dashboard 200 in 1201ms
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (webpack-internal:///(middleware)/./node_modules/@auth/core/lib/utils/assert.js:66:16)
+    at Auth (webpack-internal:///(middleware)/./node_modules/@auth/core/index.js:91:95)
+ ✓ Compiled /_not-found in 349ms (1047 modules)
+ GET /settings 404 in 599ms
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (webpack-internal:///(middleware)/./node_modules/@auth/core/lib/utils/assert.js:66:16)
+    at Auth (webpack-internal:///(middleware)/./node_modules/@auth/core/index.js:91:95)
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (webpack-internal:///(middleware)/./node_modules/@auth/core/lib/utils/assert.js:66:16)
+    at Auth (webpack-internal:///(middleware)/./node_modules/@auth/core/index.js:91:95)
+ ○ Compiling /dashboard/settings ...
+ ✓ Compiled /dashboard/settings in 730ms (986 modules)
+ GET /dashboard/settings 200 in 1191ms
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (webpack-internal:///(middleware)/./node_modules/@auth/core/lib/utils/assert.js:66:16)
+    at Auth (webpack-internal:///(middleware)/./node_modules/@auth/core/index.js:91:95)
+ ○ Compiling /dashboard/schedule ...
+ ✓ Compiled /dashboard/schedule in 623ms (1052 modules)
+ GET /dashboard/schedule 200 in 942ms
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (webpack-internal:///(middleware)/./node_modules/@auth/core/lib/utils/assert.js:66:16)
+    at Auth (webpack-internal:///(middleware)/./node_modules/@auth/core/index.js:91:95)
+ ○ Compiling /dashboard/subscription ...
+ ✓ Compiled /dashboard/subscription in 873ms (1050 modules)
+ GET /dashboard/subscription 200 in 1116ms
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (webpack-internal:///(middleware)/./node_modules/@auth/core/lib/utils/assert.js:66:16)
+    at Auth (webpack-internal:///(middleware)/./node_modules/@auth/core/index.js:91:95)
+ ○ Compiling /dashboard/feedback ...
+ ✓ Compiled /dashboard/feedback in 643ms (1060 modules)
+ GET /dashboard/feedback 200 in 868ms
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (webpack-internal:///(middleware)/./node_modules/@auth/core/lib/utils/assert.js:66:16)
+    at Auth (webpack-internal:///(middleware)/./node_modules/@auth/core/index.js:91:95)
+ GET /dashboard/subscription 200 in 126ms
+   Reload env: .env.local
+ ✓ Compiled in 273ms (695 modules)
+ ✓ Compiled in 408ms (463 modules)
+   Reload env: .env.local
+ ✓ Compiled in 348ms (710 modules)
+[?25h
