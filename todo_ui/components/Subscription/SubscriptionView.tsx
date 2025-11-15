@@ -13,6 +13,10 @@ export default function SubscriptionView() {
   const cap = subscription?.credits_limit ?? 0
   const pct = cap > 0 ? Math.min(100, Math.round((used / cap) * 100)) : 0
 
+  // defensive check for plan name
+  const planName = subscription?.plan || 'free'
+  const displayPlanName = planName.charAt(0).toUpperCase() + planName.slice(1)
+
   return (
     <section className={subscriptionStyles.container} aria-labelledby="subscription-title">
       <h1 id="subscription-title" className={subscriptionStyles.title}>Subscription</h1>
@@ -22,7 +26,7 @@ export default function SubscriptionView() {
             <>
               <div>
                 <p className={subscriptionStyles.planTitle}>
-                  {subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1)} Plan
+                  {displayPlanName} Plan
                 </p>
                 <p className={subscriptionStyles.subText}>
                   Renews {new Date(subscription.renews_at).toLocaleDateString('en-US')}
