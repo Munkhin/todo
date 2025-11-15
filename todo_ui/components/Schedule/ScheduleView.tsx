@@ -17,6 +17,7 @@ import type { EventObject } from "@toast-ui/calendar"
 import TUICalendar from "../Schedule/TUICalendarWrapper"
 import TaskDialog from "../Schedule/TaskDialog"
 import { ChatBar } from "../Schedule/ChatBar"
+import EventPopup, { type EventData } from "../Schedule/EventPopup"
 import "@toast-ui/calendar/dist/toastui-calendar.min.css"
 import "./ScheduleView.css"
 
@@ -32,6 +33,22 @@ export function ScheduleView() {
     const [calendarEvents, setCalendarEvents] = useState<any[]>([]) // needed for Calendar
     const [chatValue, setChatValue] = useState<string>("")
     const [usagePercent, setUsagePercent] = useState<number>(0)
+    const [popupState, setPopupState] = useState<{
+        isOpen: boolean
+        mode: 'create' | 'edit'
+        data: EventData
+    }>({
+        isOpen: false,
+        mode: 'create',
+        data: {
+            title: '',
+            description: '',
+            start_time: '',
+            end_time: '',
+            event_type: 'study',
+            priority: 'medium'
+        }
+    })
 
     // get user id from auth
     const userId = useUserId()
@@ -55,21 +72,40 @@ export function ScheduleView() {
         }
     }
 
-    // handle event creation from popup
-    async function handleEventCreate(event: EventObject) {
-        try {
-            const eventData = fromTUIEvent(event)
-            await createManualEvent({
-                user_id: userId || 0,
+    // handle opening create popup with prefilled times
+    function handleCreatePopupOpen({ start, end }: { start: string; end: string }) {
+        setPopupState({
+            isOpen: true,
+            mode: 'create',
+            data: {
+                title: '',
+                description: '',
+                start_time: start,
+                end_time: end,
+                event_type: 'study',
+                priority: 'medium'
+            }
+        })
+    }
+
+    // handle opening edit popup with full event data
+    function handleEditPopupOpen(event: EventObject) {
+        const eventData = fromTUIEvent(event)
+        setPopupState({
+            isOpen: true,
+            mode: 'edit',
+            data: {
+                id: eventData.id,
                 title: eventData.title || '',
+                description: eventData.description || '',
                 start_time: eventData.start_time || '',
                 end_time: eventData.end_time || '',
-                event_type: eventData.event_type,
-            })
-            await loadCalendarEvents()
-        } catch (error) {
-            console.error("Failed to create event:", error)
-        }
+                event_type: eventData.event_type || 'study',
+                priority: eventData.priority || 'medium',
+                task_id: eventData.task_id,
+                source: eventData.source
+            }
+        })
     }
 
     // handle event update from popup
@@ -98,6 +134,56 @@ export function ScheduleView() {
         } catch (error) {
             console.error("Failed to delete event:", error)
         }
+    }
+
+    // handle saving event from popup
+    async function handlePopupSave(data: EventData) {
+        try {
+            if (popupState.mode === 'create') {
+                await createManualEvent({
+                    user_id: userId || 0,
+                    title: data.title,
+                    description: data.description,
+                    start_time: data.start_time,
+                    end_time: data.end_time,
+                    event_type: data.event_type,
+                    priority: data.priority,
+                })
+            } else {
+                if (data.id) {
+                    await updateManualEvent(data.id, {
+                        title: data.title,
+                        description: data.description,
+                        start_time: data.start_time,
+                        end_time: data.end_time,
+                        event_type: data.event_type,
+                        priority: data.priority,
+                    })
+                }
+            }
+            await loadCalendarEvents()
+            setPopupState({ ...popupState, isOpen: false })
+        } catch (error) {
+            console.error("Failed to save event:", error)
+        }
+    }
+
+    // handle deleting event from popup
+    async function handlePopupDelete() {
+        try {
+            if (popupState.data.id) {
+                await deleteEvent(popupState.data.id)
+                await loadCalendarEvents()
+                setPopupState({ ...popupState, isOpen: false })
+            }
+        } catch (error) {
+            console.error("Failed to delete event:", error)
+        }
+    }
+
+    // handle closing popup
+    function handlePopupClose() {
+        setPopupState({ ...popupState, isOpen: false })
     }
 
     // fetch usage for percentage display on the chatbox
@@ -134,9 +220,10 @@ export function ScheduleView() {
             <div className="schedule-view-calendar-wrapper">
                 <TUICalendar
                     events={calendarEvents}
-                    onEventCreate={handleEventCreate}
                     onEventUpdate={handleEventUpdate}
                     onEventDelete={handleEventDelete}
+                    onCreatePopupOpen={handleCreatePopupOpen}
+                    onEditPopupOpen={handleEditPopupOpen}
                 />
                 {responseMessage && <TaskDialog text={responseMessage} />}
             </div>
@@ -148,6 +235,14 @@ export function ScheduleView() {
                     usagePercent={usagePercent}
                 />
             </div>
+            <EventPopup
+                isOpen={popupState.isOpen}
+                mode={popupState.mode}
+                eventData={popupState.data}
+                onSave={handlePopupSave}
+                onDelete={popupState.mode === 'edit' ? handlePopupDelete : undefined}
+                onClose={handlePopupClose}
+            />
         </div>
     )
 }

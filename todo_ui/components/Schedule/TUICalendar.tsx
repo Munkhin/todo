@@ -13,16 +13,18 @@ type CalendarView = "day" | "week" | "month"
 
 interface TUICalendarProps {
     events?: EventObject[]
-    onEventCreate?: (event: EventObject) => Promise<void>
     onEventUpdate?: (event: EventObject) => Promise<void>
     onEventDelete?: (eventId: string) => Promise<void>
+    onCreatePopupOpen?: (timeData: { start: string; end: string }) => void
+    onEditPopupOpen?: (event: EventObject) => void
 }
 
 export default function TUICalendar({
     events = [],
-    onEventCreate,
     onEventUpdate,
-    onEventDelete
+    onEventDelete,
+    onCreatePopupOpen,
+    onEditPopupOpen
 }: TUICalendarProps) {
     const containerRef = useRef<HTMLDivElement>(null)
     const calendarInstanceRef = useRef<Calendar | null>(null)
@@ -36,8 +38,8 @@ export default function TUICalendar({
         // create calendar instance with options per docs
         const options = {
             defaultView: view,
-            useFormPopup: true,
-            useDetailPopup: true,
+            useFormPopup: false,
+            useDetailPopup: false,
             usageStatistics: false,
             week: {
                 showTimezoneCollapseButton: false,
@@ -52,86 +54,40 @@ export default function TUICalendar({
             month: {
                 startDayOfWeek: 0,
             },
-            // customize popup template to include priority, event_type, description
-            template: {
-                popupEdit: function() {
-                    return `
-                        <div class="custom-event-form">
-                            <div class="form-group">
-                                <label>Title</label>
-                                <input type="text" name="title" class="form-control" />
-                            </div>
-                            <div class="form-group">
-                                <label>Description</label>
-                                <textarea name="body" class="form-control" rows="3"></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label>Event Type</label>
-                                <select name="eventType" class="form-control">
-                                    <option value="study">Study</option>
-                                    <option value="break">Break</option>
-                                    <option value="rest">Rest</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Priority</label>
-                                <select name="priority" class="form-control">
-                                    <option value="low">Low</option>
-                                    <option value="medium" selected>Medium</option>
-                                    <option value="high">High</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Start</label>
-                                <input type="datetime-local" name="start" class="form-control" />
-                            </div>
-                            <div class="form-group">
-                                <label>End</label>
-                                <input type="datetime-local" name="end" class="form-control" />
-                            </div>
-                        </div>
-                    `;
-                },
-                popupDetailBody: function(event: EventObject) {
-                    const raw = event.raw || {};
-                    return `
-                        <div class="event-details">
-                            <div class="detail-row">
-                                <strong>Title:</strong> ${event.title || 'Untitled'}
-                            </div>
-                            ${event.body ? `<div class="detail-row"><strong>Description:</strong> ${event.body}</div>` : ''}
-                            <div class="detail-row">
-                                <strong>Event Type:</strong> ${raw.eventType || 'study'}
-                            </div>
-                            <div class="detail-row">
-                                <strong>Priority:</strong> ${raw.priority || 'medium'}
-                            </div>
-                            <div class="detail-row">
-                                <strong>Time:</strong> ${event.start?.toLocaleString()} - ${event.end?.toLocaleString()}
-                            </div>
-                            ${raw.taskId ? `<div class="detail-row"><strong>Task ID:</strong> ${raw.taskId}</div>` : ''}
-                            <div class="detail-row">
-                                <strong>Source:</strong> ${raw.source || 'user'}
-                            </div>
-                        </div>
-                    `;
-                }
-            }
         }
 
         calendarInstanceRef.current = new Calendar(containerRef.current, options)
 
-        // set up event listeners for popup interactions only if handlers provided
+        // set up event listeners for custom popup
         const calendar = calendarInstanceRef.current
 
-        // handle event creation via popup
-        if (onEventCreate) {
-            calendar.on('beforeCreateEvent', async (eventData: any) => {
-                await onEventCreate(eventData as EventObject)
+        // handle time selection for creating new events
+        if (onCreatePopupOpen) {
+            calendar.on('beforeCreateEvent', (eventData: any) => {
+                // don't create event yet, just open popup with time prefill
+                const startTime = eventData.start instanceof Date
+                    ? eventData.start.toISOString()
+                    : new Date(eventData.start).toISOString()
+                const endTime = eventData.end instanceof Date
+                    ? eventData.end.toISOString()
+                    : new Date(eventData.end).toISOString()
+
+                onCreatePopupOpen({
+                    start: startTime,
+                    end: endTime
+                })
             })
         }
 
-        // handle event update via popup
+        // handle clicking existing event for editing
+        if (onEditPopupOpen) {
+            calendar.on('clickEvent', ({ event }: any) => {
+                // open edit popup with full event data
+                onEditPopupOpen(event as EventObject)
+            })
+        }
+
+        // handle drag-and-drop time changes
         if (onEventUpdate) {
             calendar.on('beforeUpdateEvent', async ({ event, changes }: any) => {
                 const updatedEvent = { ...event, ...changes }
@@ -145,11 +101,6 @@ export default function TUICalendar({
                 await onEventDelete(event.id)
             })
         }
-
-        // add clickEvent listener for debugging
-        calendar.on('clickEvent', ({ event }: any) => {
-            console.log('Event clicked:', event.title)
-        })
 
         updateDateRange()
 

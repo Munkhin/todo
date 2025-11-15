@@ -26,6 +26,7 @@ export function toTUIEvent(event: CalendarEvent): EventObject {
         id: String(event.id),
         calendarId: event.event_type,
         title: event.title,
+        body: event.description || '',
         start: event.start_time,
         end: event.end_time,
         category: mapEventTypeToCategory(event.event_type),
@@ -36,6 +37,8 @@ export function toTUIEvent(event: CalendarEvent): EventObject {
             taskId: event.task_id,
             source: event.source,
             eventType: event.event_type,
+            priority: event.priority || 'medium',
+            description: event.description || '',
         },
     }
 }
@@ -45,9 +48,11 @@ export function fromTUIEvent(event: EventObject): Partial<CalendarEvent> {
     return {
         id: event.id ? Number(event.id) : undefined,
         title: event.title || '',
+        description: event.body || event.raw?.description || '',
         start_time: typeof event.start === 'string' ? event.start : new Date(event.start as any).toISOString(),
         end_time: typeof event.end === 'string' ? event.end : new Date(event.end as any).toISOString(),
         event_type: (event.raw?.eventType || event.calendarId || 'study') as CalendarEventType,
+        priority: event.raw?.priority || 'medium',
         task_id: event.raw?.taskId,
         source: event.raw?.source || 'user',
     }
