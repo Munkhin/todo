@@ -1,5 +1,22 @@
 /* custom tui calendar styling - minimal overrides since we configure via options */
 
+/* center all calendar popups */
+.toastui-calendar-popup-container {
+    position: fixed !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 1000 !important;
+}
+
+.toastui-calendar-popup {
+    position: fixed !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 1000 !important;
+}
+
 /* ensure calendar fills container properly */
 .toastui-calendar-week-view {
     height: 100% !important;
