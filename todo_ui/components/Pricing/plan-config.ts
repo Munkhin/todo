@@ -1,3 +1,4 @@
+import type { PlanTier } from "@/types/subscription"
 export type { PlanTier } from "@/types/subscription"
 
 export type PlanConfig = {
