@@ -1,6 +1,6 @@
 import { api } from './client'
 
-export type CalendarEventType = 'study' | 'rest' | 'break'
+export type CalendarEventType = 'study' | 'break' | 'other'
 export type CalendarEventPriority = 'low' | 'medium' | 'high'
 
 export interface CalendarEvent {
@@ -52,4 +52,3 @@ export async function updateManualEvent(eventId: number, updates: Partial<{
 export async function deleteEvent(eventId: number) {
   return api.delete<{ ok: boolean }>(`/api/calendar/events/${eventId}`)
 }
-

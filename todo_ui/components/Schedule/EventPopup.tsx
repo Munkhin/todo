@@ -145,7 +145,7 @@ export default function EventPopup({
             >
               <option value="study">Study</option>
               <option value="break">Break</option>
-              <option value="rest">Rest</option>
+              <option value="other">Other</option>
             </select>
           </div>
         </div>

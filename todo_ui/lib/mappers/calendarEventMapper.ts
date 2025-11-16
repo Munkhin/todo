@@ -10,12 +10,12 @@ function mapEventTypeToCategory(eventType: CalendarEventType): 'time' | 'allday'
 
 // map our event type to color
 function mapEventTypeToColor(eventType: CalendarEventType): { backgroundColor: string; color: string } {
-    const colorMap = {
+    const colorMap: Record<CalendarEventType, { backgroundColor: string; color: string }> = {
         study: { backgroundColor: '#03bd9e', color: '#ffffff' },
-        rest: { backgroundColor: '#00a9ff', color: '#ffffff' },
         break: { backgroundColor: '#ffa500', color: '#ffffff' },
+        other: { backgroundColor: '#1f2937', color: '#ffffff' },
     }
-    return colorMap[eventType] || { backgroundColor: '#a1b56c', color: '#ffffff' }
+    return colorMap[eventType] ?? { backgroundColor: '#1f2937', color: '#ffffff' }
 }
 
 // convert our CalendarEvent to TUI EventObject
