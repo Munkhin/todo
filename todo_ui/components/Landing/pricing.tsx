@@ -7,70 +7,16 @@ import { pricingStyles } from "./pricing.styles"
 import { useSubscription } from "@/hooks/use-subscription"
 // end react query
 import { useUserId } from "@/hooks/use-user-id"
+import { PLAN_CONFIGS, PlanTier, isPaidPlan } from "@/components/Pricing/plan-config"
 
-type Plan = {
-  name: string
-  price: string
-  note: string
-  features: string[]
-  cta: string
-  variant: 'free' | 'pro' | 'unlimited'
-  href?: string
-  popular?: boolean
-}
-
-const plans: Plan[] = [
-  {
-    name: "Free",
-    price: "$0",
-    note: "10 schedules/month",
-    features: [
-      "Chat to schedule",
-      "Daily and weekly calendar view",
-      "File uploads",
-    ],
-    cta: "Get Started",
-    variant: 'free',
-    href: "/signup",
-  },
-  {
-    name: "Pro",
-    price: "$19.99",
-    note: "500 schedules/month",
-    features: [
-      "Advanced AI scheduling",
-      "Smooth rescheduling",
-      "Priority support via email",
-    ],
-    cta: "Start Pro Plan",
-    variant: 'pro',
-    popular: true,
-  },
-  {
-    name: "Unlimited",
-    price: "$49.99",
-    note: "Unlimited schedules",
-    features: [
-      "Unlimited scheduling",
-      "Unlimited rescheduling",
-      "Dedicated support via email",
-      "Early access to features",
-    ],
-    cta: "Start Unlimited Plan",
-    variant: 'unlimited',
-  },
-]
-
-const freePlanHref = plans.find((plan) => plan.variant === 'free')?.href ?? '/signup'
-const isPaidPlan = (variant: Plan['variant']): variant is 'pro' | 'unlimited' =>
-  variant !== 'free'
+const freePlanHref = PLAN_CONFIGS.find((plan) => plan.variant === 'free')?.href ?? '/signup'
 
 export default function Pricing() {
   const { status } = useSession()
   const userId = useUserId()
   const { subscription } = useSubscription(userId)
 
-  const startPlan = useCallback((plan: Plan['variant']) => {
+  const startPlan = useCallback((plan: PlanTier) => {
     if (!isPaidPlan(plan)) {
       window.location.href = freePlanHref
       return
@@ -91,7 +37,7 @@ export default function Pricing() {
         <h2 className={pricingStyles.title}>Simple, Transparent Pricing</h2>
         <p className={pricingStyles.sub}>Start free, upgrade as you grow</p>
         <div className={pricingStyles.grid}>
-          {plans.map((plan) => {
+          {PLAN_CONFIGS.map((plan) => {
             const isCurrent = subscription?.plan === plan.variant
             const content = (
               <div className={pricingStyles.cardInner}>

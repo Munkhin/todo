@@ -141,6 +141,19 @@ def get_user_conversation_id(user_id: int) -> Optional[str]:
         print(f"Error getting conversation id: {e}")
         return None
 
+def save_feedback(message: str, email: Optional[str] = None, user_id: Optional[int] = None) -> bool:
+    """persist feedback submissions"""
+    try:
+        supabase.table("feedback").insert({
+            "user_id": user_id,
+            "message": message,
+            "email": email
+        }).execute()
+        return True
+    except Exception as e:
+        print(f"Error saving feedback: {e}")
+        return False
+
 # ============ SESSION OPERATIONS ============
 
 def create_session(session_id: str, credentials: Dict[str, Any]) -> bool:

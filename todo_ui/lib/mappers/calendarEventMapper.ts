@@ -1,7 +1,7 @@
 // maps between our CalendarEvent schema and TUI Calendar EventObject schema
 
 import type { EventObject } from "@toast-ui/calendar"
-import type { CalendarEvent, CalendarEventType } from "../api/calendar"
+import type { CalendarEvent, CalendarEventType, CalendarEventPriority } from "../api/calendar"
 
 // map our event type to TUI category
 function mapEventTypeToCategory(eventType: CalendarEventType): 'time' | 'allday' {
@@ -20,7 +20,9 @@ function mapEventTypeToColor(eventType: CalendarEventType): { backgroundColor: s
 
 // convert our CalendarEvent to TUI EventObject
 export function toTUIEvent(event: CalendarEvent): EventObject {
-    const colors = mapEventTypeToColor(event.event_type)
+    const colors = event.color_hex
+        ? { backgroundColor: event.color_hex, color: '#ffffff' }
+        : mapEventTypeToColor(event.event_type)
 
     return {
         id: String(event.id),
@@ -39,6 +41,7 @@ export function toTUIEvent(event: CalendarEvent): EventObject {
             eventType: event.event_type,
             priority: event.priority || 'medium',
             description: event.description || '',
+            colorHex: event.color_hex,
         },
     }
 }
@@ -52,8 +55,9 @@ export function fromTUIEvent(event: EventObject): Partial<CalendarEvent> {
         start_time: typeof event.start === 'string' ? event.start : new Date(event.start as any).toISOString(),
         end_time: typeof event.end === 'string' ? event.end : new Date(event.end as any).toISOString(),
         event_type: (event.raw?.eventType || event.calendarId || 'study') as CalendarEventType,
-        priority: event.raw?.priority || 'medium',
+        priority: (event.raw?.priority as CalendarEventPriority) || 'medium',
         task_id: event.raw?.taskId,
+        color_hex: (event.raw?.colorHex as string | undefined) || undefined,
         source: event.raw?.source || 'user',
     }
 }

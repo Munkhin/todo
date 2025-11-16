@@ -8,6 +8,21 @@ import math
 from collections import deque
 from datetime import datetime, timezone, timedelta
 
+PRIORITY_TIME_HOURS = {
+    "high": 24,      # roughly 1 day horizon
+    "medium": 72,    # roughly 3 days
+    "low": 168,      # roughly 1 week
+}
+
+DEFAULT_PRIORITY = "medium"
+
+
+def normalize_priority(value):
+    if not value:
+        return DEFAULT_PRIORITY
+    value = value.lower()
+    return value if value in PRIORITY_TIME_HOURS else DEFAULT_PRIORITY
+
 async def schedule_tasks(tasks, user_id, start_date, end_date, settings, db):
 
     empty_slots = await get_empty_slots(user_id, start_date, end_date, settings.min_study_duration, settings.max_study_duration, settings.break_duration, db)
@@ -181,14 +196,11 @@ def schedule_tasks_with_energy_ranking(tasks, sorted_empty_slots, min_duration, 
 
 
 def add_importance_to_tasks(tasks):
-    now = datetime.now(timezone.utc)
-
     for task in tasks:
-        # Time left in hours
-        due_date = datetime.fromisoformat(task["due_date"].replace("Z", "+00:00")) if isinstance(task["due_date"], str) else task["due_date"]
-        time_left = max((due_date - now).total_seconds() / 3600, 1)
+        priority = normalize_priority(task.get("priority"))
+        task["priority"] = priority
+        time_left = PRIORITY_TIME_HOURS[priority]
 
-        # Normalize difficulty (assuming 1–10 scale; adjust if needed)
         difficulty = task.get("difficulty", 3)
 
         task["importance"] = (1 / time_left) * 1000 + math.log1p(difficulty)
@@ -209,14 +221,7 @@ def schedule_task(schedule, task, min_duration, max_duration, current_time, rema
 
         effective_duration = task_duration - leftover
 
-    # map difficulty to priority (1-3: low, 4-7: medium, 8-10: high)
-    difficulty = task.get("difficulty", 5)
-    if difficulty <= 3:
-        priority = "low"
-    elif difficulty <= 7:
-        priority = "medium"
-    else:
-        priority = "high"
+    priority = normalize_priority(task.get("priority"))
 
     # concordant with EVENT_SCHEMA from consts.py
     schedule.append({

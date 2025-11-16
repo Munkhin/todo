@@ -9,19 +9,19 @@ Begin with a brief checklist (3-5 bullets) of your analysis approach.
 
 ## Input Sources
 
-- `tasks`: Array of task objects with fields like user_id, description, difficulty, duration, due_date
+- `tasks`: Array of task objects with fields like user_id, description, difficulty, duration, priority
 - `energy_profile`: User's wake_time, sleep_time, energy_levels by hour, study preferences
 - `calendar_events`: Existing calendar commitments that block time
 - `current_datetime`: The current date and time for reference
 
 ## Recommendation Guidelines
 
-- Analyze each task's difficulty, duration, and due_date
+- Analyze each task's difficulty, duration, and priority (high/medium/low)
 - Match high-difficulty tasks with high-energy time slots from the energy profile
 - Avoid recommending times that conflict with existing calendar events
 - Respect wake_time and sleep_time boundaries
 - Consider spacing tasks appropriately with breaks between sessions
-- Account for task deadlines and prioritize urgent items
+- Let priority drive urgency (High = schedule asap, Medium = soon, Low = flexible)
 - Suggest breaking large tasks (>2 hours) into smaller sessions
 - Provide specific time recommendations (e.g., "Tuesday 9-11 AM") not vague suggestions
 
@@ -33,7 +33,7 @@ Return a JSON object with exactly two fields:
 
 ## Example Input
 
-tasks: [{"description": "Study calculus", "difficulty": 8, "duration": 2.5, "due_date": "2025-11-12T23:59:59Z"}]
+tasks: [{"description": "Study calculus", "difficulty": 8, "duration": 2.5, "priority": "high"}]
 energy_profile: {"wake_time": 7, "sleep_time": 23, "energy_levels": {"9": 8, "10": 9, "14": 5}}
 calendar_events: [{"title": "Lunch", "start_time": "2025-11-10T12:00:00Z", "end_time": "2025-11-10T13:00:00Z"}]
 current_datetime: "2025-11-09T20:00:00Z"
@@ -42,13 +42,13 @@ current_datetime: "2025-11-09T20:00:00Z"
 
 {
   "user_id": null,
-  "text": "Based on your schedule and energy levels, here's my recommendation:\n\n**Study calculus (2.5 hours, difficulty: hard)**\n- Best slot: Tomorrow (Nov 10) 9:00-11:30 AM\n- Reasoning: Your peak energy hours are 9-10 AM, perfect for this challenging math work. Due in 3 days, so starting early gives you review time.\n- Consider breaking into: 1.5 hours tomorrow morning + 1 hour Monday afternoon as review\n\nNote: You have lunch at noon, so the morning slot won't conflict. I'd suggest a 10-min break around 10:15 AM to maintain focus."
+  "text": "Based on your schedule and energy levels, here's my recommendation:\n\n**Study calculus (2.5 hours, difficulty: hard, priority: high)**\n- Best slot: Tomorrow (Nov 10) 9:00-11:30 AM\n- Reasoning: High priority + peak energy at 9-10 AM makes this the ideal window so you finish early and gain review time.\n- Consider breaking into: 1.5 hours tomorrow morning + 1 hour Monday afternoon as review\n\nNote: You have lunch at noon, so the morning slot won't conflict. I'd suggest a 10-min break around 10:15 AM to maintain focus."
 }
 
 ## Key Principles
 
 - Match task difficulty to energy levels (high difficulty → high energy times)
-- Prioritize by due_date urgency
+- Prioritize based on provided priority (high/medium/low)
 - Avoid calendar_event conflicts
 - Break long tasks into focused sessions
 - Explain your reasoning concisely
@@ -89,9 +89,9 @@ Begin with a concise checklist (3-7 bullets) of what you will do; keep items con
   - `user_id` (string, required; always set to null)
   - `description` (string, required)
   - `difficulty` (number, optional; scale 1-10)
+  - `priority` (string, required; one of high/medium/low)
   - `start_time` (ISO 8601 string, optional)
   - `end_time` (ISO 8601 string, optional)
-  - `due_date` (ISO 8601 string, optional)
   - `duration` (number in hours, optional)
   - `scheduled` (boolean, optional)
 
@@ -109,7 +109,8 @@ Begin with a concise checklist (3-7 bullets) of what you will do; keep items con
 - Infer reasonable task durations if not specified, using typical values where appropriate.
 - Respect any explicit time constraints mentioned; do not invent or guess time fields if unclear.
 - For estimated difficulty, use a scale of 1 (very easy) to 10 (very hard); infer based on task complexity if not directly stated.
-- If any time field (`start_time`, `end_time`, `due_date`) is ambiguous or absent, do not include it.
+- Always infer `priority` based on urgency cues (e.g., "ASAP" → high, "sometime" → low). If unclear, default to medium.
+- If any time field (`start_time`, `end_time`) is ambiguous or absent, do not include it.
 - If tasks have overlapping times, extract and present both—do not resolve scheduling conflicts.
 
 After extracting tasks, validate that the output strictly follows the schema and that no unspecified fields are included. If a validation issue is found, self-correct before providing the final result.
@@ -127,6 +128,7 @@ conversation_history: ["User: Can you schedule my study for the week?", "Assista
     "user_id": null,
     "description": "Revise Chapter 5 of Biology notes",
     "difficulty": 3,
+    "priority": "medium",
     "start_time": "2025-11-10T09:00:00Z",
     "duration": 2.0,
     "scheduled": false
@@ -135,6 +137,7 @@ conversation_history: ["User: Can you schedule my study for the week?", "Assista
     "user_id": null,
     "description": "Write a 2-page report for History",
     "difficulty": 2,
+    "priority": "high",
     "start_time": "2025-11-10T11:30:00Z",
     "duration": 1.5,
     "scheduled": false
@@ -147,7 +150,8 @@ conversation_history: ["User: Can you schedule my study for the week?", "Assista
   - `user_id`: always null
   - `description`: concise task summary
   - `difficulty`: number from 1 (very easy) to 5 (very hard), inferred when needed
-  - `start_time`, `end_time`, `due_date`: ISO 8601 strings if available
+  - `priority`: one of `"low"`, `"medium"`, `"high"`
+  - `start_time`, `end_time`: ISO 8601 strings if available
   - `duration`: hours (number), inferred where sensible
   - `scheduled`: boolean (optional)
 - Omit any field that is unknown or ambiguous; never guess time fields.
@@ -155,7 +159,7 @@ conversation_history: ["User: Can you schedule my study for the week?", "Assista
 
 """
 
-# tasks : [{user_id, description, difficulty, start_time, end_time, due_date, duration, scheduled}]
+# tasks : [{user_id, description, difficulty, priority, start_time, end_time, duration, scheduled}]
 TASK_SCHEMA = {
     "type": "array",
     "items": {
@@ -164,13 +168,13 @@ TASK_SCHEMA = {
             "user_id": {"type": "string"},
             "description": {"type": "string"},
             "difficulty": {"type": "number"},
+            "priority": {"type": "string", "enum": ["low", "medium", "high"]},
             "start_time": {"type": "string"},
             "end_time": {"type": "string"},
-            "due_date": {"type": "string"},
             "duration": {"type": "number"},
             "scheduled": {"type": "boolean"}
         },
-        "required": ["user_id", "description"],
+        "required": ["user_id", "description", "priority"],
         "additionalProperties": False
     }
 }
@@ -334,7 +338,8 @@ EVENT_SCHEMA = {
         "event_type": {"type": "string"},  # 'study', 'break', etc.
         "priority": {"type": "string"},    # 'low', 'medium', 'high'
         "source": {"type": "string"},      # 'user', 'scheduler', etc.
-        "task_id": {"type": ["number", "null"]}
+        "task_id": {"type": ["number", "null"]},
+        "color_hex": {"type": ["string", "null"]},
     },
     "required": ["user_id", "title", "start_time", "end_time"],
     "additionalProperties": False

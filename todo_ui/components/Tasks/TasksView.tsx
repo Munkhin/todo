@@ -1,15 +1,29 @@
 "use client"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 // react query
 import { useTasks } from "@/hooks/use-tasks"
 import { taskEvents } from "@/lib/events/taskEvents"
 // end react query
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { tasksViewStyles } from "./TasksView.styles"
-import { Calendar } from "lucide-react"
+import TaskEditSheet from "./TaskEditSheet"
+import { type Task } from "@/lib/api/tasks"
+import { Calendar, Edit3 } from "lucide-react"
 
 export default function TasksView() {
   const { tasks, fetchTasks } = useTasks()
+  const [editingTask, setEditingTask] = useState<Task | null>(null)
+  const [isEditorOpen, setEditorOpen] = useState(false)
+
+  const openEditor = (task: Task) => {
+    setEditingTask(task)
+    setEditorOpen(true)
+  }
+
+  const closeEditor = () => {
+    setEditorOpen(false)
+    setEditingTask(null)
+  }
 
   // subscribe to task events (when chat creates tasks)
   useEffect(() => {
@@ -30,8 +44,20 @@ export default function TasksView() {
             <Card>
               <CardHeader className={tasksViewStyles.cardHeader}>
                 <div className={tasksViewStyles.cardHeaderRow}>
-                  <h2 className={tasksViewStyles.cardTitle}>{t.title}</h2>
-                  <span className={tasksViewStyles.cardMeta} aria-label="Estimated duration">{t.estimated_duration || 0}m</span>
+                  <div className={tasksViewStyles.cardTitleRow}>
+                    <h2 className={tasksViewStyles.cardTitle}>{t.title}</h2>
+                    <button
+                      type="button"
+                      className={tasksViewStyles.cardEditButton}
+                      onClick={() => openEditor(t)}
+                      aria-label={`Edit ${t.title}`}
+                    >
+                      <Edit3 className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <span className={tasksViewStyles.cardMeta} aria-label="Estimated duration">
+                    {t.estimated_duration || 0}m
+                  </span>
                 </div>
               </CardHeader>
               <CardContent>
@@ -78,6 +104,14 @@ export default function TasksView() {
         <p className={tasksViewStyles.empty}>
           No tasks found. Schedule one with AI in the schedule tab.
         </p>
+      )}
+      {editingTask && (
+        <TaskEditSheet
+          task={editingTask}
+          open={isEditorOpen}
+          onClose={closeEditor}
+          onSaved={fetchTasks}
+        />
       )}
     </section>
   )

@@ -6,6 +6,8 @@ export const tasksViewStyles = {
   grid: "grid grid-cols-1 gap-4 md:grid-cols-2",
   empty: "rounded-lg border border-dashed border-gray-300 p-[clamp(1rem,4vh,2rem)] text-center text-gray-600",
   cardHeaderRow: "flex items-baseline justify-between gap-2",
+  cardTitleRow: "flex items-center gap-2 flex-1 min-w-0",
+  cardEditButton: "inline-flex h-8 w-8 items-center justify-center rounded-full border border-transparent text-gray-500 transition hover:border-gray-300 hover:text-gray-700 focus-visible:ring-2 focus-visible:ring-primary/70 focus-visible:outline-none",
   cardTitle: "text-xl font-semibold flex-1 min-w-0 truncate",
   cardMeta: "text-sm text-gray-500 flex-shrink-0",
   cardDesc: "text-gray-700",

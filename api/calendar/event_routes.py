@@ -25,6 +25,7 @@ class CreateCalendarEventRequest(BaseModel):
     priority: str = "medium"  # low, medium, high
     source: str = "user"  # user or system
     task_id: Optional[int] = None
+    color_hex: Optional[str] = None
 
 class UpdateCalendarEventRequest(BaseModel):
     title: Optional[str] = None
@@ -35,6 +36,7 @@ class UpdateCalendarEventRequest(BaseModel):
     priority: Optional[str] = None
     source: Optional[str] = None
     task_id: Optional[int] = None
+    color_hex: Optional[str] = None
 
 # ============ CALENDAR EVENT ROUTES ============
 
@@ -96,7 +98,8 @@ async def create_event(request: CreateCalendarEventRequest):
             "event_type": request.event_type,
             "priority": request.priority,
             "source": request.source,
-            "task_id": request.task_id
+            "task_id": request.task_id,
+            "color_hex": request.color_hex
         }
 
         event_id = create_calendar_event(event_data)
@@ -153,6 +156,8 @@ async def update_event(event_id: int, request: UpdateCalendarEventRequest):
             update_data["source"] = request.source
         if request.task_id is not None:
             update_data["task_id"] = request.task_id
+        if request.color_hex is not None:
+            update_data["color_hex"] = request.color_hex
 
         # validate times if both are being updated
         if "start_time" in update_data and "end_time" in update_data:
@@ -200,4 +205,3 @@ async def delete_event(event_id: int):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error deleting calendar event: {str(e)}")
-

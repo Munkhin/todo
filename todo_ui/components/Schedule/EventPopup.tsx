@@ -2,9 +2,45 @@
 // custom event popup matching exact database schema
 
 import React, { useState, useEffect } from "react"
-import { Tag, MapPin, Calendar, Clock } from "lucide-react"
+import { Tag, Calendar, Clock, FileText, Flag, ListTodo, Palette } from "lucide-react"
 import type { CalendarEventType, CalendarEventPriority } from "@/lib/api/calendar"
 import "./EventPopup.css"
+
+const PRIORITY_OPTIONS: Array<{
+  value: CalendarEventPriority
+  label: string
+  helper: string
+}> = [
+  { value: 'low', label: 'Low', helper: 'Keep flexible' },
+  { value: 'medium', label: 'Medium', helper: 'Plan soon' },
+  { value: 'high', label: 'High', helper: 'Must happen' },
+]
+
+const COLOR_OPTIONS: Array<{
+  value: string
+  label: string
+}> = [
+  { value: '#03bd9e', label: 'Teal' },
+  { value: '#3b82f6', label: 'Blue' },
+  { value: '#f97316', label: 'Orange' },
+  { value: '#ec4899', label: 'Pink' },
+  { value: '#8b5cf6', label: 'Purple' },
+  { value: '#1f2937', label: 'Charcoal' },
+]
+
+const DEFAULT_COLOR = COLOR_OPTIONS[0].value
+
+const sanitizeColorHex = (value?: string | null) => {
+  if (!value) return DEFAULT_COLOR
+  const trimmed = value.trim()
+  if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(trimmed)) {
+    return trimmed
+  }
+  if (/^([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(trimmed)) {
+    return `#${trimmed}`
+  }
+  return DEFAULT_COLOR
+}
 
 export interface EventData {
   id?: number
@@ -14,7 +50,9 @@ export interface EventData {
   end_time: string
   event_type: CalendarEventType
   priority: CalendarEventPriority
+  color_hex?: string
   task_id?: number
+  task_name?: string
   source?: string
 }
 
@@ -35,11 +73,18 @@ export default function EventPopup({
   onDelete,
   onClose
 }: EventPopupProps) {
-  const [formData, setFormData] = useState<EventData>(eventData)
+  const normalizeEventData = (data: EventData): EventData => ({
+    ...data,
+    description: data.description || '',
+    priority: (data.priority as CalendarEventPriority) || 'medium',
+    color_hex: sanitizeColorHex(data.color_hex),
+  })
+
+  const [formData, setFormData] = useState<EventData>(normalizeEventData(eventData))
 
   // sync form data when eventData prop changes
   useEffect(() => {
-    setFormData(eventData)
+    setFormData(normalizeEventData(eventData))
   }, [eventData])
 
   if (!isOpen) return null
@@ -60,6 +105,7 @@ export default function EventPopup({
     // convert datetime-local back to ISO string
     const dataToSave = {
       ...formData,
+      color_hex: sanitizeColorHex(formData.color_hex),
       start_time: formData.start_time.includes('T')
         ? new Date(formData.start_time).toISOString()
         : formData.start_time,
@@ -79,6 +125,11 @@ export default function EventPopup({
         </div>
 
         <div className="event-popup-body">
+          <div className="event-popup-task-label">
+            <ListTodo size={16} />
+            <span>{formData.task_name || (formData.task_id ? `Linked Task #${formData.task_id}` : 'Manual time block')}</span>
+          </div>
+
           <div className="event-popup-field">
             <div className="event-popup-field-icon">
               <Tag size={18} />
@@ -93,16 +144,16 @@ export default function EventPopup({
             />
           </div>
 
-          <div className="event-popup-field">
+          <div className="event-popup-field event-popup-field--stacked">
             <div className="event-popup-field-icon">
-              <MapPin size={18} />
+              <FileText size={18} />
             </div>
             <textarea
               id="description"
               value={formData.description}
               onChange={(e) => handleChange('description', e.target.value)}
-              placeholder="Location"
-              rows={1}
+              placeholder="Description"
+              rows={3}
             />
           </div>
 
@@ -147,6 +198,66 @@ export default function EventPopup({
               <option value="break">Break</option>
               <option value="other">Other</option>
             </select>
+          </div>
+
+          <div className="event-popup-field event-popup-field--stacked">
+            <div className="event-popup-field-icon">
+              <Flag size={18} />
+            </div>
+            <div className="event-popup-priority">
+              <div className="event-popup-priority-header">
+                <span>Priority</span>
+                <span className="event-popup-priority-value">
+                  {PRIORITY_OPTIONS.find((opt) => opt.value === formData.priority)?.label || 'Select'}
+                </span>
+              </div>
+              <div className="event-popup-priority-options">
+                {PRIORITY_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    className={`event-popup-priority-option ${formData.priority === option.value ? 'is-active' : ''}`}
+                    onClick={() => handleChange('priority', option.value)}
+                  >
+                    <span className="event-popup-priority-option-label">{option.label}</span>
+                    <span className="event-popup-priority-option-helper">{option.helper}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="event-popup-field event-popup-field--stacked">
+            <div className="event-popup-field-icon">
+              <Palette size={18} />
+            </div>
+            <div className="event-popup-color">
+              <div className="event-popup-color-header">
+                <span>Color</span>
+                <span className="event-popup-color-value">
+                  {COLOR_OPTIONS.find((opt) => opt.value === formData.color_hex)?.label || 'Custom'}
+                </span>
+              </div>
+              <div className="event-popup-color-swatches">
+                {COLOR_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    className={`event-popup-color-swatch ${formData.color_hex === option.value ? 'is-active' : ''}`}
+                    style={{ backgroundColor: option.value }}
+                    onClick={() => handleChange('color_hex', option.value)}
+                    aria-label={`Select ${option.label}`}
+                  />
+                ))}
+              </div>
+              <input
+                className="event-popup-color-input"
+                type="text"
+                value={formData.color_hex}
+                onChange={(e) => handleChange('color_hex', e.target.value)}
+                placeholder="#03bd9e"
+              />
+            </div>
           </div>
         </div>
 

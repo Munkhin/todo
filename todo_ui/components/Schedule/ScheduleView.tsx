@@ -25,6 +25,8 @@ import "./ScheduleView.css"
 import { useUserId } from "@/hooks/use-user-id"
 import { calculateUsagePercent } from "@/lib/utils"
 
+const DEFAULT_EVENT_COLOR = '#03bd9e'
+
 
 export function ScheduleView() {
 
@@ -40,15 +42,16 @@ export function ScheduleView() {
     }>({
         isOpen: false,
         mode: 'create',
-        data: {
-            title: '',
-            description: '',
-            start_time: '',
-            end_time: '',
-            event_type: 'study',
-            priority: 'medium'
-        }
-    })
+            data: {
+                title: '',
+                description: '',
+                start_time: '',
+                end_time: '',
+                event_type: 'study',
+                priority: 'medium',
+                color_hex: DEFAULT_EVENT_COLOR,
+            }
+        })
 
     // get user id from auth
     const userId = useUserId()
@@ -83,7 +86,8 @@ export function ScheduleView() {
                 start_time: start,
                 end_time: end,
                 event_type: 'study',
-                priority: 'medium'
+                priority: 'medium',
+                color_hex: DEFAULT_EVENT_COLOR,
             }
         })
     }
@@ -101,7 +105,8 @@ export function ScheduleView() {
                 start_time: eventData.start_time || '',
                 end_time: eventData.end_time || '',
                 event_type: eventData.event_type || 'study',
-                priority: eventData.priority || 'medium',
+                priority: (eventData.priority as EventData['priority']) || 'medium',
+                color_hex: eventData.color_hex || DEFAULT_EVENT_COLOR,
                 task_id: eventData.task_id,
                 source: eventData.source
             }
@@ -118,6 +123,7 @@ export function ScheduleView() {
                     start_time: eventData.start_time,
                     end_time: eventData.end_time,
                     event_type: eventData.event_type,
+                    color_hex: eventData.color_hex,
                 })
                 await loadCalendarEvents()
             }
@@ -148,6 +154,7 @@ export function ScheduleView() {
                     end_time: data.end_time,
                     event_type: data.event_type,
                     priority: data.priority,
+                    color_hex: data.color_hex,
                 })
             } else {
                 if (data.id) {
@@ -158,6 +165,7 @@ export function ScheduleView() {
                         end_time: data.end_time,
                         event_type: data.event_type,
                         priority: data.priority,
+                        color_hex: data.color_hex,
                     })
                 }
             }

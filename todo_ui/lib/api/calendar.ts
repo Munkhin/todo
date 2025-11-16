@@ -10,6 +10,7 @@ export interface CalendarEvent {
   end_time: string
   event_type: CalendarEventType
   priority: CalendarEventPriority
+  color_hex?: string
   task_id?: number
   source: 'user' | 'system' | 'scheduler'
   description?: string
@@ -34,6 +35,7 @@ export async function createManualEvent(payload: {
   priority?: CalendarEventPriority
   description?: string
   task_id?: number
+  color_hex?: string
 }) {
   return api.post<{ id: number }>(`/api/calendar/events`, payload)
 }
@@ -45,6 +47,7 @@ export async function updateManualEvent(eventId: number, updates: Partial<{
   event_type: CalendarEventType
   priority: CalendarEventPriority
   description: string
+  color_hex: string
 }>) {
   return api.put<{ ok: boolean }>(`/api/calendar/events/${eventId}`, updates)
 }
