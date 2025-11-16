@@ -75,9 +75,10 @@ export default function TUICalendar({
                 const endTime = normalizeISO(eventData.end)
 
                 // hide the selection highlight so it feels like a modal workflow
-                if (typeof calendar.clearGridSelections === 'function') {
-                    calendar.clearGridSelections()
-                } else if (eventData?.gridSelectionElements) {
+                const enhancedCalendar = calendar as Calendar & { clearGridSelections?: () => void }
+                if (typeof enhancedCalendar.clearGridSelections === 'function') {
+                    enhancedCalendar.clearGridSelections()
+                } else if (Array.isArray(eventData?.gridSelectionElements)) {
                     eventData.gridSelectionElements.forEach((el: HTMLElement) => el.remove())
                 }
 
