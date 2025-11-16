@@ -6,6 +6,7 @@ import { useSettings } from "@/hooks/use-settings"
 import { settingsStyles } from "./SettingsView.styles"
 import { useUserId } from "@/hooks/use-user-id"
 import EnergyGraph from "./EnergyGraph"
+import DurationInput from "./DurationInput"
 
 export default function SettingsView() {
   const userId = useUserId()
@@ -43,26 +44,20 @@ export default function SettingsView() {
                 onChange={(e) => updateField('sleep_time', Number(e.target.value))}
               />
             </label>
-            <label className={settingsStyles.label}>
-              Min Study (min)
-              <input
-                type="number"
-                min={15}
-                className={settingsStyles.input}
-                value={settings.min_study_duration}
-                onChange={(e) => updateField('min_study_duration', Number(e.target.value))}
-              />
-            </label>
-            <label className={settingsStyles.label}>
-              Max Study (min)
-              <input
-                type="number"
-                max={300}
-                className={settingsStyles.input}
-                value={settings.max_study_duration}
-                onChange={(e) => updateField('max_study_duration', Number(e.target.value))}
-              />
-            </label>
+            <DurationInput
+              label="Min Study Duration"
+              value={settings.min_study_duration}
+              minMinutes={15}
+              plainNumberUnit="minutes"
+              onChange={(minutes) => updateField('min_study_duration', minutes)}
+            />
+            <DurationInput
+              label="Max Study Duration"
+              value={settings.max_study_duration}
+              maxMinutes={300}
+              plainNumberUnit="minutes"
+              onChange={(minutes) => updateField('max_study_duration', minutes)}
+            />
             <label className={settingsStyles.label}>
               Default Due Date (days)
               <input
@@ -104,46 +99,30 @@ export default function SettingsView() {
           </div>
 
           <div className={settingsStyles.formGrid}>
-            <label className={settingsStyles.label}>
-              Short Break (min)
-              <input
-                type="number"
-                min={1}
-                className={settingsStyles.input}
-                value={settings.short_break_min}
-                onChange={(e) => updateField('short_break_min', Number(e.target.value))}
-              />
-            </label>
-            <label className={settingsStyles.label}>
-              Long Break (min)
-              <input
-                type="number"
-                min={5}
-                className={settingsStyles.input}
-                value={settings.long_break_min}
-                onChange={(e) => updateField('long_break_min', Number(e.target.value))}
-              />
-            </label>
-            <label className={settingsStyles.label}>
-              Long Study Threshold (min)
-              <input
-                type="number"
-                min={30}
-                className={settingsStyles.input}
-                value={settings.long_study_threshold_min}
-                onChange={(e) => updateField('long_study_threshold_min', Number(e.target.value))}
-              />
-            </label>
-            <label className={settingsStyles.label}>
-              Min Gap For Break (min)
-              <input
-                type="number"
-                min={1}
-                className={settingsStyles.input}
-                value={settings.min_gap_for_break_min}
-                onChange={(e) => updateField('min_gap_for_break_min', Number(e.target.value))}
-              />
-            </label>
+            <DurationInput
+              label="Short Break"
+              value={settings.short_break_min}
+              minMinutes={1}
+              onChange={(minutes) => updateField('short_break_min', minutes)}
+            />
+            <DurationInput
+              label="Long Break"
+              value={settings.long_break_min}
+              minMinutes={5}
+              onChange={(minutes) => updateField('long_break_min', minutes)}
+            />
+            <DurationInput
+              label="Long Study Threshold"
+              value={settings.long_study_threshold_min}
+              minMinutes={30}
+              onChange={(minutes) => updateField('long_study_threshold_min', minutes)}
+            />
+            <DurationInput
+              label="Min Gap For Break"
+              value={settings.min_gap_for_break_min}
+              minMinutes={1}
+              onChange={(minutes) => updateField('min_gap_for_break_min', minutes)}
+            />
           </div>
         </div>
         <div className={settingsStyles.actions}>

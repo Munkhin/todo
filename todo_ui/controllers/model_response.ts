@@ -6,7 +6,7 @@ export default class ModelResponse {
     static async call(text: string, userId: string, file?: any) {
 
         // use relative path since vercel rewrites are used
-        const response = await fetch('/api/chat', {
+        const response = await fetch('/api/chat/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

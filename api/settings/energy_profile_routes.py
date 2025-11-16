@@ -1,12 +1,57 @@
 # routes for energy profile settings
 # allows users to configure their energy levels, wake/sleep times, and study preferences
 
+import json
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from typing import Optional
 from api.database import get_energy_profile, create_or_update_energy_profile
 
 router = APIRouter()
+
+# backend defaults should mirror the frontend to keep UX consistent
+DEFAULT_ENERGY_LEVELS = {
+    7: 6,
+    8: 7,
+    9: 9,
+    10: 9,
+    11: 8,
+    12: 6,
+    13: 5,
+    14: 6,
+    15: 7,
+    16: 8,
+    17: 7,
+    18: 6,
+    19: 5,
+    20: 5,
+    21: 4,
+    22: 3,
+}
+
+DEFAULT_ENERGY_PROFILE = {
+    "due_date_days": 7,
+    "wake_time": 7,
+    "sleep_time": 23,
+    "max_study_duration": 180,
+    "min_study_duration": 30,
+    "energy_levels": json.dumps(DEFAULT_ENERGY_LEVELS),
+    "insert_breaks": False,
+    "short_break_min": 5,
+    "long_break_min": 15,
+    "long_study_threshold_min": 90,
+    "min_gap_for_break_min": 3,
+}
+
+
+def seed_default_energy_profile(user_id: int):
+    """Create a default profile for first-time users so the UI always has data."""
+    profile_payload = DEFAULT_ENERGY_PROFILE.copy()
+    # use existing helper so inserts go through a single code path
+    created = create_or_update_energy_profile(user_id, profile_payload)
+    if not created:
+        raise HTTPException(status_code=500, detail="Failed to seed default energy profile")
+    return get_energy_profile(user_id)
 
 # request model for energy profile
 class EnergyProfileRequest(BaseModel):
@@ -30,7 +75,7 @@ async def get_user_energy_profile(user_id: int = Query(...)):
     try:
         profile = get_energy_profile(user_id)
         if not profile:
-            raise HTTPException(status_code=404, detail="Energy profile not found")
+            profile = seed_default_energy_profile(user_id)
 
         return profile
     except HTTPException:

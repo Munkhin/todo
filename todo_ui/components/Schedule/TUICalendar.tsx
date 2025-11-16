@@ -63,14 +63,23 @@ export default function TUICalendar({
 
         // handle time selection for creating new events
         if (onCreatePopupOpen) {
-            calendar.on('beforeCreateEvent', (eventData: any) => {
-                // don't create event yet, just open popup with time prefill
-                const startTime = eventData.start instanceof Date
-                    ? eventData.start.toISOString()
-                    : new Date(eventData.start).toISOString()
-                const endTime = eventData.end instanceof Date
-                    ? eventData.end.toISOString()
-                    : new Date(eventData.end).toISOString()
+            calendar.on('selectDateTime', (eventData: any) => {
+                const normalizeISO = (value: any) => {
+                    if (!value) return new Date().toISOString()
+                    if (value instanceof Date) return value.toISOString()
+                    if (typeof value.toDate === 'function') return value.toDate().toISOString()
+                    return new Date(value).toISOString()
+                }
+
+                const startTime = normalizeISO(eventData.start)
+                const endTime = normalizeISO(eventData.end)
+
+                // hide the selection highlight so it feels like a modal workflow
+                if (typeof calendar.clearGridSelections === 'function') {
+                    calendar.clearGridSelections()
+                } else if (eventData?.gridSelectionElements) {
+                    eventData.gridSelectionElements.forEach((el: HTMLElement) => el.remove())
+                }
 
                 onCreatePopupOpen({
                     start: startTime,
