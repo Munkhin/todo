@@ -6,3 +6,6 @@ run codex resume session_id to resume session
 ## Features
 019a8c25-c6f4-77d0-bc6a-9e9886338fa3: task editing in task tab
 019a8c2a-437d-7042-bf93-32a1cba05622: implemented feedback tab
+
+## Misc
+: debug the previous sessions
