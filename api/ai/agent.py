@@ -147,7 +147,7 @@ async def recommend_slots(user_input):
     user_input_enriched["text"] = (
         user_input["text"]
         + "\n\nEnergy profile: " + str(energy_profile)
-        + "\nCalendar events: " + calendar_events
+        + "\nCalendar events: " + str(calendar_events)
         + "\nCurrent datetime: " + current_datetime
     )
 
