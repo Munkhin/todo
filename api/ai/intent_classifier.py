@@ -41,12 +41,20 @@ intent_examples = {
                            ]
 }
 
-# Precompute mean embeddings per intent
-intent_vectors = {}
-for intent, examples in intent_examples.items():
-    vec = embed(examples).mean(axis=0)
-    vec /= np.linalg.norm(vec)
-    intent_vectors[intent] = vec
+# Precompute mean embeddings per intent (performed lazily)
+intent_vectors: dict[str, np.ndarray] = {}
+
+
+def _initialize_intent_vectors():
+    """Build embeddings for each intent when first needed."""
+    if intent_vectors:
+        return
+
+    for intent, examples in intent_examples.items():
+        vec = embed(examples).mean(axis=0)
+        vec /= np.linalg.norm(vec)
+        intent_vectors[intent] = vec
+
 
 # ------------------- Classification -------------------
 
@@ -62,6 +70,7 @@ def classify_intent(text: str, intents: list[str], dynamic_ratio: float = 0.8) -
     Returns:
         List of detected intent strings
     """
+    _initialize_intent_vectors()
     msg_vec = get_openai_embedding(text)
     msg_vec /= np.linalg.norm(msg_vec)
 
@@ -75,4 +84,3 @@ def classify_intent(text: str, intents: list[str], dynamic_ratio: float = 0.8) -
     # Get all intents above threshold
     detected = [intent for intent, score in scores.items() if score >= threshold]
     return detected
-

@@ -216,13 +216,28 @@ async def infer_tasks(user_input):
     return chatgpt_call(user_input, GET_TASKS_DEV_PROMPT, "tasks", TASK_SCHEMA)
 
 
-def conflict(tasks):
-    tasks = sorted(tasks, key=lambda x: x[0])  # sort by start time
+def _normalize_time(value):
+    """Return a consistent string representation for sorting/comparison."""
+    if value is None:
+        return ""
+    if isinstance(value, datetime):
+        return value.isoformat()
+    return str(value)
 
-    for i in range(1, len(tasks)):
-        prev_end = tasks[i - 1]["end_time"]
-        curr_start = tasks[i]["start_time"]
-        if curr_start < prev_end:
+
+def conflict(tasks):
+    # Only consider entries that have measurable start and end timestamps.
+    timed_tasks = [
+        task
+        for task in tasks
+        if task.get("start_time") and task.get("end_time")
+    ]
+    timed_tasks.sort(key=lambda task: _normalize_time(task.get("start_time")))
+
+    for i in range(1, len(timed_tasks)):
+        prev_end = _normalize_time(timed_tasks[i - 1].get("end_time"))
+        curr_start = _normalize_time(timed_tasks[i].get("start_time"))
+        if prev_end and curr_start and curr_start < prev_end:
             return True  # overlap
     return False
 
