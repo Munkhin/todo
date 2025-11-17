@@ -7,12 +7,22 @@ from api.ai.intent_classifier import classify_intent
 from api.ai.semantic_matcher import match_tasks
 from api.preprocess_user_input.file_processing import file_to_text
 from api.data_types.consts import * # get all prompts and schemas
-from api.database import get_user_conversation_id, update_user_conversation_id, get_tasks_by_user, get_calendar_events_by_task_id, get_energy_profile, get_calendar_events, create_or_update_energy_profile, supabase
+from api.database import (
+    get_user_conversation_id,
+    update_user_conversation_id,
+    get_tasks_by_user,
+    get_calendar_events_by_task_id,
+    get_energy_profile,
+    get_calendar_events,
+    create_or_update_energy_profile,
+    create_calendar_event,
+    delete_calendar_event,
+    supabase,
+)
 
 client = OpenAI()
 
 from api.business_logic.scheduler import schedule_tasks
-from api.calendar.event_routes import create_calendar_event, get_calendar_events, delete_calendar_event
 
 
 async def run_agent(user_input):

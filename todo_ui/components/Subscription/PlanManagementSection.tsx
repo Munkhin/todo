@@ -56,10 +56,10 @@ export function PlanManagementSection({ subscription }: PlanManagementSectionPro
   const currentPlan: PlanTier = subscription?.plan ?? 'free'
 
   return (
-    <section aria-labelledby="plan-management-title" className="space-y-4">
+    <section aria-labelledby="plan-management-title" className="space-y-4 pt-6">
       <header className="space-y-1">
         <h2 id="plan-management-title" className="text-xl font-semibold">
-          Change plan or cancel
+          Change plan
         </h2>
         <p className="text-sm text-gray-600">
           Choose any option below. Button labels update automatically based on your subscription.

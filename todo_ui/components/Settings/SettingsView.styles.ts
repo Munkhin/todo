@@ -1,5 +1,5 @@
 export const settingsStyles = {
-  container: "space-y-8 min-h-[60svh]",
+  container: "space-y-8 min-h-[60svh] w-full",
   title: "text-2xl font-semibold",
   card: "rounded-lg border bg-white shadow-sm",
   section: "p-[clamp(1rem,2.5vh,1.5rem)]",
