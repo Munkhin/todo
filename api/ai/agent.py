@@ -1,7 +1,9 @@
 # entry point for chat -> render on calendar flow
 
 import asyncio # for parallel execution to drastically decrease runtime
+from collections.abc import Sequence
 from datetime import datetime, timezone
+from typing import Any, MutableMapping, Sequence as TypingSequence
 from openai import OpenAI
 from api.ai.intent_classifier import classify_intent
 from api.ai.semantic_matcher import match_tasks
@@ -24,17 +26,22 @@ client = OpenAI()
 
 from api.business_logic.scheduler import schedule_tasks
 
+TextPayload = str | TypingSequence[Any] | None
+UserInput = MutableMapping[str, Any]
 
-def _ensure_text_value(value):
-    """Guarantee downstream code always works with a string prompt."""
+
+def _ensure_text_value(value: TextPayload) -> str:
+    """Guarantee downstream code always works with a strict string payload."""
     if value is None:
         return ""
-    if isinstance(value, list):
+    if isinstance(value, str):
+        return value
+    if isinstance(value, Sequence):
         return "\n".join(str(item) for item in value)
-    return str(value)
+    raise TypeError("text payloads must be strings or iterables of strings")
 
 
-async def run_agent(user_input):
+async def run_agent(user_input: UserInput):
 
     # Make sure text payload is always a string to avoid concat crashes.
     user_input = user_input.copy()
@@ -101,12 +108,14 @@ def _normalize_messages(PROMPT, user_input, file_text):
     ]
 
 
-def chatgpt_call(user_input, PROMPT, schema_name, SCHEMA):
+def chatgpt_call(user_input: UserInput, PROMPT, schema_name, SCHEMA):
 
-    file_text =  file_to_text(user_input["file"])
+    sanitized_input = user_input.copy()
+    sanitized_input["text"] = _ensure_text_value(user_input.get("text"))
+    file_text =  file_to_text(sanitized_input.get("file"))
 
     # get or create conversation id for this user
-    user_id = user_input.get("user_id")
+    user_id = sanitized_input.get("user_id")
     conversation_id = get_user_conversation_id(user_id) if user_id else None
 
     # build input messages
@@ -117,7 +126,7 @@ def chatgpt_call(user_input, PROMPT, schema_name, SCHEMA):
         },
         {
             "role": "user",
-            "content": f"{user_input["text"]}",
+            "content": sanitized_input["text"],
         },
         {
             "role": "user",
@@ -144,7 +153,7 @@ def chatgpt_call(user_input, PROMPT, schema_name, SCHEMA):
         _save_conversation_id(user_id, response, fallback_id=conversation_id)
         return add_user_id(response.output_text, user_id)
 
-    fallback_messages = _normalize_messages(PROMPT, user_input, file_text)
+    fallback_messages = _normalize_messages(PROMPT, sanitized_input, file_text)
     response = client.chat.completions.create(
         model="gpt-5",
         messages=fallback_messages,
@@ -182,6 +191,7 @@ async def recommend_slots(user_input):
     from datetime import datetime, timezone
 
     user_id = user_input.get("user_id")
+    base_text = _ensure_text_value(user_input.get("text"))
 
     # fetch energy profile
     energy_profile = get_energy_profile(user_id) if user_id else None
@@ -195,7 +205,7 @@ async def recommend_slots(user_input):
     # append to user_input
     user_input_enriched = user_input.copy()  # shallow copy to avoid modifying original
     user_input_enriched["text"] = (
-        str(user_input["text"])
+        base_text
         + "\n\nEnergy profile: " + str(energy_profile)
         + "\nCalendar events: " + str(calendar_events)
         + "\nCurrent datetime: " + current_datetime
@@ -298,7 +308,8 @@ async def delete_tasks_from_calendar(user_input):
     user_id = user_input["user_id"]
     existing_tasks = get_tasks_by_user(user_id) 
 
-    tasks_to_delete = match_tasks(user_input, existing_tasks)
+    query_text = _ensure_text_value(user_input.get("text"))
+    tasks_to_delete = match_tasks(query_text, existing_tasks)
 
     for task in tasks_to_delete:
         events = get_calendar_events_by_task_id(task["task_id"]) 
@@ -319,6 +330,7 @@ async def delete_tasks_from_calendar(user_input):
 # all queries about the calendar
 async def check_calendar(user_input):
     user_id = user_input.get("user_id")
+    base_text = _ensure_text_value(user_input.get("text"))
 
     # fetch calendar events
     calendar_events = get_calendar_events(user_id) if user_id else []
@@ -329,7 +341,7 @@ async def check_calendar(user_input):
     # enrich input with calendar data
     user_input_enriched = user_input.copy()
     user_input_enriched["text"] = (
-        user_input["text"]
+        base_text
         + "\n\nCalendar events: " + str(calendar_events)
         + "\nCurrent datetime: " + current_datetime
     )
@@ -346,6 +358,7 @@ async def check_calendar(user_input):
 async def update_preferences(user_input):
 
     user_id = user_input.get("user_id")
+    base_text = _ensure_text_value(user_input.get("text"))
 
     # get current energy profile for context
     current_profile = get_energy_profile(user_id) if user_id else None
@@ -353,7 +366,7 @@ async def update_preferences(user_input):
     # enrich input with current settings
     user_input_enriched = user_input.copy()
     user_input_enriched["text"] = (
-        user_input["text"]
+        base_text
         + "\n\nCurrent energy profile: " + str(current_profile)
     )
 

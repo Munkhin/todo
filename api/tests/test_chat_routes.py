@@ -1,8 +1,10 @@
 import asyncio
 from unittest.mock import AsyncMock
 
+import pytest
 from dotenv import load_dotenv
 from fastapi import HTTPException
+from pydantic import ValidationError
 
 load_dotenv()
 
@@ -70,3 +72,11 @@ def test_chat_endpoint_normalizes_list_text():
     mock_run_agent.assert_awaited_once()
     user_input = mock_run_agent.await_args.args[0]
     assert user_input["text"] == "first task\nsecond task"
+
+
+def test_chat_request_rejects_non_string_text():
+    payload = _make_payload()
+    payload["text"] = {"bad": "payload"}
+
+    with pytest.raises(ValidationError):
+        chat_routes.ChatRequest(**payload)
