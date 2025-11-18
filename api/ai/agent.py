@@ -61,6 +61,33 @@ async def run_agent(user_input):
 
 
 # helper function for all chatgpt calls
+def _save_conversation_id(user_id, response, fallback_id=None):
+    if not user_id:
+        return
+    conversation_id = fallback_id
+    conversation_obj = getattr(response, "conversation", None)
+    if conversation_obj:
+        conversation_id = getattr(conversation_obj, "id", conversation_id)
+    elif hasattr(response, "conversation_id"):
+        conversation_id = response.conversation_id
+    elif hasattr(response, "id") and not conversation_id:
+        conversation_id = response.id
+
+    if conversation_id:
+        try:
+            update_user_conversation_id(user_id, conversation_id)
+        except Exception:
+            pass
+
+
+def _normalize_messages(PROMPT, user_input, file_text):
+    return [
+        {"role": "system", "content": PROMPT},
+        {"role": "user", "content": user_input["text"]},
+        {"role": "user", "content": f"file contents: {file_text}"},
+    ]
+
+
 def chatgpt_call(user_input, PROMPT, schema_name, SCHEMA):
 
     file_text =  file_to_text(user_input["file"])
@@ -86,32 +113,41 @@ def chatgpt_call(user_input, PROMPT, schema_name, SCHEMA):
     ]
 
 
-    response = client.responses.create(
+    if hasattr(client, "responses"):
+        response = client.responses.create(
+            model="gpt-5",
+            reasoning={"effort": "low"},
+            input=input_messages,
+            text={
+                "format": {
+                    "type": f"{schema_name}",
+                    "name": "tasks",
+                    "strict": True,
+                    "schema": SCHEMA,
+                }
+            },
+            conversation=conversation_id,
+        )
+        _save_conversation_id(user_id, response, fallback_id=conversation_id)
+        return add_user_id(response.output_text, user_id)
+
+    fallback_messages = _normalize_messages(PROMPT, user_input, file_text)
+    response = client.chat.completions.create(
         model="gpt-5",
-        reasoning={"effort": "low"},
-        input=input_messages,
-        text={
-            "format": {
-            "type": f"{schema_name}",
-            "name": "tasks",
-            "strict": True,
-            "schema": SCHEMA,
-            }
-        },
-        conversation = conversation_id,
+        messages=fallback_messages,
     )
 
-    # persist the conversation id that responses API may have returned
-    conversation_obj = getattr(response, "conversation", None)
-    conversation_id = getattr(conversation_obj, "id", None) or getattr(response, "conversation_id", None)
-    if user_id and conversation_id:
-        try:
-            update_user_conversation_id(user_id, conversation_id)
-        except Exception:
-            pass
+    _save_conversation_id(user_id, response, fallback_id=conversation_id)
 
-    output = add_user_id(response.output_text, user_id)
-    return output
+    content = ""
+    if getattr(response, "choices", None):
+        choice = response.choices[0]
+        if getattr(choice, "message", None):
+            content = choice.message.content or ""
+        elif getattr(choice, "text", None):
+            content = choice.text or ""
+
+    return add_user_id(content, user_id)
 
 
 # helper to add user id into chatgpt json response(since passing user id into chatgpt is unsafe)
