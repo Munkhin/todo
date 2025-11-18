@@ -1,5 +1,6 @@
 # entry point for user actions
 
+import logging
 import os
 
 from fastapi import FastAPI
@@ -8,6 +9,11 @@ from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
+
+logging.basicConfig(
+    level=os.getenv("API_LOG_LEVEL", "INFO"),
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+)
 
 
 # Initialize FastAPI app

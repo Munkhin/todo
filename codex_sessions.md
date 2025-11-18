@@ -14,4 +14,4 @@ run codex resume session_id to resume session
 
 ## Misc
 
-curl -v -H "Content-Type: application/json" -d '{"text":"Please schedule two study sessions for biology and chemistry.","user_id":"5","file":null}' https://todo-fufa.onrender.com/api/chat/
+curl -v -H "Content-Type: application/json" -d '{"text":"Please schedule two study sessions for biology and chemistry.","user_id":"5","file":null}' https://todo-1-m0zu.onrender.com/api/chat/

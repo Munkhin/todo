@@ -48,3 +48,5 @@ __pycache__/
 .playwright-mcp
 .vscode
 .claude
+
+api/.env

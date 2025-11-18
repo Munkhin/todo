@@ -1,6 +1,7 @@
 # entry point for chat -> render on calendar flow
 
 import asyncio # for parallel execution to drastically decrease runtime
+import logging
 from collections.abc import Sequence
 from datetime import datetime, timezone
 from typing import Any, MutableMapping, Sequence as TypingSequence
@@ -26,6 +27,7 @@ client = OpenAI()
 
 from api.business_logic.scheduler import schedule_tasks
 
+logger = logging.getLogger(__name__)
 TextPayload = str | TypingSequence[Any] | None
 UserInput = MutableMapping[str, Any]
 
@@ -41,21 +43,38 @@ def _ensure_text_value(value: TextPayload) -> str:
     raise TypeError("text payloads must be strings or iterables of strings")
 
 
+def _summarize(text: str, limit: int = 120) -> str:
+    return text if len(text) <= limit else text[:limit].rstrip() + "…"
+
+
 async def run_agent(user_input: UserInput):
 
     # Make sure text payload is always a string to avoid concat crashes.
     user_input = user_input.copy()
     user_input["text"] = _ensure_text_value(user_input.get("text"))
 
+    logger.info(
+        "Agent invoked",
+        extra={
+            "user_id": user_input.get("user_id"),
+            "text_preview": _summarize(user_input["text"]),
+        },
+    )
+
     # intents handled
     allowed_intents = ["recommend-slots", "schedule-tasks", "delete-tasks", "reschedule", "check-calendar", "update-preferences"]
     
     # first classify the intent(s) with a lightweight model
     intents = classify_intent(user_input["text"], allowed_intents)
+    logger.info(
+        "Intents classified",
+        extra={"user_id": user_input.get("user_id"), "intents": intents},
+    )
 
     # Check for unsupported intents
     unsupported = [i for i in intents if i not in allowed_intents]
     if unsupported:
+        logger.error("Unsupported intents detected", extra={"unsupported": unsupported})
         raise Exception(f"Intent(s) not supported: {unsupported}")
 
     # Build tasks list
@@ -75,8 +94,22 @@ async def run_agent(user_input: UserInput):
     if "update-preferences" in intents:
         tasks.append(update_preferences(user_input)) # effect
 
+    logger.debug(
+        "Executing agent tasks",
+        extra={"user_id": user_input.get("user_id"), "task_count": len(tasks)},
+    )
+
     # Run all tasks concurrently
-    results = await asyncio.gather(*tasks)
+    try:
+        results = await asyncio.gather(*tasks)
+    except Exception:
+        logger.exception("Agent task execution failed", extra={"user_id": user_input.get("user_id")})
+        raise
+
+    logger.info(
+        "Agent completed",
+        extra={"user_id": user_input.get("user_id"), "result_count": len(results)},
+    )
     return results
 
 
@@ -136,6 +169,10 @@ def chatgpt_call(user_input: UserInput, PROMPT, schema_name, SCHEMA):
 
 
     if hasattr(client, "responses"):
+        logger.debug(
+            "Calling OpenAI responses API",
+            extra={"user_id": user_id, "schema": schema_name},
+        )
         response = client.responses.create(
             model="gpt-5",
             reasoning={"effort": "low"},
@@ -154,6 +191,10 @@ def chatgpt_call(user_input: UserInput, PROMPT, schema_name, SCHEMA):
         return add_user_id(response.output_text, user_id)
 
     fallback_messages = _normalize_messages(PROMPT, sanitized_input, file_text)
+    logger.debug(
+        "Calling OpenAI chat completions API",
+        extra={"user_id": user_id, "schema": schema_name},
+    )
     response = client.chat.completions.create(
         model="gpt-5",
         messages=fallback_messages,
