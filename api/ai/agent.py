@@ -28,6 +28,7 @@ from api.database import (
 client = OpenAI()
 
 from api.business_logic.scheduler import schedule_tasks
+from api.tasks.task_routes import create_new_task
 
 logger = logging.getLogger(__name__)
 TextPayload = str | TypingSequence[Any] | None
@@ -49,30 +50,6 @@ def _summarize(text: str, limit: int = 120) -> str:
     return text if len(text) <= limit else text[:limit].rstrip() + "…"
 
 
-def _normalize_task_collection(value: Any, *, context: str) -> list[dict]:
-    """Ensure task collections are always lists of dictionaries."""
-    if value is None:
-        return []
-    if isinstance(value, list):
-        return value
-    if isinstance(value, str):
-        try:
-            parsed = json.loads(value)
-        except json.JSONDecodeError as exc:
-            raise TypeError(f"{context} expected a list of tasks but received a string.") from exc
-        if isinstance(parsed, list):
-            return parsed
-        raise TypeError(f"{context} expected a list of tasks but received: {type(parsed).__name__}.")
-    raise TypeError(f"{context} expected a list of tasks but received: {type(value).__name__}.")
-
-
-def _coerce_int(value: Any) -> Any:
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return value
-
-
 EVENT_ALLOWED_FIELDS = {
     "user_id",
     "title",
@@ -91,7 +68,6 @@ def _sanitize_event_payload(event: dict, default_user_id: Any = None) -> dict:
     """Remove fields that the calendar_events table doesn't understand."""
     sanitized: dict[str, Any] = {}
     resolved_user_id = event.get("user_id", default_user_id)
-    resolved_user_id = _coerce_int(resolved_user_id)
     if resolved_user_id is not None:
         sanitized["user_id"] = resolved_user_id
 
@@ -105,32 +81,6 @@ def _sanitize_event_payload(event: dict, default_user_id: Any = None) -> dict:
         sanitized["title"] = sanitized.get("description") or "Calendar Event"
 
     return sanitized
-
-
-def _persist_new_tasks(tasks: list[dict], user_id: Any) -> None:
-    """Create task rows for inferred tasks so they always exist in the DB."""
-    normalized_user_id = _coerce_int(user_id)
-    for task in tasks:
-        if task.get("task_id"):
-            continue
-
-        task["user_id"] = normalized_user_id
-        task_payload = {
-            "user_id": normalized_user_id,
-            "title": task.get("description") or task.get("title") or "Task",
-            "description": task.get("description"),
-            "priority": task.get("priority"),
-            "difficulty": task.get("difficulty"),
-            "status": "scheduled",
-            "scheduled_start": task.get("start_time"),
-            "scheduled_end": task.get("end_time"),
-        }
-
-        task_id = create_task(task_payload)
-        if task_id:
-            task["task_id"] = task_id
-        else:
-            logger.warning("Failed to persist inferred task", extra={"user_id": normalized_user_id, "task": task})
 
 
 async def run_agent(user_input: UserInput):
@@ -344,16 +294,16 @@ async def recommend_slots(user_input):
 # scheduling and rescheduling
 async def schedule_tasks_into_calendar(user_input):
 
-    tasks_raw = await infer_tasks(user_input)
-    tasks = _normalize_task_collection(tasks_raw, context="LLM task inference")
+    tasks = await infer_tasks(user_input)
 
     user_id = user_input["user_id"]
-    normalized_user_id = _coerce_int(user_id)
+    
+    # create tasks
+    for task in tasks:
+        task["user_id"] = user_id
+        response = create_new_task(task)
 
-    _persist_new_tasks(tasks, normalized_user_id)
-
-    existing_tasks_raw = get_tasks_by_user(normalized_user_id)
-    existing_tasks = _normalize_task_collection(existing_tasks_raw, context="existing tasks")
+    existing_tasks = get_tasks_by_user(user_id)
 
     logger.info(
         "Scheduling tasks",
@@ -374,7 +324,7 @@ async def schedule_tasks_into_calendar(user_input):
 
     if len(tasks) == 1:
         event = tasks[0]
-        sanitized_event = _sanitize_event_payload(event, normalized_user_id)
+        sanitized_event = _sanitize_event_payload(event, user_id)
         create_calendar_event(sanitized_event)
         return {
             "text": f"Scheduled {event['description']}"
@@ -383,7 +333,7 @@ async def schedule_tasks_into_calendar(user_input):
     # if many tasks process first
     if len(tasks) > 1:
         # get energy profile settings
-        energy_profile = get_energy_profile(normalized_user_id)
+        energy_profile = get_energy_profile(user_id)
 
         # create settings object
         import json
@@ -402,9 +352,9 @@ async def schedule_tasks_into_calendar(user_input):
         due_date_days = energy_profile.get("due_date_days", 7) if energy_profile else 7
         end_date = start_date + timedelta(days=due_date_days)
 
-        schedule = await schedule_tasks(tasks, normalized_user_id, start_date, end_date, settings, supabase)
+        schedule = await schedule_tasks(tasks, user_id, start_date, end_date, settings, supabase)
         for event in schedule:
-            sanitized_event = _sanitize_event_payload(event, normalized_user_id)
+            sanitized_event = _sanitize_event_payload(event, user_id)
             create_calendar_event(sanitized_event)
         
 
@@ -422,7 +372,13 @@ async def schedule_tasks_into_calendar(user_input):
 
 
 async def infer_tasks(user_input):
-    return chatgpt_call(user_input, GET_TASKS_DEV_PROMPT, "tasks", TASK_SCHEMA)
+    tasks = chatgpt_call(user_input, GET_TASKS_DEV_PROMPT, "tasks", TASK_SCHEMA)
+    if isinstance(tasks, str):
+        try:
+            return json.loads(tasks)
+        except json.JSONDecodeError as exc:
+            raise TypeError("LLM task inference returned a string that is not valid JSON.") from exc
+    return tasks
 
 
 def _normalize_time(value):

@@ -65,6 +65,16 @@ export function ScheduleView() {
         }
     }, [userId])
 
+    useEffect(() => {
+        if (!responseMessage) return
+
+        const timeoutId = setTimeout(() => {
+            setResponseMessage(null)
+        }, 11000)
+
+        return () => clearTimeout(timeoutId)
+    }, [responseMessage])
+
     // load calendar events and transform to TUI format
     async function loadCalendarEvents() {
         try {

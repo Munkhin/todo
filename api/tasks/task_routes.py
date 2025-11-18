@@ -18,13 +18,13 @@ router = APIRouter()
 # request models for tasks
 class CreateTaskRequest(BaseModel):
     user_id: int
-    title: str
-    description: Optional[str] = None
-    priority: Optional[str] = "medium"  # low, medium, high
-    difficulty: Optional[int] = None  # 1-10 scale
-    status: str = "pending"  # pending, in_progress, completed
-    due_date: Optional[str] = None  # ISO format datetime string
+    description: str
+    title: Optional[str] = None
     estimated_duration: Optional[int] = None  # minutes
+    difficulty: Optional[int] = None  # 1-10 scale
+    due_date: Optional[str] = None  # ISO format datetime string
+    status: str = "pending"  # pending, in_progress, completed
+    priority: Optional[str] = "medium"  # low, medium, high
     scheduled_start: Optional[str] = None  # ISO format datetime string
     scheduled_end: Optional[str] = None  # ISO format datetime string
 
@@ -85,9 +85,10 @@ async def create_new_task(request: CreateTaskRequest):
             raise HTTPException(status_code=400, detail="Difficulty must be between 1 and 10")
 
         # create task data
+        title_value = request.title or request.description
         task_data = {
             "user_id": request.user_id,
-            "title": request.title,
+            "title": title_value,
             "description": request.description,
             "priority": request.priority,
             "difficulty": request.difficulty,

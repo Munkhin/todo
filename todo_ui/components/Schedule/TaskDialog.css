@@ -1,16 +1,16 @@
 /* styling for AI response message display */
 
 .task-dialog-container {
-    position: fixed;
-    top: 50%;
+    position: absolute;
     left: 50%;
-    transform: translate(-50%, -50%);
+    bottom: 1.5rem; /* sit just above the chat bar */
+    transform: translateX(-50%);
     display: flex;
     justify-content: center;
-    max-width: 48rem;
-    width: calc(100% - 2rem);
+    width: min(48rem, calc(100% - 4rem));
     padding: 0 1rem;
     z-index: 30;
+    pointer-events: none;
 }
 
 .task-dialog-box {
@@ -19,10 +19,24 @@
     border-radius: 0.5rem;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     padding: 1rem;
+    opacity: 1;
+    animation: task-dialog-fade-out 0.5s ease forwards;
+    animation-delay: 10s;
 }
 
 .task-dialog-text {
     font-size: 0.875rem;
     color: #374151;
     white-space: pre-wrap;
+}
+
+@keyframes task-dialog-fade-out {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(0.5rem);
+    }
 }
