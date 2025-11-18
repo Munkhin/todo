@@ -1,6 +1,7 @@
 # entry point for chat -> render on calendar flow
 
 import asyncio # for parallel execution to drastically decrease runtime
+import json
 import logging
 from collections.abc import Sequence
 from datetime import datetime, timezone
@@ -45,6 +46,23 @@ def _ensure_text_value(value: TextPayload) -> str:
 
 def _summarize(text: str, limit: int = 120) -> str:
     return text if len(text) <= limit else text[:limit].rstrip() + "…"
+
+
+def _normalize_task_collection(value: Any, *, context: str) -> list[dict]:
+    """Ensure task collections are always lists of dictionaries."""
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    if isinstance(value, str):
+        try:
+            parsed = json.loads(value)
+        except json.JSONDecodeError as exc:
+            raise TypeError(f"{context} expected a list of tasks but received a string.") from exc
+        if isinstance(parsed, list):
+            return parsed
+        raise TypeError(f"{context} expected a list of tasks but received: {type(parsed).__name__}.")
+    raise TypeError(f"{context} expected a list of tasks but received: {type(value).__name__}.")
 
 
 async def run_agent(user_input: UserInput):
@@ -258,17 +276,39 @@ async def recommend_slots(user_input):
 # scheduling and rescheduling
 async def schedule_tasks_into_calendar(user_input):
 
-    tasks = await infer_tasks(user_input)
+    tasks_raw = await infer_tasks(user_input)
+    tasks = _normalize_task_collection(tasks_raw, context="LLM task inference")
 
     user_id = user_input["user_id"]
-    existing_tasks = get_tasks_by_user(user_id)
+    existing_tasks_raw = get_tasks_by_user(user_id)
+    existing_tasks = _normalize_task_collection(existing_tasks_raw, context="existing tasks")
+
+    logger.info(
+        "Scheduling tasks",
+        extra={
+            "user_id": user_id,
+            "new_task_count": len(tasks),
+            "existing_task_count": len(existing_tasks),
+        },
+    )
+
+    if not tasks:
+        raise ValueError("No tasks were inferred from the request.")
 
     # if conflict reschedule all
     if conflict(tasks + existing_tasks):
+        logger.info("Conflict detected; merging with existing tasks", extra={"user_id": user_id})
         tasks += existing_tasks
 
+    if len(tasks) == 1:
+        event = tasks[0]
+        create_calendar_event(event)
+        return {
+            "text": f"Scheduled {event['description']}"
+        }
+
     # if many tasks process first
-    if len(tasks) >= 1:
+    if len(tasks) > 1:
         # get energy profile settings
         energy_profile = get_energy_profile(user_id)
 
@@ -304,13 +344,7 @@ async def schedule_tasks_into_calendar(user_input):
             "text": result
         }
 
-    # else schedule just one
-    else:
-        event = tasks[0]
-        create_calendar_event(event)
-        return {
-            "text": f"Scheduled {event["description"]}"
-        }
+    raise ValueError("Unable to schedule tasks due to insufficient data.")
 
 
 async def infer_tasks(user_input):
