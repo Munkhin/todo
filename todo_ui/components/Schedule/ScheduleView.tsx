@@ -24,6 +24,7 @@ import "./ScheduleView.css"
 // state management utility functions
 import { useUserId } from "@/hooks/use-user-id"
 import { calculateUsagePercent } from "@/lib/utils"
+import { taskEvents } from "@/lib/events/taskEvents"
 
 const DEFAULT_EVENT_COLOR = '#03bd9e'
 
@@ -233,7 +234,10 @@ export function ScheduleView() {
             // 4. update credit usage
             await fetchUsage()
 
-            // 5. clear chatbox once the message is sent
+            // 5. emit task events to notify other components (like TasksView) that tasks have changed
+            taskEvents.emit()
+
+            // 6. clear chatbox once the message is sent
             setChatValue("")
         } catch (error) {
             console.error("Failed to send chat message:", error)
