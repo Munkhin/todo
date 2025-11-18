@@ -1,16 +1,24 @@
 # chat endpoint for running agent
 
+from typing import Optional, Union
+
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, field_validator
+
 from api.ai.agent import run_agent
 
 router = APIRouter()
 
 class ChatRequest(BaseModel):
-    text: str
+    text: Union[str, list[str]]
     user_id: str
     file: Optional[dict] = None
+
+    @field_validator("text", mode="before")
+    def normalize_text(cls, value):
+        if isinstance(value, list):
+            return "\n".join(str(item) for item in value)
+        return value
 
 @router.post("/")
 async def chat_endpoint(request: ChatRequest):
