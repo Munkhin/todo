@@ -69,14 +69,6 @@ def chatgpt_call(user_input, PROMPT, schema_name, SCHEMA):
     user_id = user_input.get("user_id")
     conversation_id = get_user_conversation_id(user_id) if user_id else None
 
-    if not conversation_id:
-        conversation = client.conversations.create()
-        conversation_id = conversation.id
-        if user_id:
-            update_user_conversation_id(user_id, conversation_id)
-    else:
-        conversation = type("obj", (object,), {"id": conversation_id})
-
     # build input messages
     input_messages = [
         {
@@ -108,6 +100,15 @@ def chatgpt_call(user_input, PROMPT, schema_name, SCHEMA):
         },
         conversation = conversation_id,
     )
+
+    # persist the conversation id that responses API may have returned
+    conversation_obj = getattr(response, "conversation", None)
+    conversation_id = getattr(conversation_obj, "id", None) or getattr(response, "conversation_id", None)
+    if user_id and conversation_id:
+        try:
+            update_user_conversation_id(user_id, conversation_id)
+        except Exception:
+            pass
 
     output = add_user_id(response.output_text, user_id)
     return output

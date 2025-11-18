@@ -1,7 +1,7 @@
 run codex resume session_id to resume session
 
 ## backend/logic
-: api call error in agent chat
+019a90ab-f979-7be1-8375-ac5c3bb3a898: api call error in agent chat
 
 ## UI
 019a8bf1-9f6b-75c2-8291-9c355e0634d7: debug api call and added change plan buttons in subscription tab
@@ -13,3 +13,5 @@ run codex resume session_id to resume session
 
 
 ## Misc
+
+curl -v -H "Content-Type: application/json" -d '{"text":"Please schedule two study sessions for biology and chemistry.","user_id":"42","file":null}' https://todo-fufa.onrender.com/api/chat/
