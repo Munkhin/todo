@@ -5,6 +5,7 @@ import json
 import logging
 from collections.abc import Sequence
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from typing import Any, MutableMapping, Sequence as TypingSequence
 from openai import OpenAI
 from api.ai.intent_classifier import classify_intent
@@ -18,6 +19,7 @@ from api.database import (
     get_calendar_events_by_task_id,
     get_energy_profile,
     get_calendar_events,
+    get_user_by_id,
     create_or_update_energy_profile,
     create_calendar_event,
     delete_calendar_event,
@@ -28,11 +30,32 @@ from api.database import (
 client = OpenAI()
 
 from api.business_logic.scheduler import schedule_tasks
-from api.tasks.task_routes import create_new_task
 
 logger = logging.getLogger(__name__)
 TextPayload = str | TypingSequence[Any] | None
 UserInput = MutableMapping[str, Any]
+
+
+def _resolve_user_timezone(user_id: Any) -> str:
+    if not user_id:
+        return "UTC"
+    try:
+        user_record = get_user_by_id(user_id)
+    except Exception:
+        user_record = None
+    tz_value = None
+    if isinstance(user_record, dict):
+        tz_value = user_record.get("timezone")
+    return tz_value or "UTC"
+
+
+def _now_in_timezone(tz_name: str) -> datetime:
+    now_utc = datetime.now(timezone.utc)
+    try:
+        target_zone = ZoneInfo(tz_name)
+    except Exception:
+        target_zone = timezone.utc
+    return now_utc.astimezone(target_zone)
 
 
 def _ensure_text_value(value: TextPayload) -> str:
@@ -48,6 +71,72 @@ def _ensure_text_value(value: TextPayload) -> str:
 
 def _summarize(text: str, limit: int = 120) -> str:
     return text if len(text) <= limit else text[:limit].rstrip() + "…"
+
+
+def _drop_nulls(data: dict[str, Any]) -> dict[str, Any]:
+    return {key: value for key, value in data.items() if value is not None}
+
+
+def _build_task_payload(task: dict[str, Any], user_id: Any) -> dict[str, Any]:
+    duration = task.get("duration")
+    estimated_duration = None
+    if isinstance(duration, (int, float)):
+        estimated_duration = int(max(duration * 60, 0))
+
+    priority_value = task.get("priority")
+    if isinstance(priority_value, str):
+        priority_value = priority_value.lower()
+    else:
+        priority_value = "medium"
+
+    status_value = task.get("status") if isinstance(task.get("status"), str) else "pending"
+
+    payload = {
+        "user_id": user_id,
+        "title": task.get("title") or task.get("description") or "Task",
+        "description": task.get("description") or task.get("title") or "Task",
+        "priority": priority_value,
+        "difficulty": task.get("difficulty"),
+        "status": status_value,
+        "due_date": task.get("due_date"),
+        "estimated_duration": estimated_duration,
+        "scheduled_start": task.get("start_time") or task.get("scheduled_start"),
+        "scheduled_end": task.get("end_time") or task.get("scheduled_end"),
+    }
+    return _drop_nulls(payload)
+
+
+def _standardize_existing_task(task: dict[str, Any]) -> dict[str, Any]:
+    if not isinstance(task, dict):
+        return {}
+    description = task.get("description") or task.get("title") or "Task"
+    return {
+        "user_id": task.get("user_id"),
+        "description": description,
+        "start_time": task.get("start_time") or task.get("scheduled_start"),
+        "end_time": task.get("end_time") or task.get("scheduled_end"),
+        "priority": task.get("priority"),
+        "task_id": task.get("id") or task.get("task_id"),
+    }
+
+
+def _ensure_mapping(obj: Any, *, context: str) -> dict[str, Any]:
+    if obj is None:
+        return {}
+    if isinstance(obj, str):
+        try:
+            obj = json.loads(obj)
+        except json.JSONDecodeError as exc:
+            logger.error("%s returned invalid JSON string", context, extra={"error": str(exc)})
+            return {}
+    if not isinstance(obj, dict):
+        logger.error(
+            "%s expected a dictionary result but received %s",
+            context,
+            type(obj).__name__,
+        )
+        return {}
+    return obj
 
 
 EVENT_ALLOWED_FIELDS = {
@@ -79,6 +168,21 @@ def _sanitize_event_payload(event: dict, default_user_id: Any = None) -> dict:
 
     if not sanitized.get("title"):
         sanitized["title"] = sanitized.get("description") or "Calendar Event"
+
+    if not sanitized.get("event_type"):
+        sanitized["event_type"] = "task"
+    if not sanitized.get("source"):
+        sanitized["source"] = "agent"
+    if not sanitized.get("priority"):
+        sanitized["priority"] = "medium"
+    if not sanitized.get("color_hex"):
+        sanitized["color_hex"] = "#000000"
+
+    missing_required = [field for field in ("start_time", "end_time") if not sanitized.get(field)]
+    if missing_required:
+        raise ValueError(
+            f"Calendar events require {', '.join(missing_required)} before creation."
+        )
 
     return sanitized
 
@@ -294,90 +398,123 @@ async def recommend_slots(user_input):
 # scheduling and rescheduling
 async def schedule_tasks_into_calendar(user_input):
 
-    tasks = await infer_tasks(user_input)
+    inferred_tasks = await infer_tasks(user_input)
+    tasks = inferred_tasks if isinstance(inferred_tasks, list) else []
 
     user_id = user_input["user_id"]
-    
-    # create tasks
-    for task in tasks:
-        task["user_id"] = user_id
-        response = create_new_task(task)
 
-    existing_tasks = get_tasks_by_user(user_id)
+    prepared_tasks: list[dict[str, Any]] = []
+    for task in tasks:
+        if not isinstance(task, dict):
+            continue
+        task_copy = task.copy()
+        task_copy["user_id"] = user_id
+        db_payload = _build_task_payload(task_copy, user_id)
+        try:
+            task_id = create_task(db_payload)
+        except Exception:
+            task_id = None
+            logger.exception(
+                "Failed to persist inferred task",
+                extra={"user_id": user_id, "task": task_copy},
+            )
+        if task_id:
+            task_copy["task_id"] = task_id
+        prepared_tasks.append(task_copy)
+
+    existing_tasks_raw = get_tasks_by_user(user_id)
+    existing_tasks = [_standardize_existing_task(task) for task in (existing_tasks_raw or [])]
 
     logger.info(
         "Scheduling tasks",
         extra={
             "user_id": user_id,
-            "new_task_count": len(tasks),
+            "new_task_count": len(prepared_tasks),
             "existing_task_count": len(existing_tasks),
         },
     )
 
-    if not tasks:
+    if not prepared_tasks:
         raise ValueError("No tasks were inferred from the request.")
 
-    # if conflict reschedule all
-    if conflict(tasks + existing_tasks):
-        logger.info("Conflict detected; merging with existing tasks", extra={"user_id": user_id})
-        tasks += existing_tasks
+    combined_for_conflict = prepared_tasks + existing_tasks
+    requires_reschedule = conflict(combined_for_conflict)
+    scheduling_payload = combined_for_conflict if requires_reschedule else prepared_tasks
 
-    if len(tasks) == 1:
-        event = tasks[0]
+    missing_timestamps = any(
+        not task.get("start_time") or not task.get("end_time") for task in scheduling_payload
+    )
+    requires_scheduler = len(scheduling_payload) > 1 or missing_timestamps
+
+    if not requires_scheduler:
+        confirmations = []
+        for event in prepared_tasks:
+            try:
+                sanitized_event = _sanitize_event_payload(event, user_id)
+            except ValueError as exc:
+                logger.info(
+                    "Switching to scheduler because event lacks timestamps",
+                    extra={"user_id": user_id, "error": str(exc)},
+                )
+                requires_scheduler = True
+                break
+            create_calendar_event(sanitized_event)
+            confirmations.append(event.get("description") or event.get("title", "task"))
+        if not requires_scheduler:
+            return {"text": "Scheduled " + ", ".join(confirmations)}
+
+    energy_profile = get_energy_profile(user_id)
+
+    import numpy as np
+    settings = type("obj", (object,), {
+        "min_study_duration": energy_profile.get("min_study_duration", 30) if energy_profile else 30,
+        "max_study_duration": energy_profile.get("max_study_duration", 180) if energy_profile else 180,
+        "break_duration": energy_profile.get("short_break_min", 5) if energy_profile else 5,
+        "max_study_duration_before_break": energy_profile.get("long_study_threshold_min", 90) if energy_profile else 90,
+        "energy_plot": np.array(json.loads(energy_profile.get("energy_levels", "[]"))) if energy_profile and energy_profile.get("energy_levels") else np.ones(24)
+    })()
+
+    from datetime import timedelta
+    start_date = datetime.now(timezone.utc)
+    due_date_days = energy_profile.get("due_date_days", 7) if energy_profile else 7
+    end_date = start_date + timedelta(days=due_date_days)
+
+    schedule = await schedule_tasks(scheduling_payload, user_id, start_date, end_date, settings, supabase)
+    for event in schedule:
         sanitized_event = _sanitize_event_payload(event, user_id)
         create_calendar_event(sanitized_event)
-        return {
-            "text": f"Scheduled {event['description']}"
-        }
 
-    # if many tasks process first
-    if len(tasks) > 1:
-        # get energy profile settings
-        energy_profile = get_energy_profile(user_id)
+    descriptions = [event.get("description") or event.get("title", "task") for event in schedule]
 
-        # create settings object
-        import json
-        import numpy as np
-        settings = type("obj", (object,), {
-            "min_study_duration": energy_profile.get("min_study_duration", 30) if energy_profile else 30,
-            "max_study_duration": energy_profile.get("max_study_duration", 180) if energy_profile else 180,
-            "break_duration": energy_profile.get("short_break_min", 5) if energy_profile else 5,
-            "max_study_duration_before_break": energy_profile.get("long_study_threshold_min", 90) if energy_profile else 90,
-            "energy_plot": np.array(json.loads(energy_profile.get("energy_levels", "[]"))) if energy_profile and energy_profile.get("energy_levels") else np.ones(24)
-        })()
-
-        # determine scheduling window
-        from datetime import timedelta
-        start_date = datetime.now(timezone.utc)
-        due_date_days = energy_profile.get("due_date_days", 7) if energy_profile else 7
-        end_date = start_date + timedelta(days=due_date_days)
-
-        schedule = await schedule_tasks(tasks, user_id, start_date, end_date, settings, supabase)
-        for event in schedule:
-            sanitized_event = _sanitize_event_payload(event, user_id)
-            create_calendar_event(sanitized_event)
-        
-
-        # text return for user to see
-        descriptions = [event["description"] for event in schedule]
-
-        # Join them into a single string
-        result = "Scheduled " + ", ".join(descriptions)
-
-        return {
-            "text": result
-        }
-
-    raise ValueError("Unable to schedule tasks due to insufficient data.")
+    return {
+        "text": "Scheduled " + ", ".join(descriptions)
+    }
 
 
 async def infer_tasks(user_input):
-    tasks = chatgpt_call(user_input, GET_TASKS_DEV_PROMPT, "tasks", TASK_SCHEMA)
+    base_text = _ensure_text_value(user_input.get("text"))
+    user_id = user_input.get("user_id")
+    tz_name = _resolve_user_timezone(user_id)
+    local_now = _now_in_timezone(tz_name)
+
+    enriched_input = user_input.copy()
+    enriched_input["text"] = (
+        base_text
+        + "\n\nUser timezone: " + tz_name
+        + "\nCurrent local datetime: " + local_now.isoformat()
+        + "\nIf a time is provided without a date, assume it refers to the above date."
+    )
+
+    tasks = chatgpt_call(enriched_input, GET_TASKS_DEV_PROMPT, "tasks", TASK_SCHEMA)
     if isinstance(tasks, str):
         try:
-            return json.loads(tasks)
+            tasks = json.loads(tasks)
         except json.JSONDecodeError as exc:
             raise TypeError("LLM task inference returned a string that is not valid JSON.") from exc
+    if tasks is None:
+        return []
+    if not isinstance(tasks, list):
+        raise TypeError("LLM task inference must return a list of tasks.")
     return tasks
 
 
@@ -482,15 +619,16 @@ async def update_preferences(user_input):
         "preference_updates",
         PREFERENCE_UPDATES_SCHEMA
     )
+    updates = _ensure_mapping(updates, context="Preference extraction")
 
     # apply updates to database
-    if updates and any(v is not None for v in updates.values() if v != "user_id"):
+    if updates and any(v is not None for k, v in updates.items() if k != "user_id"):
         # remove user_id from updates dict before passing to db
         profile_data = {k: v for k, v in updates.items() if k != "user_id" and v is not None}
         create_or_update_energy_profile(user_id, profile_data)
 
         return {
-            "text": f"Updated preferences: {", ".join(profile_data.keys())}"
+            "text": "Updated preferences: " + ", ".join(profile_data.keys())
         }
     else:
         return {
