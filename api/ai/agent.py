@@ -281,7 +281,18 @@ def _normalize_messages(PROMPT, user_input, file_text):
     ]
 
 
-def chatgpt_call(user_input: UserInput, PROMPT, schema_name, SCHEMA):
+async def chatgpt_call(user_input: UserInput, PROMPT, schema_name, SCHEMA):
+    """Bridge synchronous OpenAI SDK to asyncio so multiple intents can overlap."""
+    return await asyncio.to_thread(
+        _chatgpt_call_sync,
+        user_input,
+        PROMPT,
+        schema_name,
+        SCHEMA,
+    )
+
+
+def _chatgpt_call_sync(user_input: UserInput, PROMPT, schema_name, SCHEMA):
 
     sanitized_input = user_input.copy()
     sanitized_input["text"] = _ensure_text_value(user_input.get("text"))
@@ -392,7 +403,7 @@ async def recommend_slots(user_input):
         + "\nCurrent datetime: " + current_datetime
     )
 
-    return chatgpt_call(user_input_enriched, RECOMMEND_SLOTS_DEV_PROMPT, "slots recommendation", SLOTS_SCHEMA)
+    return await chatgpt_call(user_input_enriched, RECOMMEND_SLOTS_DEV_PROMPT, "slots recommendation", SLOTS_SCHEMA)
 
 
 # scheduling and rescheduling
@@ -505,7 +516,7 @@ async def infer_tasks(user_input):
         + "\nIf a time is provided without a date, assume it refers to the above date."
     )
 
-    tasks = chatgpt_call(enriched_input, GET_TASKS_DEV_PROMPT, "tasks", TASK_SCHEMA)
+    tasks = await chatgpt_call(enriched_input, GET_TASKS_DEV_PROMPT, "tasks", TASK_SCHEMA)
     if isinstance(tasks, str):
         try:
             tasks = json.loads(tasks)
@@ -588,7 +599,7 @@ async def check_calendar(user_input):
         + "\nCurrent datetime: " + current_datetime
     )
 
-    return chatgpt_call(
+    return await chatgpt_call(
         user_input_enriched,
         CHECK_CALENDAR_DEV_PROMPT,
         "calendar_query",
@@ -613,7 +624,7 @@ async def update_preferences(user_input):
     )
 
     # extract desired updates from user input
-    updates = chatgpt_call(
+    updates = await chatgpt_call(
         user_input_enriched,
         UPDATE_PREFERENCES_DEV_PROMPT,
         "preference_updates",
