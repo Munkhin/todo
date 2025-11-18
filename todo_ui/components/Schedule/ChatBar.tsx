@@ -2,7 +2,7 @@
 
 import React, { useRef, useState } from "react"
 import { IconPlus } from "@tabler/icons-react"
-import { ArrowUpIcon } from "lucide-react"
+import { ArrowUpIcon, Loader2 } from "lucide-react"
 import {
   InputGroup,
   InputGroupAddon,
@@ -20,6 +20,7 @@ type ChatBarProps = {
   disabled?: boolean
   placeholder?: string
   usagePercent?: number
+  isSubmitting?: boolean
 }
 
 export function ChatBar({
@@ -29,6 +30,7 @@ export function ChatBar({
   disabled = false,
   placeholder = "Ask, Search or Chat...",
   usagePercent = 0,
+  isSubmitting = false,
 }: ChatBarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined)
@@ -38,7 +40,7 @@ export function ChatBar({
   }
 
   const handleSubmit = () => {
-    if (!disabled && value.trim()) {
+    if (!disabled && !isSubmitting && value.trim()) {
       onSubmit?.(value, selectedFile)
       setSelectedFile(undefined)
     }
@@ -99,11 +101,15 @@ export function ChatBar({
             variant="default"
             className="rounded-full"
             size="icon-xs"
-            disabled={disabled || !value.trim()}
+            disabled={disabled || isSubmitting || !value.trim()}
             onClick={handleSubmit}
             type="button"
           >
-            <ArrowUpIcon />
+            {isSubmitting ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <ArrowUpIcon />
+            )}
             <span className="sr-only">Send</span>
           </InputGroupButton>
         </InputGroupAddon>

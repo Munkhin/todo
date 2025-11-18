@@ -52,6 +52,7 @@ export function ScheduleView() {
                 color_hex: DEFAULT_EVENT_COLOR,
             }
         })
+    const [isSending, setIsSending] = useState<boolean>(false)
 
     // get user id from auth
     const userId = useUserId()
@@ -206,21 +207,29 @@ export function ScheduleView() {
 
     // handling sending via chatbox
     async function handleChatSubmit(query: string, file?: File) {
+        if (isSending) return
+        setIsSending(true)
         // 1. send query to backend (AI + scheduling)
-        const response = await ModelResponseController.call(query, String(userId), file)
+        try {
+            const response = await ModelResponseController.call(query, String(userId), file)
 
-        // 2. show any feedback message via task dialog
-        const text = ModelResponseController.extractText(response)
-        setResponseMessage(text)
+            // 2. show any feedback message via task dialog
+            const text = ModelResponseController.extractText(response)
+            setResponseMessage(text)
 
-        // 3. reload calendar to reflect newly scheduled tasks
-        await loadCalendarEvents()
+            // 3. reload calendar to reflect newly scheduled tasks
+            await loadCalendarEvents()
 
-        // 4. update credit usage
-        await fetchUsage()
+            // 4. update credit usage
+            await fetchUsage()
 
-        // 5. clear chatbox once the message is sent
-        setChatValue("")
+            // 5. clear chatbox once the message is sent
+            setChatValue("")
+        } catch (error) {
+            console.error("Failed to send chat message:", error)
+        } finally {
+            setIsSending(false)
+        }
     }
 
     return (
@@ -241,6 +250,7 @@ export function ScheduleView() {
                     onChange={setChatValue}
                     onSubmit={handleChatSubmit}
                     usagePercent={usagePercent}
+                    isSubmitting={isSending}
                 />
             </div>
             <EventPopup

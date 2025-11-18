@@ -21,6 +21,7 @@ from api.database import (
     create_or_update_energy_profile,
     create_calendar_event,
     delete_calendar_event,
+    create_task,
     supabase,
 )
 
@@ -63,6 +64,73 @@ def _normalize_task_collection(value: Any, *, context: str) -> list[dict]:
             return parsed
         raise TypeError(f"{context} expected a list of tasks but received: {type(parsed).__name__}.")
     raise TypeError(f"{context} expected a list of tasks but received: {type(value).__name__}.")
+
+
+def _coerce_int(value: Any) -> Any:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return value
+
+
+EVENT_ALLOWED_FIELDS = {
+    "user_id",
+    "title",
+    "description",
+    "start_time",
+    "end_time",
+    "event_type",
+    "priority",
+    "source",
+    "task_id",
+    "color_hex",
+}
+
+
+def _sanitize_event_payload(event: dict, default_user_id: Any = None) -> dict:
+    """Remove fields that the calendar_events table doesn't understand."""
+    sanitized: dict[str, Any] = {}
+    resolved_user_id = event.get("user_id", default_user_id)
+    resolved_user_id = _coerce_int(resolved_user_id)
+    if resolved_user_id is not None:
+        sanitized["user_id"] = resolved_user_id
+
+    for key in EVENT_ALLOWED_FIELDS:
+        if key == "user_id":
+            continue
+        if key in event and event[key] is not None:
+            sanitized[key] = event[key]
+
+    if not sanitized.get("title"):
+        sanitized["title"] = sanitized.get("description") or "Calendar Event"
+
+    return sanitized
+
+
+def _persist_new_tasks(tasks: list[dict], user_id: Any) -> None:
+    """Create task rows for inferred tasks so they always exist in the DB."""
+    normalized_user_id = _coerce_int(user_id)
+    for task in tasks:
+        if task.get("task_id"):
+            continue
+
+        task["user_id"] = normalized_user_id
+        task_payload = {
+            "user_id": normalized_user_id,
+            "title": task.get("description") or task.get("title") or "Task",
+            "description": task.get("description"),
+            "priority": task.get("priority"),
+            "difficulty": task.get("difficulty"),
+            "status": "scheduled",
+            "scheduled_start": task.get("start_time"),
+            "scheduled_end": task.get("end_time"),
+        }
+
+        task_id = create_task(task_payload)
+        if task_id:
+            task["task_id"] = task_id
+        else:
+            logger.warning("Failed to persist inferred task", extra={"user_id": normalized_user_id, "task": task})
 
 
 async def run_agent(user_input: UserInput):
@@ -192,7 +260,7 @@ def chatgpt_call(user_input: UserInput, PROMPT, schema_name, SCHEMA):
             extra={"user_id": user_id, "schema": schema_name},
         )
         response = client.responses.create(
-            model="gpt-5",
+            model="gpt-5-mini",
             reasoning={"effort": "low"},
             input=input_messages,
             text={
@@ -214,7 +282,7 @@ def chatgpt_call(user_input: UserInput, PROMPT, schema_name, SCHEMA):
         extra={"user_id": user_id, "schema": schema_name},
     )
     response = client.chat.completions.create(
-        model="gpt-5",
+        model="gpt-5-mini",
         messages=fallback_messages,
     )
 
@@ -280,7 +348,11 @@ async def schedule_tasks_into_calendar(user_input):
     tasks = _normalize_task_collection(tasks_raw, context="LLM task inference")
 
     user_id = user_input["user_id"]
-    existing_tasks_raw = get_tasks_by_user(user_id)
+    normalized_user_id = _coerce_int(user_id)
+
+    _persist_new_tasks(tasks, normalized_user_id)
+
+    existing_tasks_raw = get_tasks_by_user(normalized_user_id)
     existing_tasks = _normalize_task_collection(existing_tasks_raw, context="existing tasks")
 
     logger.info(
@@ -302,7 +374,8 @@ async def schedule_tasks_into_calendar(user_input):
 
     if len(tasks) == 1:
         event = tasks[0]
-        create_calendar_event(event)
+        sanitized_event = _sanitize_event_payload(event, normalized_user_id)
+        create_calendar_event(sanitized_event)
         return {
             "text": f"Scheduled {event['description']}"
         }
@@ -310,7 +383,7 @@ async def schedule_tasks_into_calendar(user_input):
     # if many tasks process first
     if len(tasks) > 1:
         # get energy profile settings
-        energy_profile = get_energy_profile(user_id)
+        energy_profile = get_energy_profile(normalized_user_id)
 
         # create settings object
         import json
@@ -329,9 +402,10 @@ async def schedule_tasks_into_calendar(user_input):
         due_date_days = energy_profile.get("due_date_days", 7) if energy_profile else 7
         end_date = start_date + timedelta(days=due_date_days)
 
-        schedule = await schedule_tasks(tasks, user_id, start_date, end_date, settings, supabase)
+        schedule = await schedule_tasks(tasks, normalized_user_id, start_date, end_date, settings, supabase)
         for event in schedule:
-            create_calendar_event(event)
+            sanitized_event = _sanitize_event_payload(event, normalized_user_id)
+            create_calendar_event(sanitized_event)
         
 
         # text return for user to see

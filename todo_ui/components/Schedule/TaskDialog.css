@@ -2,13 +2,15 @@
 
 .task-dialog-container {
     position: fixed;
-    bottom: 7rem;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
-
+    transform: translate(-50%, -50%);
+    display: flex;
+    justify-content: center;
     max-width: 48rem;
-    width: 100%;
+    width: calc(100% - 2rem);
     padding: 0 1rem;
+    z-index: 30;
 }
 
 .task-dialog-box {
