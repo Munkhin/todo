@@ -53,3 +53,20 @@ def test_chat_endpoint_propagates_exceptions_as_http_error():
         assert exc.detail == "scheduling failed"
     finally:
         mock_run_agent.side_effect = None
+
+
+def test_chat_endpoint_normalizes_list_text():
+    mock_run_agent.reset_mock()
+    mock_run_agent.return_value = [{"text": "Combined tasks."}]
+
+    payload = _make_payload()
+    payload["text"] = ["first task", "second task"]
+
+    request = chat_routes.ChatRequest(**payload)
+    response = asyncio.run(chat_routes.chat_endpoint(request))
+
+    assert response["success"] is True
+    assert response["results"] == [{"text": "Combined tasks."}]
+    mock_run_agent.assert_awaited_once()
+    user_input = mock_run_agent.await_args.args[0]
+    assert user_input["text"] == "first task\nsecond task"

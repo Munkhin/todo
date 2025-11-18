@@ -195,7 +195,7 @@ async def recommend_slots(user_input):
     # append to user_input
     user_input_enriched = user_input.copy()  # shallow copy to avoid modifying original
     user_input_enriched["text"] = (
-        user_input["text"]
+        str(user_input["text"])
         + "\n\nEnergy profile: " + str(energy_profile)
         + "\nCalendar events: " + str(calendar_events)
         + "\nCurrent datetime: " + current_datetime
