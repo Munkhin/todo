@@ -25,7 +25,20 @@ client = OpenAI()
 from api.business_logic.scheduler import schedule_tasks
 
 
+def _ensure_text_value(value):
+    """Guarantee downstream code always works with a string prompt."""
+    if value is None:
+        return ""
+    if isinstance(value, list):
+        return "\n".join(str(item) for item in value)
+    return str(value)
+
+
 async def run_agent(user_input):
+
+    # Make sure text payload is always a string to avoid concat crashes.
+    user_input = user_input.copy()
+    user_input["text"] = _ensure_text_value(user_input.get("text"))
 
     # intents handled
     allowed_intents = ["recommend-slots", "schedule-tasks", "delete-tasks", "reschedule", "check-calendar", "update-preferences"]
