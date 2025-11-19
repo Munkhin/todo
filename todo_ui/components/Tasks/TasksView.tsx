@@ -28,7 +28,7 @@ export default function TasksView() {
   // subscribe to task events (when chat creates tasks)
   useEffect(() => {
     const unsubscribe = taskEvents.subscribe(() => {
-      fetchTasks({}).catch(() => {})
+      fetchTasks().catch(() => { })
     })
     return unsubscribe
   }, [fetchTasks])

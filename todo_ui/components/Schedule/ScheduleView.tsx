@@ -2,6 +2,7 @@
 // defines the schedule tab content
 
 import React, { useState, useEffect } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 
 // installing controllers
 import ModelResponseController from "@/controllers/model_response"
@@ -32,6 +33,7 @@ const DEFAULT_EVENT_COLOR = '#03bd9e'
 export function ScheduleView() {
 
     // state management
+    const queryClient = useQueryClient()
     const [responseMessage, setResponseMessage] = useState<string | null>(null)
     const [calendarEvents, setCalendarEvents] = useState<any[]>([]) // needed for Calendar
     const [chatValue, setChatValue] = useState<string>("")
@@ -43,16 +45,16 @@ export function ScheduleView() {
     }>({
         isOpen: false,
         mode: 'create',
-            data: {
-                title: '',
-                description: '',
-                start_time: '',
-                end_time: '',
-                event_type: 'study',
-                priority: 'medium',
-                color_hex: DEFAULT_EVENT_COLOR,
-            }
-        })
+        data: {
+            title: '',
+            description: '',
+            start_time: '',
+            end_time: '',
+            event_type: 'study',
+            priority: 'medium',
+            color_hex: DEFAULT_EVENT_COLOR,
+        }
+    })
     const [isSending, setIsSending] = useState<boolean>(false)
 
     // get user id from auth
@@ -138,6 +140,7 @@ export function ScheduleView() {
                     color_hex: eventData.color_hex,
                 })
                 await loadCalendarEvents()
+                queryClient.invalidateQueries({ queryKey: ['tasks'] })
             }
         } catch (error) {
             console.error("Failed to update event:", error)
@@ -149,6 +152,7 @@ export function ScheduleView() {
         try {
             await deleteEvent(Number(eventId))
             await loadCalendarEvents()
+            queryClient.invalidateQueries({ queryKey: ['tasks'] })
         } catch (error) {
             console.error("Failed to delete event:", error)
         }
@@ -182,6 +186,7 @@ export function ScheduleView() {
                 }
             }
             await loadCalendarEvents()
+            queryClient.invalidateQueries({ queryKey: ['tasks'] })
             setPopupState({ ...popupState, isOpen: false })
         } catch (error) {
             console.error("Failed to save event:", error)
@@ -194,6 +199,7 @@ export function ScheduleView() {
             if (popupState.data.id) {
                 await deleteEvent(popupState.data.id)
                 await loadCalendarEvents()
+                queryClient.invalidateQueries({ queryKey: ['tasks'] })
                 setPopupState({ ...popupState, isOpen: false })
             }
         } catch (error) {
@@ -236,6 +242,9 @@ export function ScheduleView() {
 
             // 5. emit task events to notify other components (like TasksView) that tasks have changed
             taskEvents.emit()
+
+            // Invalidate tasks query to ensure TasksView updates when user navigates back
+            queryClient.invalidateQueries({ queryKey: ['tasks'] })
 
             // 6. clear chatbox once the message is sent
             setChatValue("")

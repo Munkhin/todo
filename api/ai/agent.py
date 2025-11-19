@@ -3,11 +3,12 @@
 import asyncio # for parallel execution to drastically decrease runtime
 import json
 import logging
+import os
+import aiohttp
 from collections.abc import Sequence
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 from typing import Any, MutableMapping, Sequence as TypingSequence
-from openai import OpenAI
 from api.ai.intent_classifier import classify_intent
 from api.ai.semantic_matcher import match_tasks
 from api.preprocess_user_input.file_processing import file_to_text
@@ -27,7 +28,9 @@ from api.database import (
     supabase,
 )
 
-client = OpenAI()
+# OpenAI API configuration
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_API_URL = "https://api.openai.com/v1/responses"
 
 from api.business_logic.scheduler import schedule_tasks
 
@@ -273,30 +276,12 @@ def _save_conversation_id(user_id, response, fallback_id=None):
             pass
 
 
-def _normalize_messages(PROMPT, user_input, file_text):
-    return [
-        {"role": "system", "content": PROMPT},
-        {"role": "user", "content": user_input["text"]},
-        {"role": "user", "content": f"file contents: {file_text}"},
-    ]
-
-
 async def chatgpt_call(user_input: UserInput, PROMPT, schema_name, SCHEMA):
-    """Bridge synchronous OpenAI SDK to asyncio so multiple intents can overlap."""
-    return await asyncio.to_thread(
-        _chatgpt_call_sync,
-        user_input,
-        PROMPT,
-        schema_name,
-        SCHEMA,
-    )
-
-
-def _chatgpt_call_sync(user_input: UserInput, PROMPT, schema_name, SCHEMA):
-
+    """Async OpenAI Responses API call using aiohttp for true parallel execution."""
+    
     sanitized_input = user_input.copy()
     sanitized_input["text"] = _ensure_text_value(user_input.get("text"))
-    file_text =  file_to_text(sanitized_input.get("file"))
+    file_text = file_to_text(sanitized_input.get("file"))
 
     # get or create conversation id for this user
     user_id = sanitized_input.get("user_id")
@@ -318,50 +303,62 @@ def _chatgpt_call_sync(user_input: UserInput, PROMPT, schema_name, SCHEMA):
         }
     ]
 
-
-    if hasattr(client, "responses"):
-        logger.debug(
-            "Calling OpenAI responses API",
-            extra={"user_id": user_id, "schema": schema_name},
-        )
-        response = client.responses.create(
-            model="gpt-5-mini",
-            reasoning={"effort": "low"},
-            input=input_messages,
-            text={
-                "format": {
-                    "type": f"{schema_name}",
-                    "name": "tasks",
-                    "strict": True,
-                    "schema": SCHEMA,
-                }
-            },
-            conversation=conversation_id,
-        )
-        _save_conversation_id(user_id, response, fallback_id=conversation_id)
-        return add_user_id(response.output_text, user_id)
-
-    fallback_messages = _normalize_messages(PROMPT, sanitized_input, file_text)
     logger.debug(
-        "Calling OpenAI chat completions API",
+        "Calling OpenAI Responses API (async via aiohttp)",
         extra={"user_id": user_id, "schema": schema_name},
     )
-    response = client.chat.completions.create(
-        model="gpt-5-mini",
-        messages=fallback_messages,
-    )
+    
+    # Prepare request payload
+    payload = {
+        "model": "gpt-5.1-mini",
+        "reasoning": {"effort": "low"},
+        "input": input_messages,
+        "text": {
+            "format": {
+                "type": "json_schema",
+                "name": schema_name,
+                "schema": SCHEMA,
+                "strict": True
+            }
+        }
+    }
+    
+    # Add conversation ID if available
+    if conversation_id:
+        payload["conversation"] = conversation_id
+    
+    # Make async HTTP request
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            OPENAI_API_URL,
+            headers={
+                "Authorization": f"Bearer {OPENAI_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json=payload
+        ) as resp:
+            if resp.status != 200:
+                error_text = await resp.text()
+                logger.error(
+                    f"OpenAI API error: {resp.status}",
+                    extra={"user_id": user_id, "error": error_text}
+                )
+                raise Exception(f"OpenAI API error {resp.status}: {error_text}")
+            
+            data = await resp.json()
+            
+            # Save conversation ID from response
+            if "conversation" in data and hasattr(data["conversation"], "id"):
+                _save_conversation_id(user_id, data, fallback_id=conversation_id)
+            elif conversation_id:
+                # Use fallback if response doesn't contain conversation
+                update_user_conversation_id(user_id, conversation_id)
+            
+            # Extract output text
+            output_text = data.get("output_text") or data.get("output", [{}])[0].get("content", [{}])[0].get("text", "")
+            
+            return add_user_id(output_text, user_id)
 
-    _save_conversation_id(user_id, response, fallback_id=conversation_id)
-
-    content = ""
-    if getattr(response, "choices", None):
-        choice = response.choices[0]
-        if getattr(choice, "message", None):
-            content = choice.message.content or ""
-        elif getattr(choice, "text", None):
-            content = choice.text or ""
-
-    return add_user_id(content, user_id)
 
 
 # helper to add user id into chatgpt json response(since passing user id into chatgpt is unsafe)
