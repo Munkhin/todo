@@ -207,6 +207,17 @@ def create_task(task_data: Dict[str, Any]) -> Optional[int]:
         print(f"Error creating task: {e}")
         return None
 
+def create_tasks_batch(tasks_data: list[Dict[str, Any]]) -> list[int]:
+    """create multiple tasks in one go, returns list of task ids"""
+    try:
+        if not tasks_data:
+            return []
+        response = supabase.table("tasks").insert(tasks_data).execute()
+        return [task["id"] for task in response.data] if response.data else []
+    except Exception as e:
+        print(f"Error creating tasks batch: {e}")
+        return []
+
 def get_tasks_by_user(user_id: int) -> list[Dict[str, Any]]:
     """get all tasks for user"""
     try:

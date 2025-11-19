@@ -1,25 +1,25 @@
 import os
 import numpy as np
-from openai import OpenAI
+from openai import AsyncOpenAI
 
 # Initialize OpenAI client
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # ------------------- Embedding functions -------------------
 
-def get_openai_embedding(text, model="text-embedding-3-small"):
+async def get_openai_embedding(text, model="text-embedding-3-small"):
     """Get embedding from OpenAI API"""
-    response = client.embeddings.create(
+    response = await client.embeddings.create(
         model=model,
         input=text
     )
     return np.array(response.data[0].embedding)
 
-def embed(texts):
+async def embed(texts):
     """Embed multiple texts and return numpy matrix"""
     if isinstance(texts, str):
         texts = [texts]
-    response = client.embeddings.create(
+    response = await client.embeddings.create(
         model="text-embedding-3-small",
         input=texts
     )
@@ -45,20 +45,20 @@ intent_examples = {
 intent_vectors: dict[str, np.ndarray] = {}
 
 
-def _initialize_intent_vectors():
+async def _initialize_intent_vectors():
     """Build embeddings for each intent when first needed."""
     if intent_vectors:
         return
 
     for intent, examples in intent_examples.items():
-        vec = embed(examples).mean(axis=0)
+        vec = (await embed(examples)).mean(axis=0)
         vec /= np.linalg.norm(vec)
         intent_vectors[intent] = vec
 
 
 # ------------------- Classification -------------------
 
-def classify_intent(text: str, intents: list[str], dynamic_ratio: float = 0.8) -> list[str]:
+async def classify_intent(text: str, intents: list[str], dynamic_ratio: float = 0.8) -> list[str]:
     """
     Classify text into one or more intents using dynamic thresholding.
 
@@ -70,8 +70,8 @@ def classify_intent(text: str, intents: list[str], dynamic_ratio: float = 0.8) -
     Returns:
         List of detected intent strings
     """
-    _initialize_intent_vectors()
-    msg_vec = get_openai_embedding(text)
+    await _initialize_intent_vectors()
+    msg_vec = await get_openai_embedding(text)
     msg_vec /= np.linalg.norm(msg_vec)
 
     # Compute cosine similarity with each intent vector

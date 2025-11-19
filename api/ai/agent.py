@@ -25,12 +25,14 @@ from api.database import (
     create_calendar_event,
     delete_calendar_event,
     create_task,
+    create_tasks_batch,
     supabase,
 )
 
 # OpenAI API configuration
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_API_URL = "https://api.openai.com/v1/responses"
+OPENAI_RESPONSES_MODEL = os.getenv("OPENAI_RESPONSES_MODEL", "gpt-5-mini")
 
 from api.business_logic.scheduler import schedule_tasks
 
@@ -208,7 +210,7 @@ async def run_agent(user_input: UserInput):
     allowed_intents = ["recommend-slots", "schedule-tasks", "delete-tasks", "reschedule", "check-calendar", "update-preferences"]
     
     # first classify the intent(s) with a lightweight model
-    intents = classify_intent(user_input["text"], allowed_intents)
+    intents = await classify_intent(user_input["text"], allowed_intents)
     logger.info(
         "Intents classified",
         extra={"user_id": user_input.get("user_id"), "intents": intents},
@@ -276,6 +278,10 @@ def _save_conversation_id(user_id, response, fallback_id=None):
             pass
 
 
+def _is_valid_conversation_id(value: Any) -> bool:
+    return isinstance(value, str) and value.startswith("conv")
+
+
 async def chatgpt_call(user_input: UserInput, PROMPT, schema_name, SCHEMA):
     """Async OpenAI Responses API call using aiohttp for true parallel execution."""
     
@@ -286,6 +292,12 @@ async def chatgpt_call(user_input: UserInput, PROMPT, schema_name, SCHEMA):
     # get or create conversation id for this user
     user_id = sanitized_input.get("user_id")
     conversation_id = get_user_conversation_id(user_id) if user_id else None
+    if conversation_id and not _is_valid_conversation_id(conversation_id):
+        try:
+            update_user_conversation_id(user_id, None)
+        except Exception:
+            pass
+        conversation_id = None
 
     # build input messages
     input_messages = [
@@ -310,7 +322,7 @@ async def chatgpt_call(user_input: UserInput, PROMPT, schema_name, SCHEMA):
     
     # Prepare request payload
     payload = {
-        "model": "gpt-5.1-mini",
+        "model": OPENAI_RESPONSES_MODEL,
         "reasoning": {"effort": "low"},
         "input": input_messages,
         "text": {
@@ -383,10 +395,10 @@ async def recommend_slots(user_input):
     base_text = _ensure_text_value(user_input.get("text"))
 
     # fetch energy profile
-    energy_profile = get_energy_profile(user_id) if user_id else None
+    energy_profile = await asyncio.to_thread(get_energy_profile, user_id) if user_id else None
 
     # fetch calendar events
-    calendar_events = get_calendar_events(user_id) if user_id else []
+    calendar_events = await asyncio.to_thread(get_calendar_events, user_id) if user_id else []
 
     # get current datetime
     current_datetime = datetime.now(timezone.utc).isoformat()
@@ -418,19 +430,23 @@ async def schedule_tasks_into_calendar(user_input):
         task_copy = task.copy()
         task_copy["user_id"] = user_id
         db_payload = _build_task_payload(task_copy, user_id)
-        try:
-            task_id = create_task(db_payload)
-        except Exception:
-            task_id = None
-            logger.exception(
-                "Failed to persist inferred task",
-                extra={"user_id": user_id, "task": task_copy},
-            )
-        if task_id:
-            task_copy["task_id"] = task_id
-        prepared_tasks.append(task_copy)
+        prepared_tasks.append(db_payload)
 
-    existing_tasks_raw = get_tasks_by_user(user_id)
+    # Batch insert tasks
+    if prepared_tasks:
+        try:
+            task_ids = await asyncio.to_thread(create_tasks_batch, prepared_tasks)
+            # Map back IDs to task copies
+            for i, task_id in enumerate(task_ids):
+                if i < len(tasks):
+                    tasks[i]["task_id"] = task_id
+        except Exception:
+            logger.exception(
+                "Failed to batch persist inferred tasks",
+                extra={"user_id": user_id},
+            )
+
+    existing_tasks_raw = await asyncio.to_thread(get_tasks_by_user, user_id)
     existing_tasks = [_standardize_existing_task(task) for task in (existing_tasks_raw or [])]
 
     logger.info(
@@ -443,11 +459,12 @@ async def schedule_tasks_into_calendar(user_input):
     )
 
     if not prepared_tasks:
-        raise ValueError("No tasks were inferred from the request.")
+        logger.info("No tasks inferred; returning informational response", extra={"user_id": user_id})
+        return {"text": "I couldn't extract any actionable tasks from that message."}
 
-    combined_for_conflict = prepared_tasks + existing_tasks
+    combined_for_conflict = tasks + existing_tasks # Use tasks which now have IDs
     requires_reschedule = conflict(combined_for_conflict)
-    scheduling_payload = combined_for_conflict if requires_reschedule else prepared_tasks
+    scheduling_payload = combined_for_conflict if requires_reschedule else tasks
 
     missing_timestamps = any(
         not task.get("start_time") or not task.get("end_time") for task in scheduling_payload
@@ -456,7 +473,7 @@ async def schedule_tasks_into_calendar(user_input):
 
     if not requires_scheduler:
         confirmations = []
-        for event in prepared_tasks:
+        for event in tasks:
             try:
                 sanitized_event = _sanitize_event_payload(event, user_id)
             except ValueError as exc:
@@ -466,12 +483,12 @@ async def schedule_tasks_into_calendar(user_input):
                 )
                 requires_scheduler = True
                 break
-            create_calendar_event(sanitized_event)
+            await asyncio.to_thread(create_calendar_event, sanitized_event)
             confirmations.append(event.get("description") or event.get("title", "task"))
         if not requires_scheduler:
             return {"text": "Scheduled " + ", ".join(confirmations)}
 
-    energy_profile = get_energy_profile(user_id)
+    energy_profile = await asyncio.to_thread(get_energy_profile, user_id)
 
     import numpy as np
     settings = type("obj", (object,), {
@@ -490,7 +507,7 @@ async def schedule_tasks_into_calendar(user_input):
     schedule = await schedule_tasks(scheduling_payload, user_id, start_date, end_date, settings, supabase)
     for event in schedule:
         sanitized_event = _sanitize_event_payload(event, user_id)
-        create_calendar_event(sanitized_event)
+        await asyncio.to_thread(create_calendar_event, sanitized_event)
 
     descriptions = [event.get("description") or event.get("title", "task") for event in schedule]
 
@@ -513,16 +530,28 @@ async def infer_tasks(user_input):
         + "\nIf a time is provided without a date, assume it refers to the above date."
     )
 
-    tasks = await chatgpt_call(enriched_input, GET_TASKS_DEV_PROMPT, "tasks", TASK_SCHEMA)
-    if isinstance(tasks, str):
+    tasks_payload = await chatgpt_call(enriched_input, GET_TASKS_DEV_PROMPT, "tasks", TASK_SCHEMA)
+    if isinstance(tasks_payload, str):
         try:
-            tasks = json.loads(tasks)
-        except json.JSONDecodeError as exc:
-            raise TypeError("LLM task inference returned a string that is not valid JSON.") from exc
+            tasks_payload = json.loads(tasks_payload)
+        except json.JSONDecodeError:
+            logger.warning(
+                "LLM task inference returned non-JSON text; defaulting to no tasks",
+                extra={"user_id": user_id, "payload_preview": tasks_payload[:200]}
+            )
+            return []
+    if tasks_payload is None:
+        return []
+    if isinstance(tasks_payload, list):
+        # Backwards compatibility if model ignored wrapper
+        return tasks_payload
+    if not isinstance(tasks_payload, dict):
+        raise TypeError("LLM task inference must return an object containing a tasks array.")
+    tasks = tasks_payload.get("tasks")
     if tasks is None:
         return []
     if not isinstance(tasks, list):
-        raise TypeError("LLM task inference must return a list of tasks.")
+        raise TypeError("LLM task inference 'tasks' field must be a list.")
     return tasks
 
 
@@ -556,15 +585,15 @@ def conflict(tasks):
 async def delete_tasks_from_calendar(user_input):
 
     user_id = user_input["user_id"]
-    existing_tasks = get_tasks_by_user(user_id) 
+    existing_tasks = await asyncio.to_thread(get_tasks_by_user, user_id)
 
     query_text = _ensure_text_value(user_input.get("text"))
     tasks_to_delete = match_tasks(query_text, existing_tasks)
 
     for task in tasks_to_delete:
-        events = get_calendar_events_by_task_id(task["task_id"]) 
+        events = await asyncio.to_thread(get_calendar_events_by_task_id, task["task_id"])
         for event in events:
-            delete_calendar_event(event["event_id"])
+            await asyncio.to_thread(delete_calendar_event, event["id"])
 
     # text return for user to see
     descriptions = [tasks["description"] for tasks in tasks_to_delete]
@@ -611,7 +640,7 @@ async def update_preferences(user_input):
     base_text = _ensure_text_value(user_input.get("text"))
 
     # get current energy profile for context
-    current_profile = get_energy_profile(user_id) if user_id else None
+    current_profile = await asyncio.to_thread(get_energy_profile, user_id) if user_id else None
 
     # enrich input with current settings
     user_input_enriched = user_input.copy()
@@ -633,7 +662,7 @@ async def update_preferences(user_input):
     if updates and any(v is not None for k, v in updates.items() if k != "user_id"):
         # remove user_id from updates dict before passing to db
         profile_data = {k: v for k, v in updates.items() if k != "user_id" and v is not None}
-        create_or_update_energy_profile(user_id, profile_data)
+        await asyncio.to_thread(create_or_update_energy_profile, user_id, profile_data)
 
         return {
             "text": "Updated preferences: " + ", ".join(profile_data.keys())

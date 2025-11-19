@@ -65,7 +65,7 @@ SLOTS_SCHEMA = {
     "text": { "type": "string" }
   },
   "required": ["user_id", "text"],
-  "additionalProperties": false
+  "additionalProperties": False
 }
 
 
@@ -98,8 +98,8 @@ GET_TASKS_DEV_PROMPT = """
 
   ## Formatting and Output
 
-  - Output strictly as a JSON array of objects, matching the above schema.
-  - Do not add any explanations or extra text before or after the array.
+  - Output strictly as a JSON object with a single key `tasks` whose value is the array of task objects described below.
+  - Do not add any explanations or extra text before or after this JSON object.
   - If a field is unavailable or ambiguous, omit it entirely.
   - Maintain the order of tasks as they appear in the user input.
 
@@ -124,60 +124,78 @@ GET_TASKS_DEV_PROMPT = """
 
   ## Example Output
 
-  [
-    {
-      "user_id": null,
-      "description": "Revise Chapter 5 of Biology notes",
-      "difficulty": 3,
-      "priority": "medium",
-      "start_time": "2025-11-10T09:00:00Z",
-      "duration": 2.0,
-      "scheduled": false
-    },
-    {
-      "user_id": null,
-      "description": "Write a 2-page report for History",
-      "difficulty": 2,
-      "priority": "high",
-      "start_time": "2025-11-10T11:30:00Z",
-      "duration": 1.5,
-      "scheduled": false
-    }
-  ]
+  {
+    "tasks": [
+      {
+        "user_id": null,
+        "description": "Revise Chapter 5 of Biology notes",
+        "difficulty": 3,
+        "priority": "medium",
+        "start_time": "2025-11-10T09:00:00Z",
+        "duration": 2.0,
+        "scheduled": false
+      },
+      {
+        "user_id": null,
+        "description": "Write a 2-page report for History",
+        "difficulty": 2,
+        "priority": "high",
+        "start_time": "2025-11-10T11:30:00Z",
+        "duration": 1.5,
+        "scheduled": false
+      }
+    ]
+  }
 
   ## Output Schema
 
-  - Each task object may contain these fields:
+  - Each task object inside the `tasks` array must include the following keys. If information is unknown, set the value to `null` rather than omitting the key.
     - `user_id`: always null
-    - `description`: concise task summary
-    - `difficulty`: number from 1 (very easy) to 5 (very hard), inferred when needed
+    - `description`: concise task summary (string)
+    - `difficulty`: number from 1 (very easy) to 10 (very hard), or null if unknown
     - `priority`: one of `"low"`, `"medium"`, `"high"`
-    - `start_time`, `end_time`: ISO 8601 strings if available
-    - `duration`: hours (number), inferred where sensible
-    - `scheduled`: boolean (optional)
-  - Omit any field that is unknown or ambiguous; never guess time fields.
+    - `start_time`, `end_time`: ISO 8601 strings or null if unavailable
+    - `duration`: number of hours or null if unknown
+    - `scheduled`: boolean or null if unspecified
+  - Never invent time fields—use null when uncertain.
   - Preserve the sequence of tasks as presented by the user.
 
 """
 
-# tasks : [{user_id, description, difficulty, priority, start_time, end_time, duration, scheduled}]
+# tasks : { tasks: [{user_id, description, difficulty, priority, start_time, end_time, duration, scheduled}] }
 TASK_SCHEMA = {
-  "type": "array",
-  "items": {
-    "type": "object",
-    "properties": {
-      "user_id": { "type": "null" },
-      "description": { "type": "string" },
-      "difficulty": { "type": "number" },
-      "priority": { "type": "string", "enum": ["low", "medium", "high"] },
-      "start_time": { "type": "string", "format": "date-time" },
-      "end_time": { "type": "string", "format": "date-time" },
-      "duration": { "type": "number" },
-      "scheduled": { "type": "boolean" }
-    },
-    "required": ["user_id", "description", "priority"],
-    "additionalProperties": false
-  }
+  "type": "object",
+  "properties": {
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "user_id": { "type": "null" },
+          "description": { "type": "string" },
+          "difficulty": { "type": ["number", "null"] },
+          "priority": { "type": "string", "enum": ["low", "medium", "high"] },
+          "start_time": { "type": ["string", "null"], "format": "date-time" },
+          "end_time": { "type": ["string", "null"], "format": "date-time" },
+          "duration": { "type": ["number", "null"] },
+          "scheduled": { "type": ["boolean", "null"] }
+        },
+        "required": [
+          "user_id",
+          "description",
+          "difficulty",
+          "priority",
+          "start_time",
+          "end_time",
+          "duration",
+          "scheduled"
+        ],
+        "additionalProperties": False
+      }
+    }
+  },
+  "required": ["tasks"],
+  "additionalProperties": False
 }
 
 
@@ -238,7 +256,7 @@ CALENDAR_QUERY_SCHEMA = {
     "text": { "type": "string" }
   },
   "required": ["user_id", "text"],
-  "additionalProperties": false
+  "additionalProperties": False
 }
 
 
@@ -324,7 +342,7 @@ PREFERENCE_UPDATES_SCHEMA = {
     "min_gap_for_break_min": { "type": ["number", "null"] }
   },
   "required": ["user_id"],
-  "additionalProperties": false
+  "additionalProperties": False
 }
 
 
@@ -345,5 +363,5 @@ EVENT_SCHEMA = {
     "color_hex": { "type": ["string", "null"], "pattern": "^#?[0-9A-Fa-f]{6}$" }
   },
   "required": ["user_id", "title", "start_time", "end_time"],
-  "additionalProperties": false
+  "additionalProperties": False
 }

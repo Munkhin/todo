@@ -41,7 +41,7 @@ class UpdateCalendarEventRequest(BaseModel):
 # ============ CALENDAR EVENT ROUTES ============
 
 @router.get("/events")
-async def get_calendar_events(
+def get_calendar_events(
     user_id: Optional[int] = None,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None
@@ -74,7 +74,7 @@ async def get_calendar_events(
         raise HTTPException(status_code=500, detail=f"Error fetching calendar events: {str(e)}")
 
 @router.post("/events")
-async def create_event(request: CreateCalendarEventRequest):
+def create_event(request: CreateCalendarEventRequest):
     """create new calendar event"""
     try:
         # validate datetime strings
@@ -120,7 +120,7 @@ async def create_event(request: CreateCalendarEventRequest):
         raise HTTPException(status_code=500, detail=f"Error creating calendar event: {str(e)}")
 
 @router.put("/events/{event_id}")
-async def update_event(event_id: int, request: UpdateCalendarEventRequest):
+def update_event(event_id: int, request: UpdateCalendarEventRequest):
     """update existing calendar event"""
     try:
         # check if event exists
@@ -185,7 +185,7 @@ async def update_event(event_id: int, request: UpdateCalendarEventRequest):
         raise HTTPException(status_code=500, detail=f"Error updating calendar event: {str(e)}")
 
 @router.delete("/events/{event_id}")
-async def delete_event(event_id: int):
+def delete_event(event_id: int):
     """delete calendar event"""
     try:
         # check if event exists

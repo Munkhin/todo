@@ -48,9 +48,12 @@ async def get_empty_slots(user_id, start_date, end_date, min_study_duration, max
     # ---------------------------------------------------------- #
 
     from api.calendar.event_routes import get_calendar_events
+    import asyncio
 
     # get calendar events using existing route function
-    result = await get_calendar_events(
+    # run in threadpool since get_calendar_events is now sync
+    result = await asyncio.to_thread(
+        get_calendar_events,
         user_id=user_id,
         start_date=start_date.isoformat() if start_date else None,
         end_date=end_date.isoformat() if end_date else None,
