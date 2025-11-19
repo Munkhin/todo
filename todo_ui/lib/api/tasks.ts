@@ -94,3 +94,11 @@ export const updateTask = async (taskId: string, data: TaskUpdateData) => {
 export const deleteTask = async (taskId: string) => {
   return api.delete<{ message: string }>(`/api/tasks/${taskId}`);
 };
+
+// schedule task
+export const scheduleTask = async (taskId: number) => {
+  return api.post<{ events: TaskEvent[]; message: string; count: number }>(
+    `/api/tasks/${taskId}/schedule`,
+    {}
+  );
+};

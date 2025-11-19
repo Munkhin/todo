@@ -3,18 +3,27 @@ import { useEffect, useState } from "react"
 // react query
 import { useTasks } from "@/hooks/use-tasks"
 import { taskEvents } from "@/lib/events/taskEvents"
+import { useQueryClient } from "@tanstack/react-query"
 // end react query
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { tasksViewStyles } from "./TasksView.styles"
 import TaskEditSheet from "./TaskEditSheet"
-import { type Task, updateTask, deleteTask } from "@/lib/api/tasks"
-import { Calendar, Edit3 } from "lucide-react"
+import TaskCreateSheet from "./TaskCreateSheet"
+import { type Task, updateTask, deleteTask, scheduleTask } from "@/lib/api/tasks"
+import { Calendar, Edit3, Plus, Loader2 } from "lucide-react"
+import { useSession } from "next-auth/react"
 
 export default function TasksView() {
+  const { data: session } = useSession()
+  const userId = session?.user?.id ? Number(session.user.id) : 0
+  const queryClient = useQueryClient()
   const { tasks, fetchTasks } = useTasks()
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [isEditorOpen, setEditorOpen] = useState(false)
+  const [isCreatorOpen, setCreatorOpen] = useState(false)
   const [exitingTasks, setExitingTasks] = useState<Set<number>>(new Set())
+  const [schedulingTaskId, setSchedulingTaskId] = useState<number | null>(null)
 
   const openEditor = (task: Task) => {
     setEditingTask(task)
@@ -47,6 +56,21 @@ export default function TasksView() {
     }, 500)
   }
 
+  const handleScheduleMe = async (taskId: number) => {
+    setSchedulingTaskId(taskId)
+
+    try {
+      await scheduleTask(taskId)
+      await fetchTasks() // Refresh to show new events
+      queryClient.invalidateQueries({ queryKey: ['calendar'] })
+    } catch (error) {
+      console.error("Failed to schedule task:", error)
+      alert("Failed to schedule task. Please make sure you have an energy profile configured and the task has an estimated duration.")
+    } finally {
+      setSchedulingTaskId(null)
+    }
+  }
+
   // subscribe to task events (when chat creates tasks)
   useEffect(() => {
     const unsubscribe = taskEvents.subscribe(() => {
@@ -59,6 +83,10 @@ export default function TasksView() {
     <section className={tasksViewStyles.container} aria-labelledby="tasks-heading">
       <div className={tasksViewStyles.header}>
         <h1 id="tasks-heading" className={tasksViewStyles.title}>Your Tasks</h1>
+        <Button onClick={() => setCreatorOpen(true)} className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
+          Add Task
+        </Button>
       </div>
       <div className={tasksViewStyles.grid}>
         {tasks.map((t) => {
@@ -110,6 +138,26 @@ export default function TasksView() {
                   <p className={tasksViewStyles.cardMeta}>Priority: {t.priority}</p>
                   {t.difficulty && <p className={tasksViewStyles.cardMeta}>Difficulty: {t.difficulty}/10</p>}
 
+                  {/* Schedule for me button */}
+                  {(!t.events || t.events.length === 0) && (
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                      {schedulingTaskId === t.id ? (
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Finding good slots…</span>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleScheduleMe(t.id)}
+                          className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                        >
+                          Schedule for me
+                        </button>
+                      )}
+                    </div>
+                  )}
+
                   {/* scheduled sessions */}
                   {t.events && t.events.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-gray-200">
@@ -158,6 +206,15 @@ export default function TasksView() {
           onSaved={fetchTasks}
         />
       )}
+      <TaskCreateSheet
+        open={isCreatorOpen}
+        onClose={() => setCreatorOpen(false)}
+        onCreated={() => {
+          fetchTasks()
+          taskEvents.emit()
+        }}
+        userId={userId}
+      />
     </section>
   )
 }
