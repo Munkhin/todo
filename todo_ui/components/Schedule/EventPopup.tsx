@@ -11,22 +11,22 @@ const PRIORITY_OPTIONS: Array<{
   label: string
   helper: string
 }> = [
-  { value: 'low', label: 'Low', helper: 'Keep flexible' },
-  { value: 'medium', label: 'Medium', helper: 'Plan soon' },
-  { value: 'high', label: 'High', helper: 'Must happen' },
-]
+    { value: 'low', label: 'Low', helper: 'Keep flexible' },
+    { value: 'medium', label: 'Medium', helper: 'Plan soon' },
+    { value: 'high', label: 'High', helper: 'Must happen' },
+  ]
 
 const COLOR_OPTIONS: Array<{
   value: string
   label: string
 }> = [
-  { value: '#03bd9e', label: 'Teal' },
-  { value: '#3b82f6', label: 'Blue' },
-  { value: '#f97316', label: 'Orange' },
-  { value: '#ec4899', label: 'Pink' },
-  { value: '#8b5cf6', label: 'Purple' },
-  { value: '#1f2937', label: 'Charcoal' },
-]
+    { value: '#03bd9e', label: 'Teal' },
+    { value: '#3b82f6', label: 'Blue' },
+    { value: '#f97316', label: 'Orange' },
+    { value: '#ec4899', label: 'Pink' },
+    { value: '#8b5cf6', label: 'Purple' },
+    { value: '#1f2937', label: 'Charcoal' },
+  ]
 
 const DEFAULT_COLOR = COLOR_OPTIONS[0].value
 
@@ -262,9 +262,6 @@ export default function EventPopup({
         </div>
 
         <div className="event-popup-footer">
-          <button className="event-popup-btn event-popup-btn-cancel" onClick={onClose}>
-            Cancel
-          </button>
           {mode === 'edit' && onDelete && (
             <button className="event-popup-btn event-popup-btn-delete" onClick={onDelete}>
               Delete
@@ -278,3 +275,4 @@ export default function EventPopup({
     </div>
   )
 }
+

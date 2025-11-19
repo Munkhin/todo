@@ -12,7 +12,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
-import { type Task, type TaskUpdateData, updateTask } from "@/lib/api/tasks"
+import { type Task, type TaskUpdateData, updateTask, deleteTask } from "@/lib/api/tasks"
 
 type EditFormState = {
   title: string
@@ -202,12 +202,29 @@ export default function TaskEditSheet({ task, open, onClose, onSaved }: TaskEdit
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
           <SheetFooter className="pt-2">
-            <div className="flex flex-col gap-2 md:flex-row md:items-center">
-              <Button className="w-full" type="submit" disabled={saving}>
-                {saving ? "Saving..." : "Save changes"}
+            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between w-full">
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={async () => {
+                  if (confirm("Are you sure you want to delete this task?")) {
+                    setSaving(true)
+                    try {
+                      await deleteTask(String(task.id))
+                      await onSaved?.()
+                      onClose()
+                    } catch (err) {
+                      setError(err instanceof Error ? err.message : "Failed to delete")
+                      setSaving(false)
+                    }
+                  }
+                }}
+                disabled={saving}
+              >
+                Delete
               </Button>
-              <Button variant="outline" className="w-full" type="button" onClick={onClose}>
-                Cancel
+              <Button type="submit" disabled={saving}>
+                {saving ? "Saving..." : "Save changes"}
               </Button>
             </div>
           </SheetFooter>

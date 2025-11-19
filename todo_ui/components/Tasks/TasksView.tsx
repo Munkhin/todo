@@ -7,13 +7,14 @@ import { taskEvents } from "@/lib/events/taskEvents"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { tasksViewStyles } from "./TasksView.styles"
 import TaskEditSheet from "./TaskEditSheet"
-import { type Task } from "@/lib/api/tasks"
+import { type Task, updateTask, deleteTask } from "@/lib/api/tasks"
 import { Calendar, Edit3 } from "lucide-react"
 
 export default function TasksView() {
   const { tasks, fetchTasks } = useTasks()
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [isEditorOpen, setEditorOpen] = useState(false)
+  const [exitingTasks, setExitingTasks] = useState<Set<number>>(new Set())
 
   const openEditor = (task: Task) => {
     setEditingTask(task)
@@ -23,6 +24,27 @@ export default function TasksView() {
   const closeEditor = () => {
     setEditorOpen(false)
     setEditingTask(null)
+  }
+
+  const handleComplete = async (taskId: number) => {
+    // 1. Add to exiting set to trigger animation
+    setExitingTasks(prev => new Set(prev).add(taskId))
+
+    // 2. Wait for animation to finish (500ms)
+    setTimeout(async () => {
+      try {
+        await deleteTask(String(taskId))
+        await fetchTasks()
+      } catch (error) {
+        console.error("Failed to delete task", error)
+        // Revert exiting state if delete fails
+        setExitingTasks(prev => {
+          const next = new Set(prev)
+          next.delete(taskId)
+          return next
+        })
+      }
+    }, 500)
   }
 
   // subscribe to task events (when chat creates tasks)
@@ -39,66 +61,89 @@ export default function TasksView() {
         <h1 id="tasks-heading" className={tasksViewStyles.title}>Your Tasks</h1>
       </div>
       <div className={tasksViewStyles.grid}>
-        {tasks.map((t) => (
-          <article key={t.id}>
-            <Card>
-              <CardHeader className={tasksViewStyles.cardHeader}>
-                <div className={tasksViewStyles.cardHeaderRow}>
-                  <div className={tasksViewStyles.cardTitleRow}>
-                    <h2 className={tasksViewStyles.cardTitle}>{t.title}</h2>
-                    <button
-                      type="button"
-                      className={tasksViewStyles.cardEditButton}
-                      onClick={() => openEditor(t)}
-                      aria-label={`Edit ${t.title}`}
-                    >
-                      <Edit3 className="h-4 w-4" />
-                    </button>
-                  </div>
-                  <span className={tasksViewStyles.cardMeta} aria-label="Estimated duration">
-                    {t.estimated_duration || 0}m
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className={tasksViewStyles.cardDesc}>{t.description || "No description"}</p>
-                <p className={tasksViewStyles.cardDue}>Due: {t.due_date ? new Date(t.due_date).toLocaleString() : 'No due date'}</p>
-                <p className={tasksViewStyles.cardMeta}>Priority: {t.priority}</p>
-                {t.difficulty && <p className={tasksViewStyles.cardMeta}>Difficulty: {t.difficulty}/10</p>}
-
-                {/* scheduled sessions */}
-                {t.events && t.events.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-gray-200">
-                    <div className="flex items-center gap-1 text-sm font-medium text-gray-700 mb-2">
-                      <Calendar className="h-4 w-4" />
-                      <span>Scheduled Sessions</span>
+        {tasks.map((t) => {
+          const isExiting = exitingTasks.has(t.id)
+          return (
+            <article
+              key={t.id}
+              className={`transition-all duration-500 ease-in-out ${isExiting
+                ? 'translate-x-[-100%] opacity-0 max-h-0 mb-0 overflow-hidden'
+                : 'translate-x-0 opacity-100 max-h-[500px]' // Arbitrary max-height for transition
+                }`}
+            >
+              <Card>
+                <CardHeader className={tasksViewStyles.cardHeader}>
+                  <div className={tasksViewStyles.cardHeaderRow}>
+                    <div className="flex items-center gap-3 flex-1">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleComplete(t.id)
+                        }}
+                        className={`h-5 w-5 rounded-full border flex items-center justify-center transition-colors border-gray-400 hover:border-primary`}
+                        aria-label="Complete and delete task"
+                      >
+                      </button>
+                      <h2 className={tasksViewStyles.cardTitle}>
+                        {t.title}
+                      </h2>
                     </div>
-                    <ul className="space-y-1">
-                      {t.events.map((event) => (
-                        <li key={event.id} className="text-sm text-gray-600 flex items-start">
-                          <span className="mr-2">•</span>
-                          <span>
-                            {new Date(event.start_time).toLocaleString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              hour: 'numeric',
-                              minute: '2-digit'
-                            })}
-                            {' - '}
-                            {new Date(event.end_time).toLocaleTimeString('en-US', {
-                              hour: 'numeric',
-                              minute: '2-digit'
-                            })}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        className={tasksViewStyles.cardEditButton}
+                        onClick={() => openEditor(t)}
+                        aria-label={`Edit ${t.title}`}
+                      >
+                        <Edit3 className="h-4 w-4" />
+                      </button>
+                      <span className={tasksViewStyles.cardMeta} aria-label="Estimated duration">
+                        {t.estimated_duration || 0}m
+                      </span>
+                    </div>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </article>
-        ))}
+                </CardHeader>
+                <CardContent>
+                  <p className={tasksViewStyles.cardDesc}>{t.description || "No description"}</p>
+                  <p className={tasksViewStyles.cardDue}>Due: {t.due_date ? new Date(t.due_date).toLocaleString() : 'No due date'}</p>
+                  <p className={tasksViewStyles.cardMeta}>Priority: {t.priority}</p>
+                  {t.difficulty && <p className={tasksViewStyles.cardMeta}>Difficulty: {t.difficulty}/10</p>}
+
+                  {/* scheduled sessions */}
+                  {t.events && t.events.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                      <div className="flex items-center gap-1 text-sm font-medium text-gray-700 mb-2">
+                        <Calendar className="h-4 w-4" />
+                        <span>Scheduled Sessions</span>
+                      </div>
+                      <ul className="space-y-1">
+                        {t.events.map((event) => (
+                          <li key={event.id} className="text-sm text-gray-600 flex items-start">
+                            <span className="mr-2">•</span>
+                            <span>
+                              {new Date(event.start_time).toLocaleString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: '2-digit'
+                              })}
+                              {' - '}
+                              {new Date(event.end_time).toLocaleTimeString('en-US', {
+                                hour: 'numeric',
+                                minute: '2-digit'
+                              })}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </article>
+          )
+        })}
       </div>
       {tasks.length === 0 && (
         <p className={tasksViewStyles.empty}>
