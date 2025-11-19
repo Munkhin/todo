@@ -71,6 +71,7 @@ from api.business_logic.subscription_routes import router as subscription_router
 from api.auth.user_routes import router as user_router
 from api.feedback.feedback_routes import router as feedback_router
 from api.settings.energy_profile_routes import router as settings_router
+from api.onboarding.onboarding_routes import router as onboarding_router
 
 # register routers with prefixes
 app.include_router(auth_router, prefix="/api/auth", tags=["Authentication"])
@@ -81,6 +82,7 @@ app.include_router(subscription_router, prefix="/api", tags=["Subscription"])
 app.include_router(user_router, prefix="/api/user", tags=["User"])
 app.include_router(feedback_router, prefix="/api", tags=["Feedback"])
 app.include_router(settings_router, prefix="/api/settings", tags=["Settings"])
+app.include_router(onboarding_router, prefix="/api/onboarding", tags=["Onboarding"])
 
 
 if __name__ == "__main__":

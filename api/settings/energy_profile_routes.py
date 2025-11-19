@@ -41,6 +41,7 @@ DEFAULT_ENERGY_PROFILE = {
     "long_break_min": 15,
     "long_study_threshold_min": 90,
     "min_gap_for_break_min": 3,
+    "onboarding_completed": False,
 }
 
 
@@ -66,6 +67,7 @@ class EnergyProfileRequest(BaseModel):
     long_break_min: Optional[int] = None
     long_study_threshold_min: Optional[int] = None
     min_gap_for_break_min: Optional[int] = None
+    onboarding_completed: Optional[bool] = None
 
 # ============ ENERGY PROFILE ROUTES ============
 
@@ -112,6 +114,8 @@ async def save_user_energy_profile(
             profile_data["long_study_threshold_min"] = request.long_study_threshold_min
         if request.min_gap_for_break_min is not None:
             profile_data["min_gap_for_break_min"] = request.min_gap_for_break_min
+        if request.onboarding_completed is not None:
+            profile_data["onboarding_completed"] = request.onboarding_completed
 
         success = create_or_update_energy_profile(user_id, profile_data)
         if not success:

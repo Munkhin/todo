@@ -26,6 +26,7 @@ export interface EnergyProfilePayload {
   long_break_min: number;
   long_study_threshold_min: number;
   min_gap_for_break_min: number;
+  onboarding_completed?: boolean;
 }
 
 export interface EnergyProfileResponse {
@@ -40,6 +41,7 @@ export interface EnergyProfileResponse {
   long_break_min?: number | null;
   long_study_threshold_min?: number | null;
   min_gap_for_break_min?: number | null;
+  onboarding_completed?: boolean;
 }
 
 function parseEnergyLevels(levels: string | null): Record<number, number> {
@@ -90,6 +92,7 @@ export function normaliseResponse(response: EnergyProfileResponse | null): Energ
     long_break_min: response.long_break_min ?? DEFAULT_LONG_BREAK_MIN,
     long_study_threshold_min: response.long_study_threshold_min ?? DEFAULT_LONG_STUDY_THRESHOLD_MIN,
     min_gap_for_break_min: response.min_gap_for_break_min ?? DEFAULT_MIN_GAP_FOR_BREAK_MIN,
+    onboarding_completed: response.onboarding_completed ?? false,
   };
 }
 
@@ -118,6 +121,7 @@ export async function saveEnergyProfile(userId: number, payload: EnergyProfilePa
     long_break_min: payload.long_break_min,
     long_study_threshold_min: payload.long_study_threshold_min,
     min_gap_for_break_min: payload.min_gap_for_break_min,
+    onboarding_completed: payload.onboarding_completed,
   };
 
   await api.post(`/api/settings/energy-profile?user_id=${userId}`, body);
