@@ -20,6 +20,7 @@ type EditFormState = {
   priority: string
   status: string
   due_date: string
+  subject: string
 }
 
 const initialFormState: EditFormState = {
@@ -28,6 +29,7 @@ const initialFormState: EditFormState = {
   priority: "medium",
   status: "pending",
   due_date: "",
+  subject: "",
 }
 
 const statusOptions = [
@@ -62,6 +64,24 @@ export default function TaskEditSheet({ task, open, onClose, onSaved }: TaskEdit
   const [formState, setFormState] = useState<EditFormState>(initialFormState)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [subjects, setSubjects] = useState<Array<{ id: number, subject_name: string }>>([])
+
+  // Fetch subjects
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      try {
+        const userId = task.user_id
+        const response = await fetch(`/api/settings/subjects?user_id=${userId}`)
+        if (response.ok) {
+          const data = await response.json()
+          setSubjects(data)
+        }
+      } catch (err) {
+        console.error("Failed to fetch subjects:", err)
+      }
+    }
+    if (open) fetchSubjects()
+  }, [open, task.user_id])
 
   useEffect(() => {
     if (!open) {
@@ -76,6 +96,7 @@ export default function TaskEditSheet({ task, open, onClose, onSaved }: TaskEdit
       priority: task.priority ?? "medium",
       status: task.status ?? "pending",
       due_date: formatIsoForInput(task.due_date),
+      subject: task.subject ?? "",
     })
   }, [task])
 
@@ -92,6 +113,7 @@ export default function TaskEditSheet({ task, open, onClose, onSaved }: TaskEdit
       description: formState.description || undefined,
       priority: formState.priority,
       status: formState.status,
+      subject: formState.subject || undefined,
     }
 
     if (formState.due_date) {
@@ -179,6 +201,26 @@ export default function TaskEditSheet({ task, open, onClose, onSaved }: TaskEdit
                   </button>
                 )
               })}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="task-subject" className="text-sm font-semibold text-gray-700">
+              Subject
+            </label>
+            <div>
+              <select
+                id="task-subject"
+                value={formState.subject}
+                onChange={(event) => handleFieldChange("subject", event.target.value)}
+                className="w-full rounded-md border border-input bg-transparent px-3 py-1 text-base text-foreground shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+              >
+                <option value="">No subject</option>
+                {subjects.map((subject) => (
+                  <option key={subject.id} value={subject.subject_name}>
+                    {subject.subject_name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
           <div className="space-y-2">

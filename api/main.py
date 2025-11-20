@@ -66,22 +66,26 @@ def favicon():
 from api.auth.auth_routes import router as auth_router
 from api.calendar.event_routes import router as calendar_router
 from api.tasks.task_routes import router as task_router
+from api.tasks.review_routes import router as review_router
 from api.ai.chat_routes import router as chat_router
 from api.business_logic.subscription_routes import router as subscription_router
 from api.auth.user_routes import router as user_router
 from api.feedback.feedback_routes import router as feedback_router
 from api.settings.energy_profile_routes import router as settings_router
+from api.settings.subject_routes import router as subject_router
 from api.onboarding.onboarding_routes import router as onboarding_router
 
 # register routers with prefixes
 app.include_router(auth_router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(calendar_router, prefix="/api/calendar", tags=["Calendar"])
 app.include_router(task_router, prefix="/api", tags=["Tasks"])
+app.include_router(review_router, prefix="/api", tags=["Reviews"])
 app.include_router(chat_router, prefix="/api/chat", tags=["Chat"])
 app.include_router(subscription_router, prefix="/api", tags=["Subscription"])
 app.include_router(user_router, prefix="/api/user", tags=["User"])
 app.include_router(feedback_router, prefix="/api", tags=["Feedback"])
 app.include_router(settings_router, prefix="/api/settings", tags=["Settings"])
+app.include_router(subject_router, prefix="/api/settings", tags=["Subjects"])
 app.include_router(onboarding_router, prefix="/api/onboarding", tags=["Onboarding"])
 
 

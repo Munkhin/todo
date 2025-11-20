@@ -25,6 +25,7 @@ export interface Task {
   status: string;
   scheduled_start?: string;
   scheduled_end?: string;
+  subject?: string;  // NEW: For learning science interleaving
   created_at: string;
   updated_at: string;
   events?: TaskEvent[];
@@ -53,6 +54,7 @@ export interface TaskUpdateData {
   status?: string;
   scheduled_start?: string;
   scheduled_end?: string;
+  subject?: string;  // NEW: For learning science interleaving
 }
 
 // list all tasks with optional filters

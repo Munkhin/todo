@@ -26,32 +26,46 @@ async def submit_onboarding(
     """
     Process onboarding data:
     1. Save user preferences (energy profile)
-    2. Mark onboarding as completed
-    3. Trigger AI agent to generate initial tasks and schedule based on subjects/tests
+    2. Save user subjects to user_subjects table
+    3. Mark onboarding as completed
+    4. Trigger AI agent to generate initial tasks and schedule based on subjects/tests
     """
     try:
         # 1. Save preferences and mark onboarding as complete
-        # Convert Pydantic model to dict, using defaults for unset values
-        profile_data = request.preferences.dict()
-
+        # Convert Pydantic model to dict, excluding None values
+        profile_data = request.preferences.dict(exclude_unset=True)
+        
         # Force onboarding_completed to True
         profile_data["onboarding_completed"] = True
-
-        # Ensure energy_levels is handled correctly (use default if None)
-        if profile_data["energy_levels"] is None:
-            from api.settings.energy_profile_routes import DEFAULT_ENERGY_LEVELS
-            import json
-            profile_data["energy_levels"] = json.dumps(DEFAULT_ENERGY_LEVELS)
-
+        
+        # Ensure energy_levels is handled correctly (it should be a JSON string from the frontend/request model)
+        # The EnergyProfileRequest defines it as str, so we pass it as is.
+        
         success = create_or_update_energy_profile(user_id, profile_data)
         if not success:
             raise HTTPException(status_code=500, detail="Failed to save preferences")
 
-        # 2. Construct prompt for AI Agent
+        # 2. Save subjects to user_subjects table (NEW)
+        if request.subjects:
+            # Clear existing subjects for this user (in case they're re-onboarding)
+            supabase.table("user_subjects").delete().eq("user_id", user_id).execute()
+            
+            # Insert new subjects
+            subject_records = [
+                {"user_id": user_id, "subject_name": subject.strip()}
+                for subject in request.subjects
+                if subject.strip()  # Skip empty strings
+            ]
+            
+            if subject_records:
+                supabase.table("user_subjects").insert(subject_records).execute()
+
+        # 3. Construct prompt for AI Agent
         subjects_str = ", ".join(request.subjects) if request.subjects else "No specific subjects provided"
         tests_str = "\n".join([f"- {t.name} on {t.date}" for t in request.tests]) if request.tests else "No upcoming tests"
         
         # Only call AI agent if user actually provided subjects or tests
+        agent_result = None
         if request.subjects or request.tests or request.additional_notes:
             prompt = f"""
 I have just completed onboarding.
@@ -66,8 +80,7 @@ Please create tasks for my subjects and schedule study sessions for my upcoming 
 """
 
 
-            # 3. Call AI Agent only if there's content to process
-            agent_result = None
+            # 4. Call AI Agent only if there's content to process
             if request.subjects or request.tests or request.additional_notes:
                 agent_result = await run_agent({
                     "user_id": user_id,
