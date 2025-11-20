@@ -207,7 +207,7 @@ async def run_agent(user_input: UserInput):
     )
 
     # intents handled
-    allowed_intents = ["recommend-slots", "schedule-tasks", "delete-tasks", "reschedule", "check-calendar", "update-preferences"]
+    allowed_intents = ["recommend-slots", "schedule-tasks", "delete-tasks", "reschedule", "check-calendar", "update-preferences", "create-event"]
     
     # first classify the intent(s) with a lightweight model
     intents = await classify_intent(user_input["text"], allowed_intents)
@@ -232,6 +232,9 @@ async def run_agent(user_input: UserInput):
     
     if "delete-tasks" in intents:
         tasks.append(delete_tasks_from_calendar(user_input)) # effect
+    
+    if "create-event" in intents:
+        tasks.append(create_calendar_event_direct(user_input)) # effect
 
     if "check-calendar" in intents:
         tasks.append(check_calendar(user_input)) # text return
@@ -502,7 +505,8 @@ async def schedule_tasks_into_calendar(user_input):
     from datetime import timedelta
     start_date = datetime.now(timezone.utc)
     due_date_days = energy_profile.get("due_date_days", 7) if energy_profile else 7
-    end_date = start_date + timedelta(days=due_date_days)
+    # Add 1-week buffer to end date for scheduling flexibility with fixed events
+    end_date = start_date + timedelta(days=due_date_days + 7)
 
     schedule = await schedule_tasks(scheduling_payload, user_id, start_date, end_date, settings, supabase)
     for event in schedule:
@@ -631,6 +635,100 @@ async def check_calendar(user_input):
         "calendar_query",
         CALENDAR_QUERY_SCHEMA
     )
+
+
+# simple calendar event creation (no task decomposition)
+async def create_calendar_event_direct(user_input):
+    from api.data_types.consts import CREATE_EVENT_DEV_PROMPT, EVENT_EXTRACTION_SCHEMA
+    
+    user_id = user_input.get("user_id")
+    base_text = _ensure_text_value(user_input.get("text"))
+    tz_name = _resolve_user_timezone(user_id)
+    local_now = _now_in_timezone(tz_name)
+    
+    # Enrich input with timezone and datetime context
+    enriched_input = user_input.copy()
+    enriched_input["text"] = (
+        base_text
+        + "\\n\\nUser timezone: " + tz_name
+        + "\\nCurrent local datetime: " + local_now.isoformat()
+    )
+    
+    # Extract event details using LLM
+    event_data = await chatgpt_call(
+        enriched_input,
+        CREATE_EVENT_DEV_PROMPT,
+        "event_extraction",
+        EVENT_EXTRACTION_SCHEMA
+    )
+    event_data = _ensure_mapping(event_data, context="Event extraction")
+    
+    if not event_data or not event_data.get("start_time") or not event_data.get("end_time"):
+        logger.warning(
+            "Event extraction failed or incomplete",
+            extra={"user_id": user_id, "extracted": event_data}
+        )
+        return {"text": "I couldn't extract complete event details from your request. Please specify the time and title."}
+    
+    # Check for conflicts with existing events
+    start_time = event_data.get("start_time")
+    end_time = event_data.get("end_time")
+    
+    calendar_events = await asyncio.to_thread(get_calendar_events, user_id) if user_id else []
+    conflicting_events = []
+    
+    for event in calendar_events:
+        event_start = event.get("start_time")
+        event_end = event.get("end_time")
+        
+        # Check for overlap: new event overlaps if it starts before existing ends AND ends after existing starts
+        if start_time < event_end and end_time > event_start:
+            conflicting_events.append(event)
+    
+    # If conflicts detected, return them to user for resolution
+    if conflicting_events:
+        from datetime import datetime as dt
+        conflict_details = []
+        for event in conflicting_events:
+            try:
+                evt_start = dt.fromisoformat(event.get("start_time").replace("Z", "+00:00"))
+                evt_end = dt.fromisoformat(event.get("end_time").replace("Z", "+00:00"))
+                conflict_details.append(
+                    f"- {event.get('title', 'Untitled')} from {evt_start.strftime('%I:%M %p')} to {evt_end.strftime('%I:%M %p')}"
+                )
+            except Exception:
+                conflict_details.append(f"- {event.get('title', 'Untitled')}")
+        
+        conflict_text = "\\n".join(conflict_details)
+        return {
+            "text": f"⚠️ Time conflict detected! You already have the following event(s) during that time:\\n\\n{conflict_text}\\n\\nWould you like to:\\n(a) Reschedule the conflicting event(s)\\n(b) Choose a different time\\n(c) Create anyway (events will overlap)"
+        }
+    
+    # No conflict - create the event
+    event_payload = {
+        "user_id": user_id,
+        "title": event_data.get("title"),
+        "description": event_data.get("description"),
+        "start_time": start_time,
+        "end_time": end_time,
+        "event_type": event_data.get("event_type", "personal"),
+        "priority": event_data.get("priority", "medium"),
+        "source": "user",  # Mark as user-created
+        "task_id": None,  # No associated task
+        "color_hex": "#000000"
+    }
+    
+    try:
+        await asyncio.to_thread(create_calendar_event, event_payload)
+        return {
+            "text": f"✓ Created event: {event_payload['title']} from {start_time} to {end_time}"
+        }
+    except Exception as exc:
+        logger.error(
+            "Failed to create calendar event",
+            extra={"user_id": user_id, "error": str(exc)}
+        )
+        return {"text": f"Failed to create event: {str(exc)}"}
 
 
 # all preferences

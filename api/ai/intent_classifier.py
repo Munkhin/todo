@@ -30,15 +30,34 @@ async def embed(texts):
 # Example intent categories (extend freely)
 intent_examples = {
     "recommend-slots": ["when should i study math?", "what's the best time for me to do this?"],
-    "schedule-tasks": ["schedule a meeting from 5 to 6", "add a coding session from 4 to 5", "upload the tasks here"],
+    "schedule-tasks": [ 
+        "upload the tasks here",
+        "help me study for my calculus exam next week",
+        "I need to prepare for my presentation",
+        "schedule time to work on my essay",
+        "plan my biology revision",
+        "help me practice piano for my recital",
+        "I need to get ready for the chemistry test",
+        "break down my project into study sessions"
+    ],
     "delete-tasks": ["remove the previous task", "clear all my tasks", "delete tomorrow's tasks"],
     "reschedule": ["move my task forward by 2 hours", "delegate this to tomorrow", "reassign this task to somewhere next week", "plan my tasks again", "I dont like to do math in the morning"],
     "check-calendar": ["when am I free tomorrow afternoon?", "whats scheduled tomorrow?", "what are my tasks next month?"],
-    "update-preferences": ["Limit study blocks to 90 minutes max and insert at least 15-minute breaks.",
-                           "From now on, keep my Sundays free. I want that day for rest.",
-                           "Try not to schedule any study sessions after 9 p.m. I'm usually tired by then."
-                           "I'm more focused in the morning, so please put my hardest subjects before noon."
-                           ]
+    "update-preferences": [
+        "Limit study blocks to 90 minutes max and insert at least 15-minute breaks.",
+        "From now on, keep my Sundays free. I want that day for rest.",
+        "Try not to schedule any study sessions after 9 p.m. I'm usually tired by then."
+        "I'm more focused in the morning, so please put my hardest subjects before noon."
+    ],
+    "create-event": [
+        "block 2-3pm for dentist appointment",
+        "I have a meeting at 3pm tomorrow",
+        "remind me to call Sarah at 5pm",
+        "mark 10am-11am as busy tomorrow",
+        "add doctor appointment Friday 2pm",
+        "reserve 1-2pm for lunch meeting",
+        "block out 9am-12pm for interview"
+    ]
 }
 
 # Precompute mean embeddings per intent (performed lazily)

@@ -261,6 +261,104 @@ CALENDAR_QUERY_SCHEMA = {
 
 
 
+# user input -> simple calendar event extraction
+CREATE_EVENT_DEV_PROMPT = """
+  Developer: You are an AI assistant specialized in extracting calendar event details from natural language. Parse the user's request to create a simple calendar event and return structured event information.
+
+  Begin with a brief checklist (2-4 bullets) of what you will extract.
+
+  ## Input Sources
+
+  - `user input`: Natural language request to create a calendar event
+  - `user timezone`: The user's local timezone
+  - `current datetime`: The current date and time in the user's timezone
+
+  ## Event Extraction
+
+  Extract the following fields:
+  - `title`: Brief event title/name (string, required)
+  - `description`: Optional detailed description (string, optional)
+  - `start_time`: Event start time (ISO 8601 string, required)
+  - `end_time`: Event end time (ISO 8601 string, required)
+  - `event_type`: Type of event - "meeting", "appointment", "reminder", "personal", or "other" (string, required)
+  - `priority`: Event priority - "low", "medium", or "high" (string, required)
+
+  ## Extraction Guidelines
+
+  - Parse temporal expressions carefully (e.g., "tomorrow at 2pm", "Friday 3-5pm", "next week Monday")
+  - If only start time is given with duration (e.g., "meeting at 2pm for 1 hour"), calculate end_time
+  - If only a time slot is given (e.g., "2-3pm"), use that as start and end
+  - Default duration is 1 hour if only start time is provided
+  - Infer event_type from context:
+    - "meeting", "call" → "meeting"
+    - "dentist", "doctor", "appointment" → "appointment"
+    - "remind me" → "reminder"
+    - Default → "personal"
+  - Infer priority from urgency keywords:
+    - "urgent", "important", "ASAP" → "high"
+    - "later", "maybe", "if possible" → "low"
+    - Default → "medium"
+  - Use the provided current datetime and timezone to resolve relative times
+  - Always return times in ISO 8601 format
+
+  ## Output Format
+
+  Return JSON object with:
+  - `user_id`: always null
+  - `title`: string
+  - `description`: string or null
+  - `start_time`: ISO 8601 datetime string
+  - `end_time`: ISO 8601 datetime string
+  - `event_type`: string (meeting|appointment|reminder|personal|other)
+  - `priority`: string (low|medium|high)
+
+  ## Example Input
+
+  user input: "Block 2-3pm tomorrow for dentist appointment"
+  user timezone: "America/New_York"
+  current datetime: "2025-11-20T10:00:00-05:00"
+
+  ## Example Output
+
+  {
+    "user_id": null,
+    "title": "Dentist appointment",
+    "description": null,
+    "start_time": "2025-11-21T14:00:00-05:00",
+    "end_time": "2025-11-21T15:00:00-05:00",
+    "event_type": "appointment",
+    "priority": "medium"
+  }
+
+  ## Key Principles
+
+  - Always return valid ISO 8601 datetime strings
+  - Respect the user's timezone
+  - Infer reasonable defaults when information is incomplete
+  - Use context clues to determine event_type and priority
+  - Be consistent with time parsing
+"""
+
+EVENT_EXTRACTION_SCHEMA = {
+  "type": "object",
+  "properties": {
+    "user_id": { "type": "null" },
+    "title": { "type": "string" },
+    "description": { "type": ["string", "null"] },
+    "start_time": { "type": "string", "format": "date-time" },
+    "end_time": { "type": "string", "format": "date-time" },
+    "event_type": { 
+      "type": "string", 
+      "enum": ["meeting", "appointment", "reminder", "personal", "other"] 
+    },
+    "priority": { "type": "string", "enum": ["low", "medium", "high"] }
+  },
+  "required": ["user_id", "title", "start_time", "end_time", "event_type", "priority"],
+  "additionalProperties": False
+}
+
+
+
 # user input -> preference updates
 UPDATE_PREFERENCES_DEV_PROMPT = """
   Developer: You are an AI assistant specialized in extracting user preference updates from natural language input. Parse the user's request and return structured updates to their energy profile and scheduling preferences.
