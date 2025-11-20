@@ -56,18 +56,18 @@ def seed_default_energy_profile(user_id: int):
 
 # request model for energy profile
 class EnergyProfileRequest(BaseModel):
-    due_date_days: Optional[int] = None
-    wake_time: int
-    sleep_time: int
-    max_study_duration: int
-    min_study_duration: int
-    energy_levels: str  # JSON string of hourly energy levels
+    due_date_days: Optional[int] = 7
+    wake_time: Optional[int] = 7
+    sleep_time: Optional[int] = 23
+    max_study_duration: Optional[int] = 180
+    min_study_duration: Optional[int] = 30
+    energy_levels: Optional[str] = None  # JSON string of hourly energy levels
     insert_breaks: Optional[bool] = True
-    short_break_min: Optional[int] = None
-    long_break_min: Optional[int] = None
-    long_study_threshold_min: Optional[int] = None
-    min_gap_for_break_min: Optional[int] = None
-    onboarding_completed: Optional[bool] = None
+    short_break_min: Optional[int] = 5
+    long_break_min: Optional[int] = 15
+    long_study_threshold_min: Optional[int] = 90
+    min_gap_for_break_min: Optional[int] = 3
+    onboarding_completed: Optional[bool] = False
 
 # ============ ENERGY PROFILE ROUTES ============
 
@@ -92,13 +92,19 @@ async def save_user_energy_profile(
 ):
     """create or update user's energy profile settings"""
     try:
-        # build profile data
+        # Get default energy levels if not provided
+        energy_levels = request.energy_levels
+        if energy_levels is None:
+            # Use default energy levels from global setting
+            energy_levels = json.dumps(DEFAULT_ENERGY_LEVELS)
+
+        # build profile data with defaults for required fields
         profile_data = {
             "wake_time": request.wake_time,
             "sleep_time": request.sleep_time,
             "max_study_duration": request.max_study_duration,
             "min_study_duration": request.min_study_duration,
-            "energy_levels": request.energy_levels,
+            "energy_levels": energy_levels,
         }
 
         # add optional fields if provided

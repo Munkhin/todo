@@ -84,18 +84,67 @@ export default function OnboardingOverlay() {
     const handleComplete = async () => {
         try {
             // Ensure preferences has all required fields with defaults
+            // Convert energy_levels to object format if it's currently a string
+            let energyLevelsObject = preferences.energy_levels;
+            if (typeof energyLevelsObject === 'string') {
+                // If it's a string, parse it to object
+                try {
+                    energyLevelsObject = JSON.parse(energyLevelsObject);
+                } catch {
+                    // If parsing fails, use default values
+                    energyLevelsObject = {
+                        7: 6,
+                        8: 7,
+                        9: 9,
+                        10: 9,
+                        11: 8,
+                        12: 6,
+                        13: 5,
+                        14: 6,
+                        15: 7,
+                        16: 8,
+                        17: 7,
+                        18: 6,
+                        19: 5,
+                        20: 5,
+                        21: 4,
+                        22: 3,
+                    };
+                }
+            } else if (energyLevelsObject === null || energyLevelsObject === undefined) {
+                // If it's null/undefined, use default values
+                energyLevelsObject = {
+                    7: 6,
+                    8: 7,
+                    9: 9,
+                    10: 9,
+                    11: 8,
+                    12: 6,
+                    13: 5,
+                    14: 6,
+                    15: 7,
+                    16: 8,
+                    17: 7,
+                    18: 6,
+                    19: 5,
+                    20: 5,
+                    21: 4,
+                    22: 3,
+                };
+            }
+
             const completePreferences = {
-                due_date_days: preferences.due_date_days ?? null,
+                due_date_days: preferences.due_date_days ?? 7,
                 wake_time: preferences.wake_time ?? 7,
-                sleep_time: preferences.sleep_time ?? 22,
+                sleep_time: preferences.sleep_time ?? 23,
                 min_study_duration: preferences.min_study_duration ?? 30,
-                max_study_duration: preferences.max_study_duration ?? 90,
-                energy_levels: preferences.energy_levels ?? {},
+                max_study_duration: preferences.max_study_duration ?? 180,
+                energy_levels: energyLevelsObject,
                 insert_breaks: preferences.insert_breaks ?? true,
                 short_break_min: preferences.short_break_min ?? 5,
                 long_break_min: preferences.long_break_min ?? 15,
-                long_study_threshold_min: preferences.long_study_threshold_min ?? 60,
-                min_gap_for_break_min: preferences.min_gap_for_break_min ?? 90,
+                long_study_threshold_min: preferences.long_study_threshold_min ?? 90,
+                min_gap_for_break_min: preferences.min_gap_for_break_min ?? 3,
                 onboarding_completed: true
             }
 

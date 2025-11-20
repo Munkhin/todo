@@ -31,15 +31,18 @@ async def submit_onboarding(
     """
     try:
         # 1. Save preferences and mark onboarding as complete
-        # Convert Pydantic model to dict, excluding None values
-        profile_data = request.preferences.dict(exclude_unset=True)
-        
+        # Convert Pydantic model to dict, using defaults for unset values
+        profile_data = request.preferences.dict()
+
         # Force onboarding_completed to True
         profile_data["onboarding_completed"] = True
-        
-        # Ensure energy_levels is handled correctly (it should be a JSON string from the frontend/request model)
-        # The EnergyProfileRequest defines it as str, so we pass it as is.
-        
+
+        # Ensure energy_levels is handled correctly (use default if None)
+        if profile_data["energy_levels"] is None:
+            from api.settings.energy_profile_routes import DEFAULT_ENERGY_LEVELS
+            import json
+            profile_data["energy_levels"] = json.dumps(DEFAULT_ENERGY_LEVELS)
+
         success = create_or_update_energy_profile(user_id, profile_data)
         if not success:
             raise HTTPException(status_code=500, detail="Failed to save preferences")
