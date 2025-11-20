@@ -1,0 +1,311 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - link "Todo" [ref=e6] [cursor=pointer]:
+          - /url: /
+        - navigation "Primary" [ref=e7]:
+          - list [ref=e8]:
+            - listitem [ref=e9]:
+              - link "Features" [ref=e10] [cursor=pointer]:
+                - /url: "#features"
+            - listitem [ref=e11]:
+              - link "Use Cases" [ref=e12] [cursor=pointer]:
+                - /url: "#use-cases"
+            - listitem [ref=e13]:
+              - link "Pricing" [ref=e14] [cursor=pointer]:
+                - /url: "#pricing"
+            - listitem [ref=e15]:
+              - link "FAQ" [ref=e16] [cursor=pointer]:
+                - /url: "#faq"
+      - generic [ref=e17]:
+        - link "Sign In" [ref=e18] [cursor=pointer]:
+          - /url: /signin
+        - link "Get Started" [ref=e19] [cursor=pointer]:
+          - /url: /signup
+    - generic [ref=e22]:
+      - heading "Stop wasting hours scheduling study sessions. Just ask." [level=1] [ref=e23]:
+        - generic [ref=e24]: Stop wasting hours scheduling study sessions.
+        - generic [ref=e25]: Just ask.
+      - paragraph [ref=e26]: Let AI understand your workload and create the perfect study schedule. Just chat naturally about what you need to learn.
+      - generic [ref=e27]:
+        - link "Start Scheduling Free" [ref=e28] [cursor=pointer]:
+          - /url: /signup
+          - text: Start Scheduling Free
+          - img [ref=e29]
+        - link "Watch Demo" [ref=e31] [cursor=pointer]:
+          - /url: "#demo"
+          - img [ref=e32]
+          - text: Watch Demo
+    - generic [ref=e35]:
+      - generic [ref=e38]:
+        - generic [ref=e39]:
+          - generic [ref=e40]:
+            - heading "Schedule" [level=2] [ref=e41]
+            - generic [ref=e42]: Nov 16 - Nov 22, 2025
+          - generic [ref=e43]:
+            - button "Today" [ref=e44] [cursor=pointer]
+            - button "<" [ref=e45] [cursor=pointer]
+            - button ">" [ref=e46] [cursor=pointer]
+            - generic [ref=e47]:
+              - button "Day" [ref=e48] [cursor=pointer]
+              - button "Week" [ref=e49] [cursor=pointer]
+              - button "Month" [ref=e50] [cursor=pointer]
+        - generic [ref=e53]:
+          - generic [ref=e55]:
+            - generic:
+              - generic [ref=e57]: 16 Sun
+              - generic [ref=e59]: 17 Mon
+              - generic [ref=e61]: 18 Tue
+              - generic [ref=e63]: 19 Wed
+              - generic [ref=e65]: 20 Thu
+              - generic [ref=e67]: 21 Fri
+              - generic [ref=e69]: 22 Sat
+          - rowgroup [ref=e74]:
+            - row "7 am":
+              - generic [ref=e75]: 7 am
+            - row "8 am":
+              - generic [ref=e76]: 8 am
+            - row "9 am":
+              - generic [ref=e77]: 9 am
+            - row "10 am":
+              - generic [ref=e78]: 10 am
+            - row "11 am":
+              - generic [ref=e79]: 11 am
+            - row "1 pm":
+              - generic [ref=e80]: 1 pm
+            - row "2 pm":
+              - generic [ref=e81]: 2 pm
+            - row "3 pm":
+              - generic [ref=e82]: 3 pm
+            - row "4 pm":
+              - generic [ref=e83]: 4 pm
+            - row "5 pm":
+              - generic [ref=e84]: 5 pm
+            - row "6 pm":
+              - generic [ref=e85]: 6 pm
+            - row "7 pm":
+              - generic [ref=e86]: 7 pm
+            - row "8 pm":
+              - generic [ref=e87]: 8 pm
+            - row "9 pm":
+              - generic [ref=e88]: 9 pm
+            - generic [ref=e89]: 12:08
+      - generic [ref=e143]:
+        - textbox "Chat input" [ref=e144]:
+          - /placeholder: Ask, Search or Chat...
+        - generic [ref=e145]:
+          - button "Add attachment" [ref=e146] [cursor=pointer]:
+            - img
+          - generic [ref=e147]: 0% used
+          - button "Send" [disabled]:
+            - img
+            - generic: Send
+    - generic [ref=e150]:
+      - article [ref=e151]:
+        - img [ref=e153]
+        - heading "Lightning Fast" [level=3] [ref=e155]
+        - paragraph [ref=e156]: Process planning in minutes — not hours.
+      - article [ref=e157]:
+        - img [ref=e159]
+        - heading "Multi‑format File Upload" [level=3] [ref=e162]
+        - paragraph [ref=e163]: Upload PDFs, images, and docs — right inside AI chat.
+      - article [ref=e164]:
+        - img [ref=e166]
+        - heading "Save 100+ Hours" [level=3] [ref=e169]
+        - paragraph [ref=e170]: Stop wasting days manually planning.
+    - generic [ref=e172]:
+      - heading "Everything You Need to Study Smarter" [level=2] [ref=e173]
+      - paragraph [ref=e174]: Powered by AI, designed for students
+      - generic [ref=e175]:
+        - article [ref=e176]:
+          - img [ref=e178]
+          - heading "Schedule in Natural Language" [level=3] [ref=e180]
+          - paragraph [ref=e181]: Just type 'I need to study calculus for 2 hours before Friday' and we'll handle the rest. No complex forms or settings.
+        - article [ref=e182]:
+          - img [ref=e184]
+          - heading "Smooth Conflict Resolution" [level=3] [ref=e186]
+          - paragraph [ref=e187]: AI automatically detects scheduling conflicts and suggests optimal times based on your energy levels and existing commitments.
+        - article [ref=e188]:
+          - img [ref=e190]
+          - heading "Learns From Your Requests" [level=3] [ref=e198]
+          - paragraph [ref=e199]: The more you use it, the better it gets at understanding your preferences, study patterns, and optimal learning times.
+    - generic [ref=e201]:
+      - heading "Perfect For Every Learner" [level=2] [ref=e202]
+      - generic [ref=e203]:
+        - article [ref=e204]:
+          - img [ref=e206]
+          - paragraph [ref=e209]: High School Students
+          - heading "Ace Your Exams" [level=3] [ref=e210]
+          - list [ref=e211]:
+            - listitem [ref=e212]:
+              - img [ref=e213]
+              - paragraph [ref=e215]: Balance multiple subjects effortlessly
+            - listitem [ref=e216]:
+              - img [ref=e217]
+              - paragraph [ref=e219]: Never miss assignment deadlines
+            - listitem [ref=e220]:
+              - img [ref=e221]
+              - paragraph [ref=e223]: Study at your peak focus times
+            - listitem [ref=e224]:
+              - img [ref=e225]
+              - paragraph [ref=e227]: Track progress with visual calendars
+        - article [ref=e228]:
+          - img [ref=e230]
+          - paragraph [ref=e232]: University Students
+          - heading "Master Your Degree" [level=3] [ref=e233]
+          - list [ref=e234]:
+            - listitem [ref=e235]:
+              - img [ref=e236]
+              - paragraph [ref=e238]: Manage complex project timelines
+            - listitem [ref=e239]:
+              - img [ref=e240]
+              - paragraph [ref=e242]: Coordinate group study sessions
+            - listitem [ref=e243]:
+              - img [ref=e244]
+              - paragraph [ref=e246]: Optimize deep work blocks
+            - listitem [ref=e247]:
+              - img [ref=e248]
+              - paragraph [ref=e250]: Adapt to changing syllabi instantly
+        - article [ref=e251]:
+          - img [ref=e253]
+          - paragraph [ref=e257]: Lifelong Learners
+          - heading "Achieve Your Goals" [level=3] [ref=e258]
+          - list [ref=e259]:
+            - listitem [ref=e260]:
+              - img [ref=e261]
+              - paragraph [ref=e263]: Fit learning into busy schedules
+            - listitem [ref=e264]:
+              - img [ref=e265]
+              - paragraph [ref=e267]: Build sustainable study habits
+            - listitem [ref=e268]:
+              - img [ref=e269]
+              - paragraph [ref=e271]: Track long-term skill development
+            - listitem [ref=e272]:
+              - img [ref=e273]
+              - paragraph [ref=e275]: Stay motivated with progress insights
+    - generic [ref=e277]:
+      - heading "Simple, Transparent Pricing" [level=2] [ref=e278]
+      - paragraph [ref=e279]: Start free, upgrade as you grow
+      - generic [ref=e280]:
+        - article [ref=e281]:
+          - generic [ref=e282]:
+            - heading "Free" [level=3] [ref=e283]
+            - paragraph [ref=e284]: $0/month
+            - paragraph [ref=e285]: 10 schedules/month
+            - list [ref=e286]:
+              - listitem [ref=e287]: Chat to schedule
+              - listitem [ref=e289]: Daily and weekly calendar view
+              - listitem [ref=e291]: File uploads
+            - link "Get Started" [ref=e294] [cursor=pointer]:
+              - /url: /signup
+        - article [ref=e295]:
+          - generic [ref=e296]:
+            - generic [ref=e297]: Most Popular
+            - heading "Pro" [level=3] [ref=e298]
+            - paragraph [ref=e299]: $19.99/month
+            - paragraph [ref=e300]: 500 schedules/month
+            - list [ref=e301]:
+              - listitem [ref=e302]: Advanced AI scheduling
+              - listitem [ref=e304]: Smooth rescheduling
+              - listitem [ref=e306]: Priority support via email
+            - button "Start Pro Plan" [ref=e309] [cursor=pointer]:
+              - generic [ref=e310]: Start Pro Plan
+        - article [ref=e311]:
+          - generic [ref=e312]:
+            - heading "Unlimited" [level=3] [ref=e313]
+            - paragraph [ref=e314]: $49.99/month
+            - paragraph [ref=e315]: Unlimited schedules
+            - list [ref=e316]:
+              - listitem [ref=e317]: Unlimited scheduling
+              - listitem [ref=e319]: Unlimited rescheduling
+              - listitem [ref=e321]: Dedicated support via email
+              - listitem [ref=e323]: Early access to features
+            - button "Start Unlimited Plan" [ref=e326] [cursor=pointer]:
+              - generic [ref=e327]: Start Unlimited Plan
+    - generic [ref=e329]:
+      - heading "Frequently Asked Questions" [level=2] [ref=e330]
+      - generic [ref=e331]:
+        - generic [ref=e332]:
+          - button "How does the AI scheduling work? –" [ref=e333] [cursor=pointer]:
+            - generic [ref=e334]: How does the AI scheduling work?
+            - generic [ref=e335]: –
+          - generic [ref=e336]: We analyze your request, existing tasks and energy profile to propose optimal time blocks. You can adjust anytime.
+        - button "Can I integrate with Google Calendar? +" [ref=e338] [cursor=pointer]:
+          - generic [ref=e339]: Can I integrate with Google Calendar?
+          - generic [ref=e340]: +
+        - button "What happens when I run out of credits? +" [ref=e342] [cursor=pointer]:
+          - generic [ref=e343]: What happens when I run out of credits?
+          - generic [ref=e344]: +
+        - button "Is my data private and secure? +" [ref=e346] [cursor=pointer]:
+          - generic [ref=e347]: Is my data private and secure?
+          - generic [ref=e348]: +
+        - button "Can I cancel my subscription anytime? +" [ref=e350] [cursor=pointer]:
+          - generic [ref=e351]: Can I cancel my subscription anytime?
+          - generic [ref=e352]: +
+    - generic [ref=e354]:
+      - generic [ref=e355]:
+        - generic [ref=e356]:
+          - heading "Product" [level=4] [ref=e357]
+          - list [ref=e358]:
+            - listitem [ref=e359]:
+              - link "Features" [ref=e360] [cursor=pointer]:
+                - /url: "#features"
+            - listitem [ref=e361]:
+              - link "Pricing" [ref=e362] [cursor=pointer]:
+                - /url: "#pricing"
+            - listitem [ref=e363]:
+              - link "FAQ" [ref=e364] [cursor=pointer]:
+                - /url: "#faq"
+        - generic [ref=e365]:
+          - heading "Company" [level=4] [ref=e366]
+          - list [ref=e367]:
+            - listitem [ref=e368]:
+              - link "About" [ref=e369] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e370]:
+              - link "Blog" [ref=e371] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e372]:
+              - link "Careers" [ref=e373] [cursor=pointer]:
+                - /url: "#"
+        - generic [ref=e374]:
+          - heading "Support" [level=4] [ref=e375]
+          - list [ref=e376]:
+            - listitem [ref=e377]:
+              - link "Help Center" [ref=e378] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e379]:
+              - link "Contact" [ref=e380] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e381]:
+              - link "Status" [ref=e382] [cursor=pointer]:
+                - /url: "#"
+        - generic [ref=e383]:
+          - heading "Legal" [level=4] [ref=e384]
+          - list [ref=e385]:
+            - listitem [ref=e386]:
+              - link "Privacy" [ref=e387] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e388]:
+              - link "Terms" [ref=e389] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e390]:
+              - link "Security" [ref=e391] [cursor=pointer]:
+                - /url: "#"
+      - generic [ref=e393]:
+        - paragraph [ref=e394]: © 2025 Todo. All rights reserved.
+        - generic [ref=e395]:
+          - link "Twitter" [ref=e396] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e397]
+          - link "GitHub" [ref=e399] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e400]
+  - button "Open Next.js Dev Tools" [ref=e408] [cursor=pointer]:
+    - img [ref=e409]
+  - alert [ref=e412]
+```

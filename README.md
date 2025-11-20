@@ -38,7 +38,7 @@ on completion, send as context to the agent to generate base tasks and events
 
 **Add task in task tab**:
 - [ ] an "add task button" on the top right hnad corner of the task tab
-- [ ] triggers an overlay identical to the task edit sheet, but with create task as the text for the button instead of svae changes
+- [ ] triggers an overlay identical to the task edit sheet, but with create task as the text for the button instead of save changes
 - [ ] adds a task without any child calendar events
 - [ ] just like any other task container
 - [ ] schedule for me button in the indented children area below
