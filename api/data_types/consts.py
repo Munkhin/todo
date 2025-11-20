@@ -353,7 +353,15 @@ EVENT_EXTRACTION_SCHEMA = {
     },
     "priority": { "type": "string", "enum": ["low", "medium", "high"] }
   },
-  "required": ["user_id", "title", "start_time", "end_time", "event_type", "priority"],
+  "required": [
+    "user_id",
+    "title",
+    "description",
+    "start_time",
+    "end_time",
+    "event_type",
+    "priority"
+  ],
   "additionalProperties": False
 }
 
@@ -439,7 +447,20 @@ PREFERENCE_UPDATES_SCHEMA = {
     "long_study_threshold_min": { "type": ["number", "null"] },
     "min_gap_for_break_min": { "type": ["number", "null"] }
   },
-  "required": ["user_id"],
+  "required": [
+    "user_id",
+    "due_date_days",
+    "wake_time",
+    "sleep_time",
+    "max_study_duration",
+    "min_study_duration",
+    "energy_levels",
+    "insert_breaks",
+    "short_break_min",
+    "long_break_min",
+    "long_study_threshold_min",
+    "min_gap_for_break_min"
+  ],
   "additionalProperties": False
 }
 
@@ -460,6 +481,17 @@ EVENT_SCHEMA = {
     "task_id": { "type": ["number", "null"] },
     "color_hex": { "type": ["string", "null"], "pattern": "^#?[0-9A-Fa-f]{6}$" }
   },
-  "required": ["user_id", "title", "start_time", "end_time"],
+  "required": [
+    "user_id",
+    "title",
+    "description",
+    "start_time",
+    "end_time",
+    "event_type",
+    "priority",
+    "source",
+    "task_id",
+    "color_hex"
+  ],
   "additionalProperties": False
 }
