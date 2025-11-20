@@ -157,12 +157,12 @@ export default function OnboardingOverlay() {
 
             case 1: // Subjects
                 return (
-                    <div className="space-y-8">
+                    <div className="flex flex-col h-full overflow-hidden">
                         <div className={onboardingStyles.illustrationPlaceholder}>
                             <span className="text-gray-400 font-medium">Subjects Illustration</span>
                         </div>
-                        <div className="space-y-4">
-                            <div className="flex gap-3">
+                        <div className="flex-1 flex flex-col min-h-0 space-y-4">
+                            <div className="flex gap-3 shrink-0">
                                 <Input
                                     placeholder="e.g. Linear Algebra"
                                     value={newSubject}
@@ -170,22 +170,26 @@ export default function OnboardingOverlay() {
                                     onKeyDown={(e) => e.key === 'Enter' && addSubject()}
                                     className={onboardingStyles.input}
                                 />
-                                <Button onClick={addSubject} type="button" className="h-auto px-6 bg-blue-600 hover:bg-blue-700 rounded-2xl">
-                                    <Plus className="w-6 h-6" />
+                                <Button onClick={addSubject} type="button" className="h-auto px-5 bg-blue-600 hover:bg-blue-700 rounded-xl">
+                                    <Plus className="w-5 h-5" />
                                 </Button>
                             </div>
 
-                            <div className="grid gap-3">
-                                {subjects.map((subject, i) => (
-                                    <div key={i} className={onboardingStyles.itemCard}>
-                                        <span className={onboardingStyles.itemText}>{subject}</span>
-                                        <button onClick={() => removeSubject(i)} className={onboardingStyles.removeBtn}>
-                                            <X className="w-5 h-5" />
-                                        </button>
-                                    </div>
-                                ))}
+                            <div className="flex-1 overflow-y-auto min-h-0 pr-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {subjects.map((subject, i) => (
+                                        <div key={i} className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200 shadow-sm hover:border-blue-300 transition-all group">
+                                            <span className="font-medium text-gray-900 truncate mr-2">{subject}</span>
+                                            <button onClick={() => removeSubject(i)} className={onboardingStyles.removeBtn}>
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
                                 {subjects.length === 0 && (
-                                    <p className="text-center text-gray-400 py-8">No subjects added yet</p>
+                                    <div className="h-full flex items-center justify-center text-gray-400">
+                                        <p>No subjects added yet</p>
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -194,36 +198,38 @@ export default function OnboardingOverlay() {
 
             case 2: // Tests
                 return (
-                    <div className="space-y-8">
+                    <div className="flex flex-col h-full overflow-hidden">
                         <div className={onboardingStyles.illustrationPlaceholder}>
                             <span className="text-gray-400 font-medium">Tests Illustration</span>
                         </div>
-                        <div className="space-y-6">
-                            <div className="grid gap-4 p-6 bg-gray-50 rounded-3xl border border-gray-100">
-                                <div className="space-y-2">
-                                    <label className={onboardingStyles.label}>Test Name</label>
-                                    <Input
-                                        placeholder="e.g. Midterm Exam"
-                                        value={newTestName}
-                                        onChange={(e) => setNewTestName(e.target.value)}
-                                        className={onboardingStyles.input}
-                                    />
+                        <div className="flex-1 flex flex-col min-h-0 space-y-4">
+                            <div className="grid gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100 shrink-0">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div className="space-y-1.5">
+                                        <label className={onboardingStyles.label}>Test Name</label>
+                                        <Input
+                                            placeholder="e.g. Midterm Exam"
+                                            value={newTestName}
+                                            onChange={(e) => setNewTestName(e.target.value)}
+                                            className={onboardingStyles.input}
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className={onboardingStyles.label}>Date</label>
+                                        <Input
+                                            type="date"
+                                            value={newTestDate}
+                                            onChange={(e) => setNewTestDate(e.target.value)}
+                                            className={onboardingStyles.input}
+                                        />
+                                    </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className={onboardingStyles.label}>Date</label>
-                                    <Input
-                                        type="date"
-                                        value={newTestDate}
-                                        onChange={(e) => setNewTestDate(e.target.value)}
-                                        className={onboardingStyles.input}
-                                    />
-                                </div>
-                                <Button onClick={addTest} type="button" disabled={!newTestName || !newTestDate} className="w-full py-6 bg-blue-600 hover:bg-blue-700 rounded-2xl text-lg">
+                                <Button onClick={addTest} type="button" disabled={!newTestName || !newTestDate} className="w-full py-3 bg-blue-600 hover:bg-blue-700 rounded-xl text-base">
                                     <Plus className="w-5 h-5 mr-2" /> Add Test
                                 </Button>
                             </div>
 
-                            <div className="space-y-3">
+                            <div className="flex-1 overflow-y-auto min-h-0 pr-2 space-y-2">
                                 {tests.map((test, i) => (
                                     <div key={i} className={onboardingStyles.itemCard}>
                                         <div>
@@ -231,10 +237,15 @@ export default function OnboardingOverlay() {
                                             <div className={onboardingStyles.itemSubtext}>{new Date(test.date).toLocaleDateString()}</div>
                                         </div>
                                         <button onClick={() => removeTest(i)} className={onboardingStyles.removeBtn}>
-                                            <X className="w-5 h-5" />
+                                            <X className="w-4 h-4" />
                                         </button>
                                     </div>
                                 ))}
+                                {tests.length === 0 && (
+                                    <div className="h-full flex items-center justify-center text-gray-400 py-4">
+                                        <p>No upcoming tests added</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -405,7 +416,6 @@ export default function OnboardingOverlay() {
                     </div>
                 </div>
 
-                {/* Content */}
                 <div className={onboardingStyles.content}>
                     <AnimatePresence mode="wait">
                         <motion.div
@@ -414,7 +424,7 @@ export default function OnboardingOverlay() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
                             transition={{ duration: 0.3 }}
-                            className="w-full"
+                            className="w-full h-full" // Added h-full
                         >
                             {renderStepContent()}
                         </motion.div>
