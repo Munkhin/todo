@@ -13,8 +13,8 @@ class TestItem(BaseModel):
     date: str # ISO format date
 
 class OnboardingRequest(BaseModel):
-    subjects: List[str]
-    tests: List[TestItem]
+    subjects: Optional[List[str]] = []
+    tests: Optional[List[TestItem]] = []
     preferences: EnergyProfileRequest
     additional_notes: Optional[str] = None
 
@@ -45,10 +45,12 @@ async def submit_onboarding(
             raise HTTPException(status_code=500, detail="Failed to save preferences")
 
         # 2. Construct prompt for AI Agent
-        subjects_str = ", ".join(request.subjects)
-        tests_str = "\n".join([f"- {t.name} on {t.date}" for t in request.tests]) if request.tests else "None"
+        subjects_str = ", ".join(request.subjects) if request.subjects else "No specific subjects provided"
+        tests_str = "\n".join([f"- {t.name} on {t.date}" for t in request.tests]) if request.tests else "No upcoming tests"
         
-        prompt = f"""
+        # Only call AI agent if user actually provided subjects or tests
+        if request.subjects or request.tests or request.additional_notes:
+            prompt = f"""
 I have just completed onboarding.
 My subjects are: {subjects_str}
 
@@ -60,12 +62,14 @@ My upcoming tests are:
 Please create tasks for my subjects and schedule study sessions for my upcoming tests based on my preferences.
 """
 
-        # 3. Call AI Agent
-        # We use run_agent which handles intent classification and execution
-        agent_result = await run_agent({
-            "user_id": user_id,
-            "text": prompt
-        })
+
+            # 3. Call AI Agent only if there's content to process
+            agent_result = None
+            if request.subjects or request.tests or request.additional_notes:
+                agent_result = await run_agent({
+                    "user_id": user_id,
+                    "text": prompt
+                })
         
         return {
             "success": True,

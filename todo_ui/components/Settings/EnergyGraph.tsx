@@ -1,5 +1,7 @@
 "use client"
-import React, { useState, useRef, useEffect } from "react"
+import React, { useState, useMemo, useRef, useCallback } from "react"
+import { Line, LineChart, CartesianGrid, XAxis, YAxis, Dot } from "recharts"
+import { ChartContainer, ChartConfig, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
 type EnergyGraphProps = {
   wakeHour: number
@@ -8,11 +10,18 @@ type EnergyGraphProps = {
   onChange: (energyLevels: Record<number, number>) => void
 }
 
-export default function EnergyGraph({ wakeHour, sleepHour, energyLevels, onChange }: EnergyGraphProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [isDragging, setIsDragging] = useState(false)
+const chartConfig = {
+  energy: {
+    label: "Energy",
+    color: "#2563eb",
+  },
+} satisfies ChartConfig
 
-  // generate hours sequence from wake to sleep
+export default function EnergyGraph({ wakeHour, sleepHour, energyLevels, onChange }: EnergyGraphProps) {
+  const [draggingHour, setDraggingHour] = useState<number | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // Generate hours sequence from wake to sleep
   const getHoursSequence = (): number[] => {
     const hours: number[] = []
     if (wakeHour < sleepHour) {
@@ -28,148 +37,142 @@ export default function EnergyGraph({ wakeHour, sleepHour, energyLevels, onChang
 
   const hours = getHoursSequence()
 
-  // draw graph
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
+  const formatHour = (h: number): string => {
+    if (h === 0) return '12am'
+    if (h < 12) return `${h}am`
+    if (h === 12) return '12pm'
+    return `${h - 12}pm`
+  }
 
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+  // Prepare chart data
+  const chartData = useMemo(() => {
+    return hours.map(hour => ({
+      hour: hour,
+      hourLabel: formatHour(hour),
+      energy: energyLevels[hour] ?? 5,
+    }))
+  }, [hours, energyLevels])
 
-    const width = canvas.width
-    const height = canvas.height
-    const padding = 40
+  const handleDotMouseDown = (data: any) => {
+    setDraggingHour(data.hour)
+  }
 
-    // clear
-    ctx.clearRect(0, 0, width, height)
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (draggingHour === null || !containerRef.current) return
 
-    // draw grid
-    ctx.strokeStyle = '#e5e7eb'
-    ctx.lineWidth = 1
+    const chartElement = containerRef.current.querySelector('[data-chart]')
+    if (!chartElement) return
 
-    // horizontal grid lines (energy levels 0-10)
-    for (let i = 0; i <= 10; i++) {
-      const y = padding + (height - 2 * padding) * (1 - i / 10)
-      ctx.beginPath()
-      ctx.moveTo(padding, y)
-      ctx.lineTo(width - padding, y)
-      ctx.stroke()
+    const rect = chartElement.getBoundingClientRect()
+    const yPos = e.clientY - rect.top
 
-      // labels
-      ctx.fillStyle = '#6b7280'
-      ctx.font = '12px sans-serif'
-      ctx.textAlign = 'right'
-      ctx.fillText(String(i), padding - 10, y + 4)
+    // Chart coordinates (accounting for margins)
+    const margin = 20
+    const chartHeight = rect.height - (2 * margin)
+
+    // Calculate relative position (0 = bottom, 1 = top)
+    const relativeY = Math.max(0, Math.min(1, 1 - ((yPos - margin) / chartHeight)))
+
+    // Convert to energy level (0-10)
+    const newEnergy = Math.round(relativeY * 10)
+
+    if (energyLevels[draggingHour] !== newEnergy) {
+      onChange({ ...energyLevels, [draggingHour]: newEnergy })
     }
+  }, [draggingHour, energyLevels, onChange])
 
-    // vertical grid lines (24 hours)
-    ctx.strokeStyle = '#f3f4f6'
-    for (let h = 0; h < 24; h++) {
-      const x = padding + (width - 2 * padding) * (h / 23)
-      ctx.beginPath()
-      ctx.moveTo(x, padding)
-      ctx.lineTo(x, height - padding)
-      ctx.stroke()
+  const handleMouseUp = () => {
+    setDraggingHour(null)
+  }
 
-      // hour labels with AM/PM format
-      ctx.fillStyle = '#6b7280'
-      ctx.font = '11px sans-serif'
-      ctx.textAlign = 'center'
-      const label = h === 0 ? '12am' : h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h - 12}pm`
-      ctx.fillText(label, x, height - padding + 20)
-    }
+  // Custom draggable dot
+  const CustomDot = (props: any) => {
+    const { cx, cy, payload } = props
+    const isActive = draggingHour === payload.hour
 
-    // highlight wake/sleep region
-    const wakeX = padding + (width - 2 * padding) * (wakeHour / 23)
-    const sleepX = padding + (width - 2 * padding) * (sleepHour / 23)
-    ctx.fillStyle = 'rgba(59, 130, 246, 0.05)'
-    if (wakeHour < sleepHour) {
-      ctx.fillRect(wakeX, padding, sleepX - wakeX, height - 2 * padding)
-    } else {
-      ctx.fillRect(wakeX, padding, width - padding - wakeX, height - 2 * padding)
-      ctx.fillRect(padding, padding, sleepX - padding, height - 2 * padding)
-    }
-
-    // draw energy line
-    ctx.strokeStyle = '#3b82f6'
-    ctx.lineWidth = 3
-    ctx.beginPath()
-
-    hours.forEach((h, i) => {
-      const energy = energyLevels[h] ?? 5
-      const x = padding + (width - 2 * padding) * (h / 23)
-      const y = padding + (height - 2 * padding) * (1 - energy / 10)
-
-      if (i === 0) {
-        ctx.moveTo(x, y)
-      } else {
-        ctx.lineTo(x, y)
-      }
-    })
-
-    ctx.stroke()
-
-    // draw points
-    hours.forEach((h) => {
-      const energy = energyLevels[h] ?? 5
-      const x = padding + (width - 2 * padding) * (h / 23)
-      const y = padding + (height - 2 * padding) * (1 - energy / 10)
-
-      ctx.fillStyle = '#3b82f6'
-      ctx.beginPath()
-      ctx.arc(x, y, 5, 0, 2 * Math.PI)
-      ctx.fill()
-    })
-
-  }, [wakeHour, sleepHour, energyLevels, hours])
-
-  const handleCanvasInteraction = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const rect = canvas.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
-
-    const width = canvas.width
-    const height = canvas.height
-    const padding = 40
-
-    // find closest hour
-    const hourFrac = Math.max(0, Math.min(1, (x - padding) / (width - 2 * padding)))
-    const hour = Math.round(hourFrac * 23)
-
-    // calculate energy level
-    const energyFrac = Math.max(0, Math.min(1, 1 - (y - padding) / (height - 2 * padding)))
-    const energy = Math.round(energyFrac * 10)
-
-    // update
-    onChange({ ...energyLevels, [hour]: energy })
+    return (
+      <g>
+        <Dot
+          cx={cx}
+          cy={cy}
+          r={isActive ? 6 : 4}
+          fill="#2563eb"
+          stroke="#fff"
+          strokeWidth={2}
+          className="cursor-grab active:cursor-grabbing"
+          onMouseDown={() => handleDotMouseDown(payload)}
+          style={{
+            filter: isActive ? 'drop-shadow(0 0 6px rgba(37, 99, 235, 0.5))' : 'none',
+            transition: 'all 0.15s ease',
+            pointerEvents: 'all'
+          }}
+        />
+      </g>
+    )
   }
 
   return (
-    <div className="w-full">
-      <div className="mb-2 text-sm text-gray-600">
-        Click and drag on the graph to adjust energy levels throughout the day (0-10 scale)
-      </div>
-      <canvas
-        ref={canvasRef}
-        width={800}
-        height={300}
-        className="border border-gray-200 rounded cursor-crosshair w-full"
-        style={{ maxWidth: '100%', height: 'auto' }}
-        onMouseDown={(e) => {
-          setIsDragging(true)
-          handleCanvasInteraction(e)
-        }}
-        onMouseMove={(e) => {
-          if (isDragging) {
-            handleCanvasInteraction(e)
-          }
-        }}
-        onMouseUp={() => setIsDragging(false)}
-        onMouseLeave={() => setIsDragging(false)}
-      />
+    <div
+      ref={containerRef}
+      className="w-full space-y-4 select-none"
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+    >
+      <ChartContainer config={chartConfig} className="h-[300px] w-full">
+        <LineChart
+          data={chartData}
+          margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" className="stroke-gray-100" vertical={false} />
+          <XAxis
+            dataKey="hourLabel"
+            tickLine={false}
+            axisLine={false}
+            tickMargin={8}
+            className="text-xs"
+          />
+          <YAxis
+            domain={[0, 10]}
+            ticks={[0, 5, 10]}
+            tickLine={false}
+            axisLine={false}
+            tickMargin={8}
+            className="text-xs"
+            tickFormatter={(value) => {
+              if (value === 0) return 'Low'
+              if (value === 5) return 'Med'
+              if (value === 10) return 'High'
+              return value
+            }}
+          />
+          <ChartTooltip
+            content={
+              <ChartTooltipContent
+                labelFormatter={(value) => `${value}`}
+                formatter={(value) => [`Energy: ${value}`, ""]}
+              />
+            }
+          />
+          <defs>
+            <linearGradient id="energyGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#2563eb" stopOpacity={0.2} />
+              <stop offset="100%" stopColor="#2563eb" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <Line
+            type="monotone"
+            dataKey="energy"
+            stroke="#2563eb"
+            strokeWidth={3}
+            dot={<CustomDot />}
+            fill="url(#energyGradient)"
+          />
+        </LineChart>
+      </ChartContainer>
+      <p className="text-center text-sm text-gray-400">
+        Click and drag the points to adjust your energy levels throughout the day
+      </p>
     </div>
   )
 }

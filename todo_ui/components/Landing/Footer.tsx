@@ -34,8 +34,8 @@ export default function Footer() {
           <div>
             <h4 className={footerStyles.sectionTitle}>Legal</h4>
             <ul className={footerStyles.list}>
-              <li><Link href="#" className={footerStyles.link}>Privacy</Link></li>
-              <li><Link href="#" className={footerStyles.link}>Terms</Link></li>
+              <li><Link href="/privacy" className={footerStyles.link}>Privacy</Link></li>
+              <li><Link href="/terms" className={footerStyles.link}>Terms</Link></li>
               <li><Link href="#" className={footerStyles.link}>Security</Link></li>
             </ul>
           </div>

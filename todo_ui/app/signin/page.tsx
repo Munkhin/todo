@@ -20,6 +20,9 @@ export default function SignInPage() {
         <button onClick={onGoogle} disabled={loading} className={signinStyles.button}>
           {loading ? "Signing in…" : "Continue with Google"}
         </button>
+        <p className="mt-6 text-sm text-gray-500 max-w-sm text-center leading-relaxed">
+          Review studybar.academy&apos;s <a href="/privacy" className="text-blue-600 hover:underline">privacy policy</a> and <a href="/terms" className="text-blue-600 hover:underline">Terms of Service</a> to understand how studybar.academy will process and protect your data.
+        </p>
       </section>
     </main>
   )
