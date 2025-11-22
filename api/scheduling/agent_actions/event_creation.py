@@ -36,6 +36,17 @@ async def create_calendar_event_direct(user_input, chatgpt_call):
     )
     event_data = ensure_mapping(event_data)
     
+    logger.info(
+        "Event extraction result",
+        extra={
+            "user_id": user_id,
+            "extracted_title": event_data.get("title") if event_data else None,
+            "extracted_start": event_data.get("start_time") if event_data else None,
+            "extracted_end": event_data.get("end_time") if event_data else None,
+            "has_all_required": bool(event_data and event_data.get("start_time") and event_data.get("end_time"))
+        }
+    )
+    
     if not event_data or not event_data.get("start_time") or not event_data.get("end_time"):
         logger.warning(
             "Event extraction failed or incomplete",

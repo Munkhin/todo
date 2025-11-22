@@ -1,9 +1,13 @@
 import os
+import logging
 import numpy as np
 from openai import AsyncOpenAI
 
 # Initialize OpenAI client
 client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+# Set up logger
+logger = logging.getLogger(__name__)
 
 # ------------------- Embedding functions -------------------
 
@@ -112,6 +116,27 @@ async def classify_intent(text: str, intents: list[str], dynamic_ratio: float = 
     top_score = max(scores.values())
     threshold = top_score * dynamic_ratio
 
+    # Log detailed classification info
+    logger.info(
+        "Intent classification details",
+        extra={
+            "user_text": text[:100] + "..." if len(text) > 100 else text,
+            "scores": {k: round(v, 4) for k, v in sorted(scores.items(), key=lambda x: x[1], reverse=True)},
+            "top_score": round(top_score, 4),
+            "threshold": round(threshold, 4),
+            "dynamic_ratio": dynamic_ratio
+        }
+    )
+
     # Get all intents above threshold
     detected = [intent for intent, score in scores.items() if score >= threshold]
+    
+    logger.info(
+        "Intent classification result",
+        extra={
+            "detected_intents": detected,
+            "intent_count": len(detected)
+        }
+    )
+    
     return detected

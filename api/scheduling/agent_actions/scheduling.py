@@ -30,11 +30,24 @@ async def schedule_tasks_into_calendar(user_input, chatgpt_call):
     # 1. get infered tasks, can be more than one
     infered_tasks = await infer_tasks(user_input, chatgpt_call)
 
+    logger.info(
+        "Task inference result",
+        extra={
+            "user_id": user_input.get("user_id"),
+            "task_count": len(infered_tasks) if infered_tasks else 0,
+            "tasks": [{"desc": t.get("description", "")[:50], "priority": t.get("priority")} for t in (infered_tasks or [])[:3]]
+        }
+    )
+
     # basic error handling
     if not infered_tasks:
         logger.warning(
-            "No tasks inferred from user input",
-            extra={"user_id": user_input.get("user_id"), "text_preview": user_input.get("text", "")[:100]}
+            "No tasks inferred from user input - possible intent misclassification",
+            extra={
+                "user_id": user_input.get("user_id"), 
+                "text_preview": user_input.get("text", "")[:100],
+                "hint": "Check if this should be 'create-event' instead of 'schedule-tasks'"
+            }
         )
         return {
             "text": "I couldn't identify any tasks to schedule from your message. If you meant to create a calendar event at a specific time, please try rephrasing it."
