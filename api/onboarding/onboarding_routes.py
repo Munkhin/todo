@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 import json
 from api.scheduling.agent import run_agent
-from api.settings.settings_routes import SettingsRequest
+from api.settings.settings_routes import SettingsRequest, get_settings
 from api.database import create_or_update_settings
 
 router = APIRouter()
@@ -17,6 +17,18 @@ class OnboardingRequest(BaseModel):
     tests: Optional[List[TestItem]] = []
     preferences: SettingsRequest
     additional_notes: Optional[str] = None
+
+@router.get("/status")
+async def get_onboarding_status(user_id: int = Query(...)):
+    """
+    Check if the user has completed the onboarding process.
+    """
+    try:
+        settings = get_settings(user_id)
+        return {"onboarding_completed": settings.get("onboarding_completed", False)}
+    except Exception as e:
+        # If user has no settings, assume onboarding is not complete
+        return {"onboarding_completed": False}
 
 @router.post("/submit")
 async def submit_onboarding(

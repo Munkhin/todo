@@ -31,6 +31,7 @@ export interface EnergyProfilePayload {
   max_study_duration_before_break?: number;
   break_duration?: number;
   onboarding_completed?: boolean;
+  subject_colors?: Record<string, string>;
 }
 
 export interface EnergyProfileResponse {
@@ -48,6 +49,7 @@ export interface EnergyProfileResponse {
   max_study_duration_before_break?: number | null;
   break_duration?: number | null;
   onboarding_completed?: boolean;
+  subject_colors?: Record<string, string> | null;
 }
 
 function parseEnergyLevels(levels: string | null): Record<number, number> {
@@ -101,6 +103,7 @@ export function normaliseResponse(response: EnergyProfileResponse | null): Energ
     max_study_duration_before_break: response.max_study_duration_before_break ?? DEFAULT_MAX_STUDY_DURATION_BEFORE_BREAK,
     break_duration: response.break_duration ?? DEFAULT_BREAK_DURATION,
     onboarding_completed: response.onboarding_completed ?? false,
+    subject_colors: response.subject_colors ?? {},
   };
 }
 
@@ -132,6 +135,7 @@ export async function saveEnergyProfile(userId: number, payload: EnergyProfilePa
     max_study_duration_before_break: payload.max_study_duration_before_break,
     break_duration: payload.break_duration,
     onboarding_completed: payload.onboarding_completed,
+    subject_colors: payload.subject_colors,
   };
 
   await api.post(`/api/settings/energy-profile?user_id=${userId}`, body);

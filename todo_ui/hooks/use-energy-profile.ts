@@ -65,12 +65,12 @@ function buildDefaults(): EnergyProfilePayload {
   }
 }
 
-export function useSettings(userId: number | null) {
+export function useEnergyProfile(userId: number | null) {
   const queryClient = useQueryClient()
   const [localSettings, setLocalSettings] = useState<EnergyProfilePayload>(buildDefaults())
 
   const { data, isLoading: isQueryLoading, error: queryError } = useQuery({
-    queryKey: ['settings', userId],
+    queryKey: ['energyProfile', userId],
     queryFn: async () => {
       if (!userId || userId <= 0) throw new Error('Invalid user ID')
       const profile = await fetchEnergyProfile(userId)
@@ -93,7 +93,7 @@ export function useSettings(userId: number | null) {
       return refreshed
     },
     onSuccess: (refreshed) => {
-      queryClient.setQueryData(['settings', userId], refreshed)
+      queryClient.setQueryData(['energyProfile', userId], refreshed)
       setLocalSettings(refreshed)
     },
   })

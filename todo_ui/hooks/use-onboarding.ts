@@ -1,15 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { submitOnboarding, OnboardingPayload } from '@/lib/api/onboarding';
-import { useSettings } from './use-settings';
+import { useOnboardingStatus } from './use-onboarding-status';
 
 export function useOnboarding(userId: number | null) {
     const queryClient = useQueryClient();
-    const { settings, isLoading: isSettingsLoading } = useSettings(userId);
-
-    // Check if onboarding is completed based on settings
-    // If settings are loading, we don't know yet.
-    // If settings are loaded, check the flag.
-    const isOnboarded = settings?.onboarding_completed === true;
+    const { isOnboarded, isLoading: isOnboardingLoading } = useOnboardingStatus(userId);
 
     const submitMutation = useMutation({
         mutationFn: async (payload: OnboardingPayload) => {
@@ -17,8 +12,8 @@ export function useOnboarding(userId: number | null) {
             return submitOnboarding(userId, payload);
         },
         onSuccess: () => {
-            // Invalidate settings query to refresh onboarding status
-            queryClient.invalidateQueries({ queryKey: ['settings', userId] });
+            // Invalidate onboarding status to refresh
+            queryClient.invalidateQueries({ queryKey: ['onboardingStatus', userId] });
             // Also invalidate tasks and calendar since agent might have created them
             queryClient.invalidateQueries({ queryKey: ['tasks', userId] });
             queryClient.invalidateQueries({ queryKey: ['calendar', userId] });
@@ -27,9 +22,10 @@ export function useOnboarding(userId: number | null) {
 
     return {
         isOnboarded,
-        isSettingsLoading,
+        isOnboardingLoading,
         submit: submitMutation.mutateAsync,
         isSubmitting: submitMutation.isPending,
         error: submitMutation.error,
     };
 }
+

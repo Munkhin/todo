@@ -22,3 +22,7 @@ export interface OnboardingResponse {
 export async function submitOnboarding(userId: number, payload: OnboardingPayload): Promise<OnboardingResponse> {
     return api.post<OnboardingResponse>(`/api/onboarding/submit?user_id=${userId}`, payload);
 }
+
+export async function fetchOnboardingStatus(userId: number): Promise<{ onboarding_completed: boolean }> {
+    return api.get<{ onboarding_completed: boolean }>(`/api/onboarding/status?user_id=${userId}`);
+}

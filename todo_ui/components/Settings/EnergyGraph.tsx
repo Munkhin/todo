@@ -53,17 +53,10 @@ export default function EnergyGraph({ wakeHour, sleepHour, energyLevels, onChang
     }))
   }, [hours, energyLevels])
 
-  const handleDotMouseDown = (data: any) => {
-    setDraggingHour(data.hour)
-  }
+  const updateEnergyLevel = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!containerRef.current) return
 
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (draggingHour === null || !containerRef.current) return
-
-    const chartElement = containerRef.current.querySelector('[data-chart]')
-    if (!chartElement) return
-
-    const rect = chartElement.getBoundingClientRect()
+    const rect = containerRef.current.getBoundingClientRect()
     const yPos = e.clientY - rect.top
 
     // Chart coordinates (accounting for margins)
@@ -71,12 +64,14 @@ export default function EnergyGraph({ wakeHour, sleepHour, energyLevels, onChang
     const chartHeight = rect.height - (2 * margin)
 
     // Calculate relative position (0 = bottom, 1 = top)
+    // Note: In SVG/DOM, y increases downwards, but we want energy to increase upwards
+    // So 0 energy (bottom) corresponds to max Y
     const relativeY = Math.max(0, Math.min(1, 1 - ((yPos - margin) / chartHeight)))
 
     // Convert to energy level (0-10)
     const newEnergy = Math.round(relativeY * 10)
 
-    if (energyLevels[draggingHour] !== newEnergy) {
+    if (draggingHour !== null && energyLevels[draggingHour] !== newEnergy) {
       onChange({ ...energyLevels, [draggingHour]: newEnergy })
     }
   }, [draggingHour, energyLevels, onChange])
@@ -85,7 +80,7 @@ export default function EnergyGraph({ wakeHour, sleepHour, energyLevels, onChang
     setDraggingHour(null)
   }
 
-  // Custom draggable dot
+  // Custom dot for visual feedback
   const CustomDot = (props: any) => {
     const { cx, cy, payload } = props
     const isActive = draggingHour === payload.hour
@@ -99,12 +94,9 @@ export default function EnergyGraph({ wakeHour, sleepHour, energyLevels, onChang
           fill="#2563eb"
           stroke="#fff"
           strokeWidth={2}
-          className="cursor-grab active:cursor-grabbing"
-          onMouseDown={() => handleDotMouseDown(payload)}
           style={{
             filter: isActive ? 'drop-shadow(0 0 6px rgba(37, 99, 235, 0.5))' : 'none',
             transition: 'all 0.15s ease',
-            pointerEvents: 'all'
           }}
         />
       </g>
@@ -114,12 +106,44 @@ export default function EnergyGraph({ wakeHour, sleepHour, energyLevels, onChang
   return (
     <div
       ref={containerRef}
-      className="w-full space-y-4 select-none"
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
+      className="w-full space-y-4 select-none relative"
       onMouseLeave={handleMouseUp}
+      onMouseUp={handleMouseUp}
     >
-      <ChartContainer config={chartConfig} className="h-[300px] w-full">
+      {/* Transparent overlay for capturing mouse events */}
+      <div
+        className="absolute inset-0 z-10 cursor-crosshair"
+        onMouseDown={(e) => {
+          if (!containerRef.current) return;
+          const rect = containerRef.current.getBoundingClientRect();
+          const margin = 20;
+          const chartWidth = rect.width - (2 * margin);
+          const x = e.clientX - rect.left - margin;
+
+          // Find nearest hour
+          const hourIndex = Math.floor((x / chartWidth) * hours.length);
+          const hour = hours[Math.min(hours.length - 1, Math.max(0, hourIndex))];
+          setDraggingHour(hour);
+
+          // Trigger update immediately
+          // We need to set draggingHour first, but state update is async.
+          // So we pass the hour directly or use a ref if needed.
+          // Actually, we can just call updateEnergyLevel logic here but with the known hour.
+
+          const yPos = e.clientY - rect.top
+          const chartHeight = rect.height - (2 * margin)
+          const relativeY = Math.max(0, Math.min(1, 1 - ((yPos - margin) / chartHeight)))
+          const newEnergy = Math.round(relativeY * 10)
+
+          onChange({ ...energyLevels, [hour]: newEnergy })
+        }}
+        onMouseMove={(e) => {
+          if (draggingHour !== null) {
+            updateEnergyLevel(e)
+          }
+        }}
+      />
+      <ChartContainer config={chartConfig} className="h-[300px] w-full pointer-events-none">
         <LineChart
           data={chartData}
           margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
@@ -146,14 +170,7 @@ export default function EnergyGraph({ wakeHour, sleepHour, energyLevels, onChang
               return value
             }}
           />
-          <ChartTooltip
-            content={
-              <ChartTooltipContent
-                labelFormatter={(value) => `${value}`}
-                formatter={(value) => [`Energy: ${value}`, ""]}
-              />
-            }
-          />
+          {/* Tooltip disabled because overlay blocks it, but dragging is prioritized */}
           <defs>
             <linearGradient id="energyGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#2563eb" stopOpacity={0.2} />
@@ -171,7 +188,7 @@ export default function EnergyGraph({ wakeHour, sleepHour, energyLevels, onChang
         </LineChart>
       </ChartContainer>
       <p className="text-center text-sm text-gray-400">
-        Click and drag the points to adjust your energy levels throughout the day
+        Click and drag to adjust your energy levels throughout the day
       </p>
     </div>
   )

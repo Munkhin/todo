@@ -1,7 +1,7 @@
 "use client"
 // react query
 import React from "react"
-import { useSettings } from "@/hooks/use-settings"
+import { useEnergyProfile } from "@/hooks/use-energy-profile"
 // end react query
 import { settingsStyles } from "./SettingsView.styles"
 import { useUserId } from "@/hooks/use-user-id"
@@ -11,7 +11,7 @@ import { SubjectsManager } from "./SubjectsManager"
 
 export default function SettingsView() {
   const userId = useUserId()
-  const { settings, isLoading, error, updateField, save } = useSettings(userId)
+  const { settings, isLoading, error, updateField, save } = useEnergyProfile(userId)
 
   return (
     <section className={settingsStyles.container} aria-labelledby="settings-title">

@@ -70,6 +70,7 @@ class SettingsRequest(BaseModel):
     min_gap_for_break_min: Optional[int] = 3
     onboarding_completed: Optional[bool] = False
     subjects: Optional[List[str]] = []
+    subject_colors: Optional[dict] = None
 
 # ============ SETTINGS ROUTES ============
 
@@ -118,6 +119,9 @@ async def save_user_settings(
             "energy_levels": energy_levels,
             "subjects": request.subjects or [],
         }
+
+        if request.subject_colors is not None:
+            settings_data["subject_colors"] = json.dumps(request.subject_colors)
 
         # add optional fields if provided
         if request.due_date_days is not None:

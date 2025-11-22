@@ -5,7 +5,7 @@ import React, { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useOnboarding } from "@/hooks/use-onboarding"
 import { useUserId } from "@/hooks/use-user-id"
-import { useSettings } from "@/hooks/use-settings"
+import { useEnergyProfile } from "@/hooks/use-energy-profile"
 import { onboardingStyles } from "./OnboardingOverlay.styles"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,6 +14,8 @@ import EnergyGraph from "@/components/Settings/EnergyGraph"
 import DurationInput from "@/components/Settings/DurationInput"
 import SmartTimeInput from "@/components/Settings/SmartTimeInput"
 import { TestItem } from "@/lib/api/onboarding"
+
+const SUBJECT_COLORS = ['#03bd9e', '#00a9ff', '#9b59b6', '#e74c3c', '#f39c12', '#ffa500']
 
 // Steps definition
 const STEPS = [
@@ -29,15 +31,16 @@ const STEPS = [
 
 export default function OnboardingOverlay() {
     const userId = useUserId()
-    const { isOnboarded, isSettingsLoading, submit, isSubmitting } = useOnboarding(userId)
-    const { settings: defaultSettings } = useSettings(userId)
+    const { isOnboarded, isOnboardingLoading, submit, isSubmitting } = useOnboarding(userId)
+    const { settings: defaultSettings } = useEnergyProfile(userId)
 
     const [currentStep, setCurrentStep] = useState(0)
     const [isVisible, setIsVisible] = useState(false)
 
     // Form State
-    const [subjects, setSubjects] = useState<string[]>([])
+    const [subjects, setSubjects] = useState<{ name: string, color: string }[]>([])
     const [newSubject, setNewSubject] = useState("")
+    const [newSubjectColor, setNewSubjectColor] = useState(SUBJECT_COLORS[0])
 
     const [tests, setTests] = useState<TestItem[]>([])
     const [newTestName, setNewTestName] = useState("")
@@ -55,12 +58,12 @@ export default function OnboardingOverlay() {
 
     // Show overlay only if not onboarded and not loading
     useEffect(() => {
-        if (!isSettingsLoading && !isOnboarded && userId) {
+        if (!isOnboardingLoading && !isOnboarded && userId) {
             setIsVisible(true)
         } else {
             setIsVisible(false)
         }
-    }, [isSettingsLoading, isOnboarded, userId])
+    }, [isOnboardingLoading, isOnboarded, userId])
 
     if (!isVisible) return null
 
@@ -134,6 +137,9 @@ export default function OnboardingOverlay() {
                 };
             }
 
+            const subjectNames = subjects.map(s => s.name)
+            const subjectColors = subjects.reduce((acc, s) => ({ ...acc, [s.name]: s.color }), {})
+
             const completePreferences = {
                 due_date_days: preferences.due_date_days ?? 7,
                 wake_time: preferences.wake_time ?? 7,
@@ -141,16 +147,17 @@ export default function OnboardingOverlay() {
                 min_study_duration: preferences.min_study_duration ?? 30,
                 max_study_duration: preferences.max_study_duration ?? 180,
                 energy_levels: energyLevelsObject,
-                insert_breaks: preferences.insert_breaks ?? true,
+                insert_breaks: true, // Always enable breaks
                 short_break_min: preferences.short_break_min ?? 5,
                 long_break_min: preferences.long_break_min ?? 15,
                 long_study_threshold_min: preferences.long_study_threshold_min ?? 90,
                 min_gap_for_break_min: preferences.min_gap_for_break_min ?? 3,
-                onboarding_completed: true
+                onboarding_completed: true,
+                subject_colors: subjectColors
             }
 
             await submit({
-                subjects: subjects,
+                subjects: subjectNames,
                 tests: tests,
                 preferences: completePreferences,
                 additional_notes: additionalNotes || undefined
@@ -164,8 +171,11 @@ export default function OnboardingOverlay() {
 
     const addSubject = () => {
         if (newSubject.trim()) {
-            setSubjects([...subjects, newSubject.trim()])
+            setSubjects([...subjects, { name: newSubject.trim(), color: newSubjectColor }])
             setNewSubject("")
+            // Rotate color
+            const nextColorIndex = (SUBJECT_COLORS.indexOf(newSubjectColor) + 1) % SUBJECT_COLORS.length
+            setNewSubjectColor(SUBJECT_COLORS[nextColorIndex])
         }
     }
 
@@ -220,24 +230,39 @@ export default function OnboardingOverlay() {
                             />
                         </div>
                         <div className="flex-1 flex flex-col min-h-0 space-y-4">
-                            <div className="flex gap-3 shrink-0">
-                                <Input
-                                    placeholder="e.g. Linear Algebra"
-                                    value={newSubject}
-                                    onChange={(e) => setNewSubject(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && addSubject()}
-                                    className={onboardingStyles.input}
-                                />
-                                <Button onClick={addSubject} type="button" className="h-auto px-5 bg-blue-600 hover:bg-blue-700 rounded-xl">
-                                    <Plus className="w-5 h-5" />
-                                </Button>
+                            <div className="flex flex-col gap-3 shrink-0">
+                                <div className="flex gap-3">
+                                    <Input
+                                        placeholder="e.g. Linear Algebra"
+                                        value={newSubject}
+                                        onChange={(e) => setNewSubject(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && addSubject()}
+                                        className={onboardingStyles.input}
+                                    />
+                                    <Button onClick={addSubject} type="button" className="h-auto px-5 bg-blue-600 hover:bg-blue-700 rounded-xl">
+                                        <Plus className="w-5 h-5" />
+                                    </Button>
+                                </div>
+                                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                                    {SUBJECT_COLORS.map((color) => (
+                                        <button
+                                            key={color}
+                                            onClick={() => setNewSubjectColor(color)}
+                                            className={`w-8 h-8 rounded-full border-2 transition-all ${newSubjectColor === color ? 'border-gray-900 scale-110' : 'border-transparent hover:scale-105'}`}
+                                            style={{ backgroundColor: color }}
+                                        />
+                                    ))}
+                                </div>
                             </div>
 
                             <div className="flex-1 overflow-y-auto min-h-0 pr-2">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {subjects.map((subject, i) => (
                                         <div key={i} className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200 shadow-sm hover:border-blue-300 transition-all group">
-                                            <span className="font-medium text-gray-900 truncate mr-2">{subject}</span>
+                                            <div className="flex items-center gap-3 overflow-hidden">
+                                                <div className="w-4 h-4 rounded-full shrink-0" style={{ backgroundColor: subject.color }} />
+                                                <span className="font-medium text-gray-900 truncate">{subject.name}</span>
+                                            </div>
                                             <button onClick={() => removeSubject(i)} className={onboardingStyles.removeBtn}>
                                                 <X className="w-4 h-4" />
                                             </button>
@@ -257,7 +282,7 @@ export default function OnboardingOverlay() {
             case 2: // Tests
                 return (
                     <div className="flex flex-col h-full overflow-hidden">
-                        <div className={onboardingStyles.illustrationPlaceholder}>
+                        <div className={onboardingStyles.illustrationPlaceholder.replace('h-64', 'h-40')}>
                             <img
                                 src="/onboarding_images/tests.jpeg"
                                 alt="Tests"
@@ -352,21 +377,23 @@ export default function OnboardingOverlay() {
                                 className="h-full w-auto rounded-2xl shadow-sm"
                             />
                         </div>
-                        <div className="space-y-8">
-                            <DurationInput
-                                label="Minimum Study Session"
-                                value={preferences.min_study_duration}
-                                minMinutes={15}
-                                plainNumberUnit="minutes"
-                                onChange={(minutes) => updatePreference('min_study_duration', minutes)}
-                            />
-                            <DurationInput
-                                label="Maximum Study Session"
-                                value={preferences.max_study_duration}
-                                maxMinutes={300}
-                                plainNumberUnit="minutes"
-                                onChange={(minutes) => updatePreference('max_study_duration', minutes)}
-                            />
+                        <div className="space-y-8 overflow-y-auto max-h-[calc(100vh-400px)] pr-2">
+                            <div className="grid grid-cols-2 gap-4">
+                                <DurationInput
+                                    label="Min Session"
+                                    value={preferences.min_study_duration}
+                                    minMinutes={15}
+                                    plainNumberUnit="minutes"
+                                    onChange={(minutes) => updatePreference('min_study_duration', minutes)}
+                                />
+                                <DurationInput
+                                    label="Max Session"
+                                    value={preferences.max_study_duration}
+                                    maxMinutes={300}
+                                    plainNumberUnit="minutes"
+                                    onChange={(minutes) => updatePreference('max_study_duration', minutes)}
+                                />
+                            </div>
                         </div>
                     </div>
                 )
@@ -382,35 +409,18 @@ export default function OnboardingOverlay() {
                             />
                         </div>
                         <div className="space-y-6">
-                            <div className="flex items-center justify-between p-6 bg-white rounded-3xl border border-gray-200 shadow-sm">
-                                <span className="font-medium text-gray-900 text-lg">Enable Breaks</span>
-                                <label className="relative inline-flex items-center cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        className="sr-only peer"
-                                        checked={preferences.insert_breaks}
-                                        onChange={(e) => updatePreference('insert_breaks', e.target.checked)}
-                                    />
-                                    <div className="w-14 h-8 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-600"></div>
-                                </label>
+                            <div className="space-y-8">
+                                <DurationInput
+                                    label="Break Duration"
+                                    value={preferences.short_break_min}
+                                    minMinutes={1}
+                                    onChange={(minutes) => {
+                                        updatePreference('short_break_min', minutes)
+                                        // Set long break to 3x short break by default
+                                        updatePreference('long_break_min', minutes * 3)
+                                    }}
+                                />
                             </div>
-
-                            {preferences.insert_breaks && (
-                                <div className="space-y-8 animate-in slide-in-from-top-4 fade-in duration-300">
-                                    <DurationInput
-                                        label="Short Break Duration"
-                                        value={preferences.short_break_min}
-                                        minMinutes={1}
-                                        onChange={(minutes) => updatePreference('short_break_min', minutes)}
-                                    />
-                                    <DurationInput
-                                        label="Long Break Duration"
-                                        value={preferences.long_break_min}
-                                        minMinutes={5}
-                                        onChange={(minutes) => updatePreference('long_break_min', minutes)}
-                                    />
-                                </div>
-                            )}
                         </div>
                     </div>
                 )
