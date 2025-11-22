@@ -34,7 +34,7 @@ async def create_calendar_event_direct(user_input, chatgpt_call):
         "event_extraction",
         EVENT_EXTRACTION_SCHEMA
     )
-    event_data = ensure_mapping(event_data, context="Event extraction")
+    event_data = ensure_mapping(event_data)
     
     if not event_data or not event_data.get("start_time") or not event_data.get("end_time"):
         logger.warning(

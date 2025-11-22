@@ -29,7 +29,7 @@ async def update_preferences(user_input, chatgpt_call):
         "preference_updates",
         PREFERENCE_UPDATES_SCHEMA
     )
-    updates = ensure_mapping(updates, context="Preference extraction")
+    updates = ensure_mapping(updates)
 
     # apply updates to database
     if updates and any(v is not None for k, v in updates.items() if k != "user_id"):
