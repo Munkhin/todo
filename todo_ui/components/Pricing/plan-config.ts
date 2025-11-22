@@ -4,6 +4,7 @@ export type { PlanTier } from "@/types/subscription"
 export type PlanConfig = {
   name: string
   price: string
+  period: string
   note: string
   features: string[]
   cta: string
@@ -23,6 +24,7 @@ export const PLAN_CONFIGS: PlanConfig[] = [
   {
     name: "Free",
     price: "$0",
+    period: "/month",
     note: "10 schedules/month",
     features: [
       "Chat to schedule",
@@ -35,10 +37,11 @@ export const PLAN_CONFIGS: PlanConfig[] = [
   },
   {
     name: "Pro",
-    price: "$19.99",
-    note: "500 schedules/month",
+    price: "$10",
+    period: "/month",
+    note: "Unlimited usage",
     features: [
-      "Advanced AI scheduling",
+      "Unlimited AI scheduling",
       "Smooth rescheduling",
       "Priority support via email",
     ],
@@ -47,9 +50,10 @@ export const PLAN_CONFIGS: PlanConfig[] = [
     popular: true,
   },
   {
-    name: "Unlimited",
-    price: "$49.99",
-    note: "Unlimited schedules",
+    name: "Unlimited Yearly",
+    price: "$100",
+    period: "/year",
+    note: "Unlimited usage (Yearly)",
     features: [
       "Unlimited scheduling",
       "Unlimited rescheduling",

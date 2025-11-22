@@ -78,7 +78,7 @@ export function PlanManagementSection({ subscription }: PlanManagementSectionPro
                 <h3 className={pricingStyles.planTitle}>{plan.name}</h3>
                 <p className={pricingStyles.price}>
                   {plan.price}
-                  <span className={pricingStyles.per}>/month</span>
+                  <span className={pricingStyles.per}>{plan.period}</span>
                 </p>
                 <p className={pricingStyles.note}>{plan.note}</p>
                 <ul className={pricingStyles.features}>

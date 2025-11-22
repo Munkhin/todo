@@ -8,7 +8,7 @@ router = APIRouter()
 # credit limits per plan (in tokens or credits)
 CREDIT_LIMITS = {
     "free": 10,
-    "pro": 500,
+    "pro": None,
     "unlimited": None  # unlimited has no limit
 }
 
