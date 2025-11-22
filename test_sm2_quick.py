@@ -7,7 +7,7 @@ from pathlib import Path
 # Add api directory to path
 sys.path.insert(0, str(Path(__file__).parent / "api"))
 
-from business_logic.sm2_algorithm import sm2_next_review
+from scheduling.sm2_algorithm import sm2_next_review
 
 def main():
     print("Testing SM2 Algorithm...")

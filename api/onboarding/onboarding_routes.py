@@ -2,9 +2,9 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from typing import List, Optional
 import json
-from api.ai.agent import run_agent
-from api.settings.energy_profile_routes import EnergyProfileRequest
-from api.database import create_or_update_energy_profile
+from api.scheduling.agent import run_agent
+from api.settings.settings_routes import SettingsRequest
+from api.database import create_or_update_settings
 
 router = APIRouter()
 
@@ -15,7 +15,7 @@ class TestItem(BaseModel):
 class OnboardingRequest(BaseModel):
     subjects: Optional[List[str]] = []
     tests: Optional[List[TestItem]] = []
-    preferences: EnergyProfileRequest
+    preferences: SettingsRequest
     additional_notes: Optional[str] = None
 
 @router.post("/submit")
@@ -41,24 +41,28 @@ async def submit_onboarding(
         # Ensure energy_levels is handled correctly (it should be a JSON string from the frontend/request model)
         # The EnergyProfileRequest defines it as str, so we pass it as is.
         
-        success = create_or_update_energy_profile(user_id, profile_data)
+        success = create_or_update_settings(user_id, profile_data)
         if not success:
             raise HTTPException(status_code=500, detail="Failed to save preferences")
 
-        # 2. Save subjects to user_subjects table (NEW)
+        # 2. Save subjects to settings (merged with preferences)
         if request.subjects:
-            # Clear existing subjects for this user (in case they're re-onboarding)
-            supabase.table("user_subjects").delete().eq("user_id", user_id).execute()
+            # Add subjects to profile data
+            # Ensure subjects is a list
+            current_subjects = profile_data.get("subjects", [])
+            if not isinstance(current_subjects, list):
+                current_subjects = []
             
-            # Insert new subjects
-            subject_records = [
-                {"user_id": user_id, "subject_name": subject.strip()}
-                for subject in request.subjects
-                if subject.strip()  # Skip empty strings
-            ]
+            # Merge and deduplicate
+            new_subjects = set(current_subjects)
+            for s in request.subjects:
+                if s.strip():
+                    new_subjects.add(s.strip())
             
-            if subject_records:
-                supabase.table("user_subjects").insert(subject_records).execute()
+            profile_data["subjects"] = list(new_subjects)
+            
+            # Update settings again with subjects
+            create_or_update_settings(user_id, profile_data)
 
         # 3. Construct prompt for AI Agent
         subjects_str = ", ".join(request.subjects) if request.subjects else "No specific subjects provided"

@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / "api"))
 
-from business_logic.scheduler import (
+from scheduling.scheduler import (
     group_tasks_by_subject,
     apply_interleaving_to_schedule,
     add_review_priority_boost

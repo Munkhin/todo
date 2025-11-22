@@ -1,6 +1,7 @@
 # supabase database client and helper functions
 import os
 from typing import Optional, Dict, Any
+from datetime import datetime, timezone
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
@@ -256,6 +257,17 @@ def create_calendar_event(event_data: Dict[str, Any]) -> Optional[int]:
         print(f"Error creating calendar event: {e}")
         return None
 
+def create_calendar_events_batch(events_data: list[Dict[str, Any]]) -> list[int]:
+    """create multiple calendar events in one go, returns list of event ids"""
+    try:
+        if not events_data:
+            return []
+        response = supabase.table("calendar_events").insert(events_data).execute()
+        return [event["id"] for event in response.data] if response.data else []
+    except Exception as e:
+        print(f"Error creating calendar events batch: {e}")
+        return []
+
 def get_calendar_events(user_id: int) -> list[Dict[str, Any]]:
     """get all calendar events for user"""
     try:
@@ -283,6 +295,41 @@ def delete_calendar_event(event_id: int) -> bool:
         print(f"Error deleting calendar event: {e}")
         return False
 
+def delete_future_calendar_events(user_id: int) -> bool:
+    """delete all future calendar events for user (from now onwards)"""
+    try:
+        now = datetime.now(timezone.utc).isoformat()
+        supabase.table("calendar_events").delete().eq("user_id", user_id).gte("start_time", now).execute()
+        return True
+    except Exception as e:
+        print(f"Error deleting future calendar events: {e}")
+        return False
+
+def delete_events_for_tasks(user_id: int, task_ids: list[int]) -> bool:
+    """
+    Delete calendar events for specific tasks only (surgical deletion).
+    Only deletes future events (from now onwards).
+    
+    Args:
+        user_id: User ID to ensure security
+        task_ids: List of task IDs whose events should be deleted
+        
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    try:
+        now = datetime.now(timezone.utc).isoformat()
+        supabase.table("calendar_events") \
+            .delete() \
+            .eq("user_id", user_id) \
+            .in_("task_id", task_ids) \
+            .gte("start_time", now) \
+            .execute()
+        return True
+    except Exception as e:
+        print(f"Error deleting events for tasks {task_ids}: {e}")
+        return False
+
 def get_calendar_events_by_task_id(task_id: int) -> list[Dict[str, Any]]:
     """get all calendar events linked to a specific task"""
     try:
@@ -292,31 +339,44 @@ def get_calendar_events_by_task_id(task_id: int) -> list[Dict[str, Any]]:
         print(f"Error getting calendar events by task_id: {e}")
         return []
 
-# ============ ENERGY PROFILE OPERATIONS ============
+# ============ SETTINGS OPERATIONS ============
 
-def get_energy_profile(user_id: int) -> Optional[Dict[str, Any]]:
-    """get user's energy profile"""
+def get_settings(user_id: int) -> Optional[Dict[str, Any]]:
+    """get user's settings"""
     try:
-        response = supabase.table("energy_profiles").select("*").eq("user_id", user_id).execute()
+        response = supabase.table("settings").select("*").eq("user_id", user_id).execute()
         return response.data[0] if response.data else None
     except Exception as e:
-        print(f"Error getting energy profile: {e}")
+        print(f"Error getting settings: {e}")
         return None
 
-def create_or_update_energy_profile(user_id: int, profile_data: Dict[str, Any]) -> bool:
-    """create or update energy profile"""
+def create_or_update_settings(user_id: int, settings_data: Dict[str, Any]) -> bool:
+    """create or update settings"""
     try:
-        # check if profile exists
-        response = supabase.table("energy_profiles").select("id").eq("user_id", user_id).execute()
+        # check if settings exist
+        response = supabase.table("settings").select("id").eq("user_id", user_id).execute()
 
         if response.data:
-            # update existing profile
-            supabase.table("energy_profiles").update(profile_data).eq("user_id", user_id).execute()
+            # update existing settings
+            supabase.table("settings").update(settings_data).eq("user_id", user_id).execute()
         else:
-            # create new profile
-            profile_data["user_id"] = user_id
-            supabase.table("energy_profiles").insert(profile_data).execute()
+            # create new settings
+            settings_data["user_id"] = user_id
+            supabase.table("settings").insert(settings_data).execute()
         return True
     except Exception as e:
-        print(f"Error creating/updating energy profile: {e}")
+        print(f"Error creating/updating settings: {e}")
         return False
+
+# ============ REVIEW SESSION OPERATIONS ============
+
+def create_review_sessions_batch(sessions_data: list[Dict[str, Any]]) -> list[str]:
+    """create multiple review sessions, returns list of session ids"""
+    try:
+        if not sessions_data:
+            return []
+        response = supabase.table("review_sessions").insert(sessions_data).execute()
+        return [session["id"] for session in response.data] if response.data else []
+    except Exception as e:
+        print(f"Error creating review sessions batch: {e}")
+        return []

@@ -9,7 +9,7 @@ from datetime import datetime, timezone, timedelta
 
 def test_active_recall_trigger():
     """Test the trigger logic for active recall"""
-    from business_logic.active_recall import should_trigger_active_recall_generation
+    from scheduling.active_recall import should_trigger_active_recall_generation
     
     # Should trigger: completed task with subject
     task1 = {"status": "completed", "subject": "Math"}
@@ -32,7 +32,7 @@ def test_active_recall_trigger():
 
 def test_session_generation_logic():
     """Test session generation logic (without DB)"""
-    from business_logic.active_recall import generate_active_recall_sessions
+    from scheduling.active_recall import generate_active_recall_sessions
     
     # Mock completed tasks
     now = datetime.now(timezone.utc)
