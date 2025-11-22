@@ -6,7 +6,7 @@ from typing import Optional
 from pydantic import BaseModel
 from datetime import datetime
 from api.database import (
-    supabase,
+    get_supabase_client,
     create_calendar_event,
     update_calendar_event,
     delete_calendar_event
@@ -51,6 +51,7 @@ def get_calendar_events(
         raise HTTPException(status_code=400, detail="user_id query parameter is required")
 
     try:
+        supabase = get_supabase_client()
         # build query
         query = supabase.table("calendar_events").select("*").eq("user_id", user_id)
 
@@ -77,6 +78,7 @@ def get_calendar_events(
 def create_event(request: CreateCalendarEventRequest):
     """create new calendar event"""
     try:
+        supabase = get_supabase_client()
         # validate datetime strings
         try:
             datetime.fromisoformat(request.start_time.replace("Z", "+00:00"))
@@ -123,6 +125,7 @@ def create_event(request: CreateCalendarEventRequest):
 def update_event(event_id: int, request: UpdateCalendarEventRequest):
     """update existing calendar event"""
     try:
+        supabase = get_supabase_client()
         # check if event exists
         existing = supabase.table("calendar_events").select("*").eq("id", event_id).execute()
         if not existing.data:
@@ -188,6 +191,7 @@ def update_event(event_id: int, request: UpdateCalendarEventRequest):
 def delete_event(event_id: int):
     """delete calendar event"""
     try:
+        supabase = get_supabase_client()
         # check if event exists
         existing = supabase.table("calendar_events").select("id").eq("id", event_id).execute()
         if not existing.data:

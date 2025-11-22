@@ -7,20 +7,28 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# initialize supabase client
-supabase_url = os.getenv("SUPABASE_URL")
-supabase_key = os.getenv("SUPABASE_SERVICE_KEY")  # use service key for backend operations
+# initialize supabase client - defer initialization until first use
+_supabase_client: Client = None
 
-if not supabase_url or not supabase_key:
-    raise ValueError("SUPABASE_URL and SUPABASE_SERVICE_KEY must be set in .env")
+def get_supabase_client() -> Client:
+    """Get or create a Supabase client instance (lazy initialization)"""
+    global _supabase_client
+    if _supabase_client is None:
+        supabase_url = os.getenv("SUPABASE_URL")
+        supabase_key = os.getenv("SUPABASE_SERVICE_KEY")  # use service key for backend operations
 
-supabase: Client = create_client(supabase_url, supabase_key)
+        if not supabase_url or not supabase_key:
+            raise ValueError("SUPABASE_URL and SUPABASE_SERVICE_KEY must be set in .env")
+
+        _supabase_client = create_client(supabase_url, supabase_key)
+    return _supabase_client
 
 # ============ USER OPERATIONS ============
 
 def create_or_update_user(google_user_id: str, email: str, name: str) -> int:
     """create or update user in database, returns user id"""
     try:
+        supabase = get_supabase_client()
         # check if user exists
         response = supabase.table("users").select("id").eq("google_user_id", google_user_id).execute()
 
@@ -50,6 +58,7 @@ def create_or_update_user(google_user_id: str, email: str, name: str) -> int:
 def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
     """get user by id"""
     try:
+        supabase = get_supabase_client()
         response = supabase.table("users").select("*").eq("id", user_id).execute()
         return response.data[0] if response.data else None
     except Exception as e:
@@ -59,6 +68,7 @@ def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
 def create_or_update_user_by_email(email: str, name: Optional[str] = None) -> int:
     """create or update user by email (for NextAuth integration), returns user id"""
     try:
+        supabase = get_supabase_client()
         # check if user exists by email
         response = supabase.table("users").select("id").eq("email", email).execute()
 
@@ -87,6 +97,7 @@ def create_or_update_user_by_email(email: str, name: Optional[str] = None) -> in
 def get_user_credits(user_id: int) -> Optional[Dict[str, Any]]:
     """get user's credit information"""
     try:
+        supabase = get_supabase_client()
         response = supabase.table("users").select(
             "subscription_plan, credits_used, subscription_status"
         ).eq("id", user_id).execute()
@@ -101,6 +112,7 @@ def get_user_credits(user_id: int) -> Optional[Dict[str, Any]]:
 def update_user_plan(user_id: int, plan_type: str) -> bool:
     """update user's subscription plan"""
     try:
+        supabase = get_supabase_client()
         supabase.table("users").update({
             "subscription_plan": plan_type
         }).eq("id", user_id).execute()
@@ -112,6 +124,7 @@ def update_user_plan(user_id: int, plan_type: str) -> bool:
 def update_user_timezone(user_id: int, timezone: str) -> bool:
     """update user's timezone"""
     try:
+        supabase = get_supabase_client()
         supabase.table("users").update({
             "timezone": timezone
         }).eq("id", user_id).execute()
@@ -123,6 +136,7 @@ def update_user_timezone(user_id: int, timezone: str) -> bool:
 def update_user_conversation_id(user_id: int, conversation_id: str) -> bool:
     """update user's current conversation id"""
     try:
+        supabase = get_supabase_client()
         supabase.table("users").update({
             "conversation_id": conversation_id
         }).eq("id", user_id).execute()
@@ -134,6 +148,7 @@ def update_user_conversation_id(user_id: int, conversation_id: str) -> bool:
 def get_user_conversation_id(user_id: int) -> Optional[str]:
     """get user's current conversation id"""
     try:
+        supabase = get_supabase_client()
         response = supabase.table("users").select("conversation_id").eq("id", user_id).execute()
         if response.data and response.data[0].get("conversation_id"):
             return response.data[0]["conversation_id"]
@@ -145,6 +160,7 @@ def get_user_conversation_id(user_id: int) -> Optional[str]:
 def save_feedback(message: str, email: Optional[str] = None, user_id: Optional[int] = None) -> bool:
     """persist feedback submissions"""
     try:
+        supabase = get_supabase_client()
         supabase.table("feedback").insert({
             "user_id": user_id,
             "message": message,
@@ -160,6 +176,7 @@ def save_feedback(message: str, email: Optional[str] = None, user_id: Optional[i
 def create_session(session_id: str, credentials: Dict[str, Any]) -> bool:
     """create or update session in database"""
     try:
+        supabase = get_supabase_client()
         # check if session exists
         response = supabase.table("sessions").select("id").eq("session_id", session_id).execute()
 
@@ -182,6 +199,7 @@ def create_session(session_id: str, credentials: Dict[str, Any]) -> bool:
 def get_session(session_id: str) -> Optional[Dict[str, Any]]:
     """get session by id"""
     try:
+        supabase = get_supabase_client()
         response = supabase.table("sessions").select("*").eq("session_id", session_id).execute()
         return response.data[0] if response.data else None
     except Exception as e:
@@ -191,6 +209,7 @@ def get_session(session_id: str) -> Optional[Dict[str, Any]]:
 def delete_session(session_id: str) -> bool:
     """delete session from database"""
     try:
+        supabase = get_supabase_client()
         supabase.table("sessions").delete().eq("session_id", session_id).execute()
         return True
     except Exception as e:
@@ -202,6 +221,7 @@ def delete_session(session_id: str) -> bool:
 def create_task(task_data: Dict[str, Any]) -> Optional[int]:
     """create new task, returns task id"""
     try:
+        supabase = get_supabase_client()
         response = supabase.table("tasks").insert(task_data).execute()
         return response.data[0]["id"] if response.data else None
     except Exception as e:
@@ -213,6 +233,7 @@ def create_tasks_batch(tasks_data: list[Dict[str, Any]]) -> list[int]:
     try:
         if not tasks_data:
             return []
+        supabase = get_supabase_client()
         response = supabase.table("tasks").insert(tasks_data).execute()
         return [task["id"] for task in response.data] if response.data else []
     except Exception as e:
@@ -222,6 +243,7 @@ def create_tasks_batch(tasks_data: list[Dict[str, Any]]) -> list[int]:
 def get_tasks_by_user(user_id: int) -> list[Dict[str, Any]]:
     """get all tasks for user"""
     try:
+        supabase = get_supabase_client()
         response = supabase.table("tasks").select("*").eq("user_id", user_id).execute()
         return response.data
     except Exception as e:
@@ -231,6 +253,7 @@ def get_tasks_by_user(user_id: int) -> list[Dict[str, Any]]:
 def update_task(task_id: int, task_data: Dict[str, Any]) -> bool:
     """update task"""
     try:
+        supabase = get_supabase_client()
         supabase.table("tasks").update(task_data).eq("id", task_id).execute()
         return True
     except Exception as e:
@@ -240,6 +263,7 @@ def update_task(task_id: int, task_data: Dict[str, Any]) -> bool:
 def delete_task(task_id: int) -> bool:
     """delete task"""
     try:
+        supabase = get_supabase_client()
         supabase.table("tasks").delete().eq("id", task_id).execute()
         return True
     except Exception as e:
@@ -251,6 +275,7 @@ def delete_task(task_id: int) -> bool:
 def create_calendar_event(event_data: Dict[str, Any]) -> Optional[int]:
     """create calendar event, returns event id"""
     try:
+        supabase = get_supabase_client()
         response = supabase.table("calendar_events").insert(event_data).execute()
         return response.data[0]["id"] if response.data else None
     except Exception as e:
@@ -262,6 +287,7 @@ def create_calendar_events_batch(events_data: list[Dict[str, Any]]) -> list[int]
     try:
         if not events_data:
             return []
+        supabase = get_supabase_client()
         response = supabase.table("calendar_events").insert(events_data).execute()
         return [event["id"] for event in response.data] if response.data else []
     except Exception as e:
@@ -271,6 +297,7 @@ def create_calendar_events_batch(events_data: list[Dict[str, Any]]) -> list[int]
 def get_calendar_events(user_id: int) -> list[Dict[str, Any]]:
     """get all calendar events for user"""
     try:
+        supabase = get_supabase_client()
         response = supabase.table("calendar_events").select("*").eq("user_id", user_id).execute()
         return response.data
     except Exception as e:
@@ -280,6 +307,7 @@ def get_calendar_events(user_id: int) -> list[Dict[str, Any]]:
 def update_calendar_event(event_id: int, event_data: Dict[str, Any]) -> bool:
     """update calendar event"""
     try:
+        supabase = get_supabase_client()
         supabase.table("calendar_events").update(event_data).eq("id", event_id).execute()
         return True
     except Exception as e:
@@ -289,6 +317,7 @@ def update_calendar_event(event_id: int, event_data: Dict[str, Any]) -> bool:
 def delete_calendar_event(event_id: int) -> bool:
     """delete calendar event"""
     try:
+        supabase = get_supabase_client()
         supabase.table("calendar_events").delete().eq("id", event_id).execute()
         return True
     except Exception as e:
@@ -298,6 +327,7 @@ def delete_calendar_event(event_id: int) -> bool:
 def delete_future_calendar_events(user_id: int) -> bool:
     """delete all future calendar events for user (from now onwards)"""
     try:
+        supabase = get_supabase_client()
         now = datetime.now(timezone.utc).isoformat()
         supabase.table("calendar_events").delete().eq("user_id", user_id).gte("start_time", now).execute()
         return True
@@ -309,15 +339,16 @@ def delete_events_for_tasks(user_id: int, task_ids: list[int]) -> bool:
     """
     Delete calendar events for specific tasks only (surgical deletion).
     Only deletes future events (from now onwards).
-    
+
     Args:
         user_id: User ID to ensure security
         task_ids: List of task IDs whose events should be deleted
-        
+
     Returns:
         bool: True if successful, False otherwise
     """
     try:
+        supabase = get_supabase_client()
         now = datetime.now(timezone.utc).isoformat()
         supabase.table("calendar_events") \
             .delete() \
@@ -333,6 +364,7 @@ def delete_events_for_tasks(user_id: int, task_ids: list[int]) -> bool:
 def get_calendar_events_by_task_id(task_id: int) -> list[Dict[str, Any]]:
     """get all calendar events linked to a specific task"""
     try:
+        supabase = get_supabase_client()
         response = supabase.table("calendar_events").select("*").eq("task_id", task_id).execute()
         return response.data
     except Exception as e:
@@ -344,6 +376,7 @@ def get_calendar_events_by_task_id(task_id: int) -> list[Dict[str, Any]]:
 def get_settings(user_id: int) -> Optional[Dict[str, Any]]:
     """get user's settings"""
     try:
+        supabase = get_supabase_client()
         response = supabase.table("settings").select("*").eq("user_id", user_id).execute()
         return response.data[0] if response.data else None
     except Exception as e:
@@ -353,6 +386,7 @@ def get_settings(user_id: int) -> Optional[Dict[str, Any]]:
 def create_or_update_settings(user_id: int, settings_data: Dict[str, Any]) -> bool:
     """create or update settings"""
     try:
+        supabase = get_supabase_client()
         # check if settings exist
         response = supabase.table("settings").select("id").eq("user_id", user_id).execute()
 
@@ -375,6 +409,7 @@ def create_review_sessions_batch(sessions_data: list[Dict[str, Any]]) -> list[st
     try:
         if not sessions_data:
             return []
+        supabase = get_supabase_client()
         response = supabase.table("review_sessions").insert(sessions_data).execute()
         return [session["id"] for session in response.data] if response.data else []
     except Exception as e:

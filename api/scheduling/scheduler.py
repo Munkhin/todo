@@ -17,7 +17,7 @@ from collections import deque
 from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Tuple, Optional
 
-from api.database import supabase
+from api.database import get_supabase_client
 from api.scheduling.event_decomposition import decompose_tasks_to_events
 
 logger = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ def schedule_events(
 ) -> List[dict]:
     """
     Main scheduling function - assigns start/end times to tasks by creating calendar events.
-    
+
     Args:
         user_id: User ID
         tasks: List of task dictionaries to schedule
@@ -48,12 +48,12 @@ def schedule_events(
         end_date: End of scheduling window (UTC)
         settings: User settings including energy_levels, wake_time, sleep_time
         db: Database connection (defaults to supabase)
-    
+
     Returns:
         List of scheduled events with start_time and end_time set
     """
     if db is None:
-        db = supabase
+        db = get_supabase_client()
     
     try:
         # PHASE 1: Find empty time slots around existing events

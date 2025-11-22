@@ -190,7 +190,7 @@ async def auth_status(session_id: str = None):
 @router.get("/credits")
 async def get_credits(session_id: str):
     """Get user"s credit balance and plan information"""
-    from api.database import get_session, get_user_credits, get_user_by_id
+    from api.database import get_session, get_user_credits, get_user_by_id, get_supabase_client
 
     session = get_session(session_id)
     if not session or "credentials" not in session.get("credentials", {}):
@@ -203,7 +203,7 @@ async def get_credits(session_id: str):
     google_user_id = user_info.get("id")
 
     # get user from database by google_user_id
-    from api.database import supabase
+    supabase = get_supabase_client()
     response = supabase.table("users").select("id").eq("google_user_id", google_user_id).execute()
     if not response.data:
         raise HTTPException(status_code=404, detail="User not found")
@@ -218,7 +218,7 @@ async def get_credits(session_id: str):
 @router.post("/upgrade-plan")
 async def upgrade_plan(session_id: str, plan_type: str):
     """Upgrade user"s subscription plan (valid: "free", "pro", "unlimited")"""
-    from api.database import get_session, update_user_plan, get_user_credits, supabase
+    from api.database import get_session, update_user_plan, get_user_credits, get_supabase_client
 
     session = get_session(session_id)
     if not session or "credentials" not in session.get("credentials", {}):
@@ -234,6 +234,7 @@ async def upgrade_plan(session_id: str, plan_type: str):
     google_user_id = user_info.get("id")
 
     # get user from database by google_user_id
+    supabase = get_supabase_client()
     response = supabase.table("users").select("id").eq("google_user_id", google_user_id).execute()
     if not response.data:
         raise HTTPException(status_code=404, detail="User not found")

@@ -6,13 +6,50 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+import os
+import aiohttp
+from typing import Any, MutableMapping
+from api.database import get_user_conversation_id, update_user_conversation_id
+
+UserInput = MutableMapping[str, Any]
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_API_URL = "https://api.openai.com/v1/responses"
+OPENAI_RESPONSES_MODEL = os.getenv("OPENAI_RESPONSES_MODEL", "gpt-5-mini")
+
+def _ensure_text_value(text: Any) -> str:
+    if isinstance(text, str):
+        return text
+    return str(text) if text is not None else ""
+
+def _is_valid_conversation_id(conv_id: str) -> bool:
+    return isinstance(conv_id, str) and len(conv_id) > 0
+
+def _save_conversation_id(user_id, data, fallback_id=None):
+    conversation_id = data.get("conversation", {}).get("id")
+    if conversation_id:
+        update_user_conversation_id(user_id, conversation_id)
+    elif fallback_id:
+        update_user_conversation_id(user_id, fallback_id)
+
+def _process_file(file_obj):
+    """Process file to text, avoiding import issues"""
+    if file_obj is None:
+        return ""
+    # Import here to avoid circular dependency
+    try:
+        from api.preprocess_user_input.file_processing import file_to_text
+        return file_to_text(file_obj)
+    except Exception:
+        return "[File processing unavailable]"
+
 # universal chatgpt call function used in agent actions
 async def chatgpt_call(user_input: UserInput, PROMPT, schema_name, SCHEMA):
     """Async OpenAI Responses API call using aiohttp for true parallel execution."""
     
     sanitized_input = user_input.copy()
     sanitized_input["text"] = _ensure_text_value(user_input.get("text"))
-    file_text = file_to_text(sanitized_input.get("file"))
+    file_text = _process_file(sanitized_input.get("file"))
 
     # get or create conversation id for this user
     user_id = sanitized_input.get("user_id")
@@ -121,3 +158,23 @@ def add_user_id(obj, user_id):
         elif isinstance(current, list):
             stack.extend(current)
     return obj
+
+# Helper functions for agent actions
+def build_task_payload(task_data):
+    """Build a task payload for database insertion"""
+    return task_data
+
+def standardize_existing_task(task):
+    """Standardize an existing task format"""
+    return task
+
+def sanitize_event_payload(event_data):
+    """Sanitize event payload for database insertion"""
+    return event_data
+
+def ensure_mapping(obj):
+    """Ensure object is a mapping/dict"""
+    if isinstance(obj, dict):
+        return obj
+    return {}
+

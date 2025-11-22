@@ -1,4 +1,5 @@
 # file -> text natively to avoid latency issues
+print("Loading file_processing.py")
 
 import PyPDF2
 from PIL import Image

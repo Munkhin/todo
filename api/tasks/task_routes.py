@@ -11,7 +11,7 @@ import numpy as np
 from api.scheduling.scheduler import schedule_events
 
 from api.database import (
-    supabase,
+    get_supabase_client,
     create_task,
     get_tasks_by_user,
     update_task,
@@ -164,25 +164,26 @@ def delete_existing_task(task_id: int):
 async def schedule_single_task(task_id: int):
     """schedule a single task using the AI scheduler"""
     try:
+        supabase = get_supabase_client()
         task_response = supabase.table("tasks").select("*").eq("id", task_id).execute()
         if not task_response.data:
             raise HTTPException(status_code=404, detail=f"Task with id {task_id} not found")
-        
+
         task = task_response.data[0]
         user_id = task.get("user_id")
-        
+
         if not task.get("estimated_duration"):
             raise HTTPException(status_code=400, detail="Task must have an estimated_duration to be scheduled")
-            
+
         # fetch user settings for scheduling
         settings = await asyncio.to_thread(get_settings, user_id)
-        
+
         if not settings:
             raise HTTPException(
                 status_code=400,
                 detail="User must have settings configured before scheduling tasks"
             )
-            
+
         task_for_scheduler = {
             "user_id": user_id,
             "description": task.get("description") or task.get("title"),
@@ -193,7 +194,7 @@ async def schedule_single_task(task_id: int):
             "task_id": task_id,
             "due_date": task.get("due_date"),
         }
-        
+
         # build scheduler settings from user settings
         scheduler_settings = type("obj", (object,), {
             "min_study_duration": settings.get("min_study_duration", 30) / 60.0,  # convert to hours
@@ -202,17 +203,17 @@ async def schedule_single_task(task_id: int):
             "max_study_duration_before_break": settings.get("long_study_threshold_min", 90) / 60.0,  # convert to hours
             "energy_plot": np.array(json.loads(settings.get("energy_levels", "[]"))) if settings.get("energy_levels") else np.ones(24)
         })()
-        
+
         start_date = datetime.now(timezone.utc)
         due_date_days = settings.get("due_date_days", 7)
         end_date = start_date + timedelta(days=due_date_days)
-        
+
         # call scheduler with single task
         schedule = await schedule_events([task_for_scheduler], user_id, start_date, end_date, scheduler_settings, supabase)
-        
+
         if not schedule:
             raise HTTPException(status_code=400, detail="No available time slots found for scheduling this task")
-            
+
         created_events = []
         for event in schedule:
             sanitized_event = {
@@ -230,7 +231,7 @@ async def schedule_single_task(task_id: int):
             event_id = await asyncio.to_thread(create_calendar_event, sanitized_event)
             if event_id:
                 created_events.append({"id": event_id, **sanitized_event})
-                
+
         return {"success": True, "created_events": created_events}
     except HTTPException:
         raise

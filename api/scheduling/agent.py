@@ -7,7 +7,7 @@ import logging
 import os
 import aiohttp
 from typing import Any, MutableMapping
-from api.scheduling.agent_action.utils import chatgpt_call
+from api.scheduling.agent_actions.utils import chatgpt_call
 
 # timezone awareness
 from datetime import datetime, timezone

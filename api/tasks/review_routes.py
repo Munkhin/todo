@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from datetime import datetime, timezone
-from api.database import supabase
+from api.database import get_supabase_client
 
 router = APIRouter()
 
@@ -16,6 +16,7 @@ async def submit_review_feedback(feedback: ReviewFeedback):
     In the fixed 5-session system, this just marks the current review as complete.
     """
     try:
+        supabase = get_supabase_client()
         # Find the earliest pending review session for this task
         response = supabase.table("review_sessions")\
             .select("*")\
@@ -24,19 +25,19 @@ async def submit_review_feedback(feedback: ReviewFeedback):
             .order("scheduled_date")\
             .limit(1)\
             .execute()
-            
+
         if not response.data:
             return {"message": "No pending review session found for this task", "success": False}
-            
+
         session = response.data[0]
-        
+
         # Mark as completed
         supabase.table("review_sessions").update({
             "status": "completed",
             "completed_at": datetime.now(timezone.utc).isoformat(),
         }).eq("id", session["id"]).execute()
-        
+
         return {"success": True, "message": "Review recorded"}
-        
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -15,7 +15,7 @@ from api.database import (
     create_calendar_events_batch,
     delete_future_calendar_events,
     delete_events_for_tasks,
-    supabase,
+    get_supabase_client,
 )
 from api.data_types.consts import GET_TASKS_DEV_PROMPT, TASK_SCHEMA
 from api.scheduling.scheduler import schedule_events
@@ -231,7 +231,7 @@ def calculate_scheduling_strategy(existing_tasks: List[dict], new_tasks: List[di
     # Get user settings and current time
     user_id = existing_tasks[0].get("user_id")
     settings = get_settings(user_id)
-    db = supabase
+    db = get_supabase_client()
     now = datetime.now(timezone.utc)
     
     # STEP 1: Check for overdue tasks
