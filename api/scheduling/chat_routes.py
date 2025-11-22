@@ -38,7 +38,7 @@ async def chat_endpoint(request: ChatRequest):
             },
         )
 
-        results = await run_agent(request)
+        results = await run_agent(request.model_dump())
 
         # log success details
         logger.info(
