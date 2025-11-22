@@ -10,4 +10,5 @@ export const settingsStyles = {
   input: "mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-gray-300",
   actions: "flex justify-end gap-2 border-t p-[clamp(0.75rem,2vh,1rem)]",
   saveBtn: "rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-black",
+  error: "text-sm text-red-600 mt-2",
 }

@@ -11,6 +11,8 @@ import {
   DEFAULT_LONG_BREAK_MIN,
   DEFAULT_LONG_STUDY_THRESHOLD_MIN,
   DEFAULT_MIN_GAP_FOR_BREAK_MIN,
+  DEFAULT_MAX_STUDY_DURATION_BEFORE_BREAK,
+  DEFAULT_BREAK_DURATION,
 } from '../constants/scheduling';
 
 export interface EnergyProfilePayload {
