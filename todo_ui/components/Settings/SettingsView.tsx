@@ -94,7 +94,7 @@ export default function SettingsView() {
       {/* Save Button */}
       <article className={settingsStyles.card}>
         <button
-          className={settingsStyles.button}
+          className={settingsStyles.saveBtn}
           onClick={save}
           disabled={isLoading}
         >
