@@ -37,5 +37,5 @@ export const onboardingStyles = {
     grid2: "grid grid-cols-1 md:grid-cols-2 gap-4", // Reduced gap
 
     // Illustration placeholder
-    illustrationPlaceholder: "w-full h-48 bg-gray-50 rounded-2xl mb-6 flex items-center justify-center border-2 border-dashed border-gray-100 shrink-0 relative overflow-hidden", // Reduced height to h-48
+    illustrationPlaceholder: "h-64 mx-auto mb-6 flex items-center justify-center shrink-0 select-none", // Fixed height, auto width
 }

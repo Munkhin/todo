@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import Image from "next/image"
+
 import { motion, AnimatePresence } from "framer-motion"
 import { useOnboarding } from "@/hooks/use-onboarding"
 import { useUserId } from "@/hooks/use-user-id"
@@ -200,11 +200,10 @@ export default function OnboardingOverlay() {
                             We'll help you organize your tasks, schedule your study sessions, and optimize your learning based on your energy levels.
                         </p>
                         <div className={onboardingStyles.illustrationPlaceholder}>
-                            <Image
+                            <img
                                 src="/onboarding_images/welcome.jpeg"
                                 alt="Welcome to Todo"
-                                fill
-                                className="object-cover"
+                                className="h-full w-auto rounded-2xl shadow-sm"
                             />
                         </div>
                     </div>
@@ -214,11 +213,10 @@ export default function OnboardingOverlay() {
                 return (
                     <div className="flex flex-col h-full overflow-hidden">
                         <div className={onboardingStyles.illustrationPlaceholder}>
-                            <Image
+                            <img
                                 src="/onboarding_images/subjects.jpeg"
                                 alt="Subjects"
-                                fill
-                                className="object-cover"
+                                className="h-full w-auto rounded-2xl shadow-sm"
                             />
                         </div>
                         <div className="flex-1 flex flex-col min-h-0 space-y-4">
@@ -260,11 +258,10 @@ export default function OnboardingOverlay() {
                 return (
                     <div className="flex flex-col h-full overflow-hidden">
                         <div className={onboardingStyles.illustrationPlaceholder}>
-                            <Image
+                            <img
                                 src="/onboarding_images/tests.jpeg"
                                 alt="Tests"
-                                fill
-                                className="object-cover"
+                                className="h-full w-auto rounded-2xl shadow-sm"
                             />
                         </div>
                         <div className="flex-1 flex flex-col min-h-0 space-y-4">
@@ -320,11 +317,10 @@ export default function OnboardingOverlay() {
                 return (
                     <div className="space-y-8">
                         <div className={onboardingStyles.illustrationPlaceholder}>
-                            <Image
+                            <img
                                 src="/onboarding_images/wake_sleep_times.jpeg"
                                 alt="Wake and Sleep Schedule"
-                                fill
-                                className="object-cover"
+                                className="h-full w-auto rounded-2xl shadow-sm"
                             />
                         </div>
                         <div className={onboardingStyles.grid2}>
@@ -350,11 +346,10 @@ export default function OnboardingOverlay() {
                 return (
                     <div className="space-y-8">
                         <div className={onboardingStyles.illustrationPlaceholder}>
-                            <Image
+                            <img
                                 src="/onboarding_images/study_duration.jpeg"
                                 alt="Study Duration"
-                                fill
-                                className="object-cover"
+                                className="h-full w-auto rounded-2xl shadow-sm"
                             />
                         </div>
                         <div className="space-y-8">
@@ -380,11 +375,10 @@ export default function OnboardingOverlay() {
                 return (
                     <div className="space-y-8">
                         <div className={onboardingStyles.illustrationPlaceholder}>
-                            <Image
+                            <img
                                 src="/onboarding_images/break.jpeg"
                                 alt="Breaks and Rest"
-                                fill
-                                className="object-cover"
+                                className="h-full w-auto rounded-2xl shadow-sm"
                             />
                         </div>
                         <div className="space-y-6">
@@ -425,11 +419,10 @@ export default function OnboardingOverlay() {
                 return (
                     <div className="space-y-8">
                         <div className={onboardingStyles.illustrationPlaceholder}>
-                            <Image
+                            <img
                                 src="/onboarding_images/energy_levels.jpeg"
                                 alt="Energy Levels"
-                                fill
-                                className="object-cover"
+                                className="h-full w-auto rounded-2xl shadow-sm"
                             />
                         </div>
                         <div className="space-y-4">
@@ -450,11 +443,10 @@ export default function OnboardingOverlay() {
                 return (
                     <div className="space-y-8">
                         <div className={onboardingStyles.illustrationPlaceholder}>
-                            <Image
+                            <img
                                 src="/onboarding_images/anything_else.jpeg"
                                 alt="Additional Notes"
-                                fill
-                                className="object-cover"
+                                className="h-full w-auto rounded-2xl shadow-sm"
                             />
                         </div>
                         <div className="space-y-4">
