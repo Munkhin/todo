@@ -50,9 +50,10 @@ export default function TUICalendar({
                 // focus on core working hours for better space utilization
                 hourStart: 6,
                 hourEnd: 22,
+                startDayOfWeek: 1, // Start week on Monday
             },
             month: {
-                startDayOfWeek: 0,
+                startDayOfWeek: 1, // Start month on Monday
             },
         }
 

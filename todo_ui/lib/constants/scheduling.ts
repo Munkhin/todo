@@ -10,6 +10,8 @@ export const DEFAULT_SHORT_BREAK_MIN = 5;
 export const DEFAULT_LONG_BREAK_MIN = 15;
 export const DEFAULT_LONG_STUDY_THRESHOLD_MIN = 90;
 export const DEFAULT_MIN_GAP_FOR_BREAK_MIN = 3;
+export const DEFAULT_MAX_STUDY_DURATION_BEFORE_BREAK = 60;
+export const DEFAULT_BREAK_DURATION = 10;
 
 export const DEFAULT_ENERGY_LEVELS: Record<number, number> = {
   7: 6,

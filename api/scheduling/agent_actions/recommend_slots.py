@@ -30,4 +30,4 @@ async def recommend_slots(user_input, chatgpt_call):
         + "\nCurrent datetime: " + current_datetime
     )
 
-    return await chatgpt_call(user_input_enriched, RECOMMEND_SLOTS_DEV_PROMPT, "slots recommendation", SLOTS_SCHEMA)
+    return await chatgpt_call(user_input_enriched, RECOMMEND_SLOTS_DEV_PROMPT, "slots_recommendation", SLOTS_SCHEMA)

@@ -26,6 +26,8 @@ export interface EnergyProfilePayload {
   long_break_min: number;
   long_study_threshold_min: number;
   min_gap_for_break_min: number;
+  max_study_duration_before_break?: number;
+  break_duration?: number;
   onboarding_completed?: boolean;
 }
 
@@ -41,6 +43,8 @@ export interface EnergyProfileResponse {
   long_break_min?: number | null;
   long_study_threshold_min?: number | null;
   min_gap_for_break_min?: number | null;
+  max_study_duration_before_break?: number | null;
+  break_duration?: number | null;
   onboarding_completed?: boolean;
 }
 
@@ -92,6 +96,8 @@ export function normaliseResponse(response: EnergyProfileResponse | null): Energ
     long_break_min: response.long_break_min ?? DEFAULT_LONG_BREAK_MIN,
     long_study_threshold_min: response.long_study_threshold_min ?? DEFAULT_LONG_STUDY_THRESHOLD_MIN,
     min_gap_for_break_min: response.min_gap_for_break_min ?? DEFAULT_MIN_GAP_FOR_BREAK_MIN,
+    max_study_duration_before_break: response.max_study_duration_before_break ?? DEFAULT_MAX_STUDY_DURATION_BEFORE_BREAK,
+    break_duration: response.break_duration ?? DEFAULT_BREAK_DURATION,
     onboarding_completed: response.onboarding_completed ?? false,
   };
 }
@@ -121,6 +127,8 @@ export async function saveEnergyProfile(userId: number, payload: EnergyProfilePa
     long_break_min: payload.long_break_min,
     long_study_threshold_min: payload.long_study_threshold_min,
     min_gap_for_break_min: payload.min_gap_for_break_min,
+    max_study_duration_before_break: payload.max_study_duration_before_break,
+    break_duration: payload.break_duration,
     onboarding_completed: payload.onboarding_completed,
   };
 

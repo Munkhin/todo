@@ -14,6 +14,8 @@ import {
   DEFAULT_LONG_BREAK_MIN,
   DEFAULT_LONG_STUDY_THRESHOLD_MIN,
   DEFAULT_MIN_GAP_FOR_BREAK_MIN,
+  DEFAULT_MAX_STUDY_DURATION_BEFORE_BREAK,
+  DEFAULT_BREAK_DURATION,
 } from '@/lib/constants/scheduling'
 
 const DEFAULT_ENERGY_LEVEL = 5
@@ -58,6 +60,8 @@ function buildDefaults(): EnergyProfilePayload {
     long_break_min: DEFAULT_LONG_BREAK_MIN,
     long_study_threshold_min: DEFAULT_LONG_STUDY_THRESHOLD_MIN,
     min_gap_for_break_min: DEFAULT_MIN_GAP_FOR_BREAK_MIN,
+    max_study_duration_before_break: DEFAULT_MAX_STUDY_DURATION_BEFORE_BREAK,
+    break_duration: DEFAULT_BREAK_DURATION,
   }
 }
 
