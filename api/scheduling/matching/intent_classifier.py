@@ -34,12 +34,15 @@ intent_examples = {
         "upload the tasks here",
         "help me study for my calculus exam next week",
         "I need to prepare for my presentation",
-        "plan my biology revision",
+        "plan my biology revision for this week",
         "I need to get ready for the chemistry test",
         "help me practice for my piano recital",
         "prepare for the history final covering chapters 1-10",
         "study for physics test on thermodynamics and electromagnetism",
-        "work on my research paper about climate change"
+        "work on my research paper about climate change",
+        "help me review all my biology notes",
+        "I want to finish my math homework by Friday",
+        "organize my study schedule for next week"
     ],
     "delete-tasks": ["remove the previous task", "clear all my tasks", "delete tomorrow's tasks"],
     "reschedule": ["move my task forward by 2 hours", "delegate this to tomorrow", "reassign this task to somewhere next week", "plan my tasks again", "I dont like to do math in the morning"],
@@ -52,19 +55,20 @@ intent_examples = {
     ],
     "create-event": [
         "block 2-3pm for dentist appointment",
-        "I have a meeting at 3pm tomorrow",
-        "remind me to call Sarah at 5pm",
+        "schedule learning math from 8 to 9 pm now",
+        "schedule learning science from 6 to 7 pm today",
+        "I have a meeting from 3pm to 4pm tomorrow",
+        "remind me to call Sarah at 5pm for 30 minutes",
         "mark 10am-11am as busy tomorrow",
-        "add doctor appointment Friday 2pm",
+        "add doctor appointment Friday 2-3pm",
         "reserve 1-2pm for lunch meeting",
         "block out 9am-12pm for interview",
-        "schedule learning math from 6 to 7 pm today",
-        "schedule learning math today",
-        "book gym session this afternoon",
-        "add study session tomorrow morning",
-        "coffee with John on Friday",
-        "yoga class at 6pm",
-        "team meeting tomorrow"
+        "book gym session 6-7pm tonight",
+        "add study block tomorrow 9-11am",
+        "coffee with John on Friday 3-4pm",
+        "yoga class at 6pm for one hour",
+        "team meeting tomorrow 2-3pm",
+        "block 8-9am for morning workout"
     ]
 }
 
