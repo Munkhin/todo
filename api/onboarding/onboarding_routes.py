@@ -33,7 +33,7 @@ async def submit_onboarding(
     try:
         # 1. Save preferences and mark onboarding as complete
         # Convert Pydantic model to dict, excluding None values
-        profile_data = request.preferences.dict(exclude_unset=True)
+        profile_data = request.preferences.model_dump(exclude_unset=True)
         
         # Force onboarding_completed to True
         profile_data["onboarding_completed"] = True

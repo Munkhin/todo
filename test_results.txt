@@ -1,0 +1,60 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0 -- C:\Users\Cheem\AppData\Local\Programs\Python\Python313\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\Cheem\OneDrive\Coding\todo\todo-1
+plugins: anyio-4.9.0, cov-7.0.0, mock-3.15.1
+collecting ... collected 28 items
+
+tests/test_auth.py::test_auth_status_unauthenticated PASSED              [  3%]
+tests/test_auth.py::test_auth_status_authenticated PASSED                [  7%]
+tests/test_auth.py::test_logout_success PASSED                           [ 10%]
+tests/test_auth.py::test_logout_invalid_session PASSED                   [ 14%]
+tests/test_auth.py::test_user_me PASSED                                  [ 17%]
+tests/test_auth.py::test_update_timezone PASSED                          [ 21%]
+tests/test_calendar.py::test_get_calendar_events_missing_user_id PASSED  [ 25%]
+tests/test_calendar.py::test_create_event_success PASSED                 [ 28%]
+tests/test_calendar.py::test_create_event_invalid_times PASSED           [ 32%]
+tests/test_calendar.py::test_update_event_success PASSED                 [ 35%]
+tests/test_calendar.py::test_delete_event_success PASSED                 [ 39%]
+tests/test_feedback.py::test_submit_feedback_success PASSED              [ 42%]
+tests/test_feedback.py::test_submit_feedback_empty PASSED                [ 46%]
+tests/test_onboarding.py::test_submit_onboarding_success PASSED          [ 50%]
+tests/test_onboarding.py::test_submit_onboarding_no_agent PASSED         [ 53%]
+tests/test_scheduling.py::test_chat_endpoint_success PASSED              [ 57%]
+tests/test_scheduling.py::test_chat_endpoint_invalid_text PASSED         [ 60%]
+tests/test_settings.py::test_get_settings_existing PASSED                [ 64%]
+tests/test_settings.py::test_get_settings_seed_default PASSED            [ 67%]
+tests/test_settings.py::test_save_settings_success PASSED                [ 71%]
+tests/test_smoke.py::test_health_endpoint PASSED                         [ 75%]
+tests/test_smoke.py::test_root_endpoint PASSED                           [ 78%]
+tests/test_tasks.py::test_get_tasks_missing_user_id PASSED               [ 82%]
+tests/test_tasks.py::test_get_tasks_success PASSED                       [ 85%]
+tests/test_tasks.py::test_create_task_success PASSED                     [ 89%]
+tests/test_tasks.py::test_create_task_invalid_difficulty PASSED          [ 92%]
+tests/test_tasks.py::test_update_task_success PASSED                     [ 96%]
+tests/test_tasks.py::test_delete_task_success PASSED                     [100%]
+
+============================== warnings summary ===============================
+..\..\..\..\AppData\Local\Programs\Python\Python313\Lib\site-packages\PyPDF2\__init__.py:21
+  C:\Users\Cheem\AppData\Local\Programs\Python\Python313\Lib\site-packages\PyPDF2\__init__.py:21: DeprecationWarning: PyPDF2 is deprecated. Please move to the pypdf library instead.
+    warnings.warn(
+
+..\..\..\..\AppData\Local\Programs\Python\Python313\Lib\site-packages\pytesseract\pytesseract.py:32
+  C:\Users\Cheem\AppData\Local\Programs\Python\Python313\Lib\site-packages\pytesseract\pytesseract.py:32: DeprecationWarning: 'pkgutil.find_loader' is deprecated and slated for removal in Python 3.14; use importlib.util.find_spec() instead
+    numpy_installed = find_loader('numpy') is not None
+
+..\..\..\..\AppData\Local\Programs\Python\Python313\Lib\site-packages\pytesseract\pytesseract.py:36
+  C:\Users\Cheem\AppData\Local\Programs\Python\Python313\Lib\site-packages\pytesseract\pytesseract.py:36: DeprecationWarning: 'pkgutil.find_loader' is deprecated and slated for removal in Python 3.14; use importlib.util.find_spec() instead
+    pandas_installed = find_loader('pandas') is not None
+
+..\..\..\..\AppData\Local\Programs\Python\Python313\Lib\site-packages\dateutil\tz\tz.py:37
+  C:\Users\Cheem\AppData\Local\Programs\Python\Python313\Lib\site-packages\dateutil\tz\tz.py:37: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
+    EPOCH = datetime.datetime.utcfromtimestamp(0)
+
+tests/test_onboarding.py::test_submit_onboarding_success
+tests/test_onboarding.py::test_submit_onboarding_no_agent
+  C:\Users\Cheem\OneDrive\Coding\todo\todo-1\api\onboarding\onboarding_routes.py:36: PydanticDeprecatedSince20: The `dict` method is deprecated; use `model_dump` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    profile_data = request.preferences.dict(exclude_unset=True)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 28 passed, 6 warnings in 1.33s ========================
