@@ -32,7 +32,13 @@ async def schedule_tasks_into_calendar(user_input, chatgpt_call):
 
     # basic error handling
     if not infered_tasks:
-        raise ValueError("No tasks inferred")
+        logger.warning(
+            "No tasks inferred from user input",
+            extra={"user_id": user_input.get("user_id"), "text_preview": user_input.get("text", "")[:100]}
+        )
+        return {
+            "text": "I couldn't identify any tasks to schedule from your message. If you meant to create a calendar event at a specific time, please try rephrasing it."
+        }
 
     # 2. insert new tasks into db efficiently
     await asyncio.to_thread(create_tasks_batch, infered_tasks)

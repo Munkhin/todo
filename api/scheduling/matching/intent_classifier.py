@@ -34,11 +34,12 @@ intent_examples = {
         "upload the tasks here",
         "help me study for my calculus exam next week",
         "I need to prepare for my presentation",
-        "schedule time to work on my essay",
         "plan my biology revision",
-        "help me practice piano for my recital",
         "I need to get ready for the chemistry test",
-        "break down my project into study sessions"
+        "help me practice for my piano recital",
+        "prepare for the history final covering chapters 1-10",
+        "study for physics test on thermodynamics and electromagnetism",
+        "work on my research paper about climate change"
     ],
     "delete-tasks": ["remove the previous task", "clear all my tasks", "delete tomorrow's tasks"],
     "reschedule": ["move my task forward by 2 hours", "delegate this to tomorrow", "reassign this task to somewhere next week", "plan my tasks again", "I dont like to do math in the morning"],
@@ -56,7 +57,14 @@ intent_examples = {
         "mark 10am-11am as busy tomorrow",
         "add doctor appointment Friday 2pm",
         "reserve 1-2pm for lunch meeting",
-        "block out 9am-12pm for interview"
+        "block out 9am-12pm for interview",
+        "schedule learning math from 6 to 7 pm today",
+        "schedule learning math today",
+        "book gym session this afternoon",
+        "add study session tomorrow morning",
+        "coffee with John on Friday",
+        "yoga class at 6pm",
+        "team meeting tomorrow"
     ]
 }
 
