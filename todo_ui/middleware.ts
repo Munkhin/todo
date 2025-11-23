@@ -14,9 +14,9 @@ export default auth((req) => {
   }
 
   // if not authenticated and trying to access protected routes, redirect to landing
-  if (!isAuthenticated && !isPublicRoute && !pathname.startsWith('/api')) {
-    return NextResponse.redirect(new URL('/', req.url));
-  }
+  // if (!isAuthenticated && !isPublicRoute && !pathname.startsWith('/api')) {
+  //   return NextResponse.redirect(new URL('/', req.url));
+  // }
 
   return NextResponse.next();
 });

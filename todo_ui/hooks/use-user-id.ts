@@ -4,6 +4,10 @@ import { useState, useEffect } from "react"
 import { api } from "@/lib/api/client"
 
 export function useUserId(): number | null {
+  // MOCK FOR DEMO
+  return 1;
+
+  /*
   const { data, status } = useSession()
   const [userId, setUserId] = useState<number | null>(null)
 
@@ -37,4 +41,5 @@ export function useUserId(): number | null {
   }, [data, status])
 
   return userId
+  */
 }
